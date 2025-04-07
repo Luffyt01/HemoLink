@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "app_user")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class User {
 
     @Id
@@ -36,4 +37,6 @@ public class User {
 
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    private boolean isProfileComplete = false;
 }

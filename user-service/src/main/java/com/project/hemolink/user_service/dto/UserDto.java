@@ -19,4 +19,5 @@ public class UserDto {
     private String phone;
     private UserRole role;
     private LocalDateTime createdAt;
+    private boolean isProfileComplete;
 }

@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.geo.Point;
+import org.locationtech.jts.geom.Point;
 
 import java.time.LocalDateTime;
 
@@ -27,6 +27,8 @@ public class Donor{
     private User user;
     @Enumerated(EnumType.STRING)
     private BloodType bloodType;
+
+    @Column(columnDefinition = "Geometry(Point, 4326)")
     private Point location;
     private LocalDateTime lastDonation;
     private boolean isAvailable;

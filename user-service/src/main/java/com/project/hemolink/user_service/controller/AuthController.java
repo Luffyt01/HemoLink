@@ -5,6 +5,7 @@ import com.project.hemolink.user_service.dto.SignupRequestDto;
 import com.project.hemolink.user_service.dto.UserDto;
 import com.project.hemolink.user_service.services.AuthService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 /*
  * Controller class to handle the authentication logic
  */
+@Slf4j
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -30,9 +32,13 @@ public class AuthController {
         return new ResponseEntity<>(userDto, HttpStatus.CREATED);
     }
 
+    // Function to Login the user
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequestDto loginRequestDto){
         String token = authService.login(loginRequestDto);
+
         return ResponseEntity.ok(token);
     }
+
+    // TODO implement refresh token and logout feature
 }
