@@ -12,4 +12,5 @@ import java.util.UUID;
 public interface DonorRepository extends JpaRepository<Donor, UUID> {
 
     Optional<Donor> findByUser(User user);
+    void deleteByUser(User user);
 }

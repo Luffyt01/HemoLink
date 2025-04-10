@@ -4,6 +4,7 @@ import com.project.hemolink.user_service.auth.UserContextHolder;
 import com.project.hemolink.user_service.dto.AvailabilityDto;
 import com.project.hemolink.user_service.dto.CompleteDonorProfileDto;
 import com.project.hemolink.user_service.dto.DonorDto;
+import com.project.hemolink.user_service.dto.PointDTO;
 import com.project.hemolink.user_service.entities.Donor;
 import com.project.hemolink.user_service.entities.User;
 import com.project.hemolink.user_service.entities.enums.BloodType;
@@ -14,8 +15,8 @@ import com.project.hemolink.user_service.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.locationtech.jts.geom.Point;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.geo.Point;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -70,5 +71,21 @@ public class DonorService {
         donor.setAvailable(availabilityDto.isAvailable());
 
         return modelMapper.map(donorRepository.save(donor), DonorDto.class);
+    }
+
+    public DonorDto updateLocation(PointDTO updatedLocation){
+        String userId = UserContextHolder.getCurrentUserId();
+        User user = (User) userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
+
+        log.info("Updating the location for the donor with email: {}", user.getEmail());
+        Donor donor = donorRepository.findByUser(user)
+                .orElseThrow(() -> new ResourceNotFoundException("Donor not found with email id: {}"+user.getEmail()));
+
+        donor.setLocation(modelMapper.map(updatedLocation, Point.class));
+
+        Donor savedDonor = donorRepository.save(donor);
+        log.info("Location updated");
+        return modelMapper.map(savedDonor, DonorDto.class);
     }
 }

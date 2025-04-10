@@ -1,6 +1,6 @@
 package com.project.hemolink.matching_service.entities;
 
-import com.project.hemolink.matching_service.entities.enums.DonationStatus;
+import com.project.hemolink.matching_service.entities.enums.NotificationStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,22 +15,18 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "donations")
-public class Donation {
+@Table(name = "match_log")
+public class MatchLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private String donorId;
-
     @ManyToOne
-    @JoinColumn(name = "request_id")
     private BloodRequest request;
 
-    private LocalDateTime scheduledAt;
-    private LocalDateTime completedAt;
+    private String donorId;
+    private LocalDateTime matchedAt;
+    private NotificationStatus notificationStatus;
 
-    @Enumerated(EnumType.STRING)
-    private DonationStatus status;
 }

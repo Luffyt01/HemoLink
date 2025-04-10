@@ -16,6 +16,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DonorDto {
+    private String name;
+    private Integer age;
+    private String address;
     private UserDto user;
     private BloodType bloodType;
     private PointDTO location;

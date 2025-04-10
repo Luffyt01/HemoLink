@@ -15,6 +15,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class CompleteDonorProfileDto {
 
+    private String name;
+    private Integer age;
+    private String address;
     private BloodType bloodType;
     private PointDTO location;
 

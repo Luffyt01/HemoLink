@@ -22,6 +22,9 @@ public class Donor{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+    private String name;
+    private Integer age;
+    private String address;
 
     @OneToOne
     private User user;
