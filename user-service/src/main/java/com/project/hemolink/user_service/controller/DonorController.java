@@ -4,10 +4,13 @@ import com.project.hemolink.user_service.dto.AvailabilityDto;
 import com.project.hemolink.user_service.dto.CompleteDonorProfileDto;
 import com.project.hemolink.user_service.dto.DonorDto;
 import com.project.hemolink.user_service.dto.LocationDto;
+import com.project.hemolink.user_service.entities.Donor;
 import com.project.hemolink.user_service.services.DonorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/donors")
@@ -29,4 +32,7 @@ public class DonorController {
     public ResponseEntity<DonorDto> updateLocation(@RequestBody LocationDto locationDto){
         return ResponseEntity.ok(donorService.updateLocation(locationDto.getLocation()));
     }
+
+    @GetMapping("/eligibleDonors")
+    public ResponseEntity<List<Donor>> getEligibleDonors()
 }
