@@ -1,9 +1,6 @@
 package com.project.hemolink.matching_service.services;
 
-import com.project.hemolink.matching_service.dto.BloodRequestDto;
-import com.project.hemolink.matching_service.dto.CreateRequestDto;
-import com.project.hemolink.matching_service.dto.PointDTO;
-import com.project.hemolink.matching_service.dto.UpdateRequestDto;
+import com.project.hemolink.matching_service.dto.*;
 import com.project.hemolink.matching_service.entities.BloodRequest;
 import com.project.hemolink.matching_service.entities.enums.RequestStatus;
 import com.project.hemolink.matching_service.entities.enums.UrgencyLevel;
@@ -21,6 +18,9 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/*
+ * Service class to handle the blood request logic
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -28,12 +28,23 @@ public class BloodRequestService {
     private final BloodRequestRepository bloodRequestRepository;
     private final ModelMapper modelMapper;
 
-    public BloodRequestDto createRequest(CreateRequestDto createRequestDto) {
-        log.info("Creating a blood request for hospital with id: {}", "H1");
+    /*
+     * Function to create a request
+     */
+    public BloodRequestDto createRequest(RequestDetailDto createRequestDto) {
 
-        BloodRequest bloodRequest = modelMapper.map(createRequestDto, BloodRequest.class);
-        // TODO implement logic to set the actual hospital id
-        bloodRequest.setHospitalId("H1");
+        // error converting request body
+        log.info("Creating a blood request for hospital with id: {}", createRequestDto.getHospitalId());
+
+
+        BloodRequest bloodRequest = new BloodRequest();
+        bloodRequest.setHospitalId(createRequestDto.getHospitalId());
+        bloodRequest.setHospitalName(createRequestDto.getHospitalName());
+        bloodRequest.setBloodType(createRequestDto.getBloodType());
+        bloodRequest.setUnitsRequired(createRequestDto.getUnitsRequired());
+        bloodRequest.setUrgency(createRequestDto.getUrgency());
+        bloodRequest.setLocation(modelMapper.map(createRequestDto.getLocation(), Point.class));
+
         bloodRequest.setExpiryTime(setRequestExpiryTime(createRequestDto.getUrgency()));
         bloodRequest.setStatus(RequestStatus.PENDING);
 

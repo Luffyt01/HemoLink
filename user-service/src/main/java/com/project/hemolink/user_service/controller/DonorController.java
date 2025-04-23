@@ -33,6 +33,6 @@ public class DonorController {
         return ResponseEntity.ok(donorService.updateLocation(locationDto.getLocation()));
     }
 
-    @GetMapping("/eligibleDonors")
-    public ResponseEntity<List<Donor>> getEligibleDonors()
+//    @GetMapping("/eligibleDonors")
+//    public ResponseEntity<List<Donor>> getEligibleDonors()
 }

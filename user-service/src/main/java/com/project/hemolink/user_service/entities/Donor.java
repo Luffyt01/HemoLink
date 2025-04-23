@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.locationtech.jts.geom.Point;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 
 @Entity
@@ -21,7 +22,7 @@ public class Donor{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    private UUID id;
     private String name;
     private Integer age;
     private String address;
@@ -34,5 +35,5 @@ public class Donor{
     @Column(columnDefinition = "Geometry(Point, 4326)")
     private Point location;
     private LocalDateTime lastDonation;
-    private boolean isAvailable;
+    private Boolean isAvailable;
 }

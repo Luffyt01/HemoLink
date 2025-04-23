@@ -1,16 +1,13 @@
-package com.project.hemolink.matching_service.dto;
+package com.project.hemolink.user_service.dto;
 
-import com.project.hemolink.matching_service.entities.enums.BloodType;
-import com.project.hemolink.matching_service.entities.enums.RequestStatus;
-import com.project.hemolink.matching_service.entities.enums.UrgencyLevel;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+
+import com.project.hemolink.user_service.entities.enums.BloodType;
+import com.project.hemolink.user_service.entities.enums.RequestStatus;
+import com.project.hemolink.user_service.entities.enums.UrgencyLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.locationtech.jts.geom.Point;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -20,7 +17,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BloodRequestDto {
-    private String id;
+    private UUID id;
     private String hospitalId;
     private String hospitalName;
     private BloodType bloodType;

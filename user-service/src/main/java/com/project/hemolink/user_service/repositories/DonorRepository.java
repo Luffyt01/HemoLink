@@ -17,14 +17,14 @@ import java.util.UUID;
 @Repository
 public interface DonorRepository extends JpaRepository<Donor, UUID> {
 
-    @Query("SELECT d FROM Donor d WHERE " +
-            "d.bloodType = :bloodType AND " +
-            "d.isAvailable = true AND " +
-            "ST_DWithinn(d.location, : location, 50) = true AND " +
-            "(d.lastDonation IS NULL OR d.lastDonation < :minDate)")
-    List<Donor> findEligibleDonors(@Param("bloodType") BloodType bloodType,
-                                   @Param("location") Point location,
-                                   @Param("minDate")LocalDate minDate);
+//    @Query("SELECT d FROM Donor d WHERE " +
+//            "d.bloodType = :bloodType AND " +
+//            "d.isAvailable = true AND " +
+//            "ST_DWithin(d.location, : location, 50) = true AND " +
+//            "(d.lastDonation IS NULL OR d.lastDonation < :minDate)")
+//    List<Donor> findEligibleDonors(@Param("bloodType") BloodType bloodType,
+//                                   @Param("location") Point location,
+//                                   @Param("minDate")LocalDate minDate);
 
 
 

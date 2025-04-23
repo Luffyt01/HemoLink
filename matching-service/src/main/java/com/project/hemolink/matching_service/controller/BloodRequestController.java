@@ -1,8 +1,6 @@
 package com.project.hemolink.matching_service.controller;
 
-import com.project.hemolink.matching_service.dto.BloodRequestDto;
-import com.project.hemolink.matching_service.dto.CreateRequestDto;
-import com.project.hemolink.matching_service.dto.UpdateRequestDto;
+import com.project.hemolink.matching_service.dto.*;
 import com.project.hemolink.matching_service.entities.enums.RequestStatus;
 import com.project.hemolink.matching_service.entities.enums.UrgencyLevel;
 import com.project.hemolink.matching_service.services.BloodRequestService;
@@ -20,8 +18,8 @@ public class BloodRequestController {
     private final BloodRequestService bloodRequestService;
 
     @PostMapping("/create")
-    public ResponseEntity<BloodRequestDto> createRequest(@RequestBody CreateRequestDto createRequestDto){
-        return new ResponseEntity<>(bloodRequestService.createRequest(createRequestDto), HttpStatus.CREATED);
+    public BloodRequestDto createRequest(@RequestBody RequestDetailDto createRequestDto){
+        return bloodRequestService.createRequest(createRequestDto);
     }
 
     @GetMapping("/{requestId}")

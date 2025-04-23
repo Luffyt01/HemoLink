@@ -31,6 +31,7 @@ public class BloodRequest {
     private UUID id;
 
     private String hospitalId;
+    private String hospitalName;
 
     @Enumerated(EnumType.STRING)
     private BloodType bloodType;

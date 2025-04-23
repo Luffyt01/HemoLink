@@ -24,6 +24,9 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.UUID;
 
+/*
+ * Service Class to manage the donor related logic
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -33,31 +36,38 @@ public class DonorService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
 
-
+    /*
+     * Function to complete the donor profile
+     */
     public DonorDto completeProfile(CompleteDonorProfileDto completeDonorProfileDto) {
+        // Getting the userId of the current logged user
         String userId = UserContextHolder.getCurrentUserId();
+
+        // Fetching the user
+        // Checking if the user already exists in the repository
         User user = (User) userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
 
+        // Checking if the user profile is already completed
         if (user.isProfileComplete()){
             throw new BadRequestException("The profile is completed for the donor with email: "+user.getEmail());
         }
         log.info("Attempting to complete the profile for donor with email: {}", user.getEmail());
 
+        // Mapping the details entered by the user to the donor object
         Donor donor = modelMapper.map(completeDonorProfileDto, Donor.class);
-
-        user.setProfileComplete(true);
-
+        user.setProfileComplete(true); // Marking the profile completed
         donor.setUser(userRepository.save(user));
-
-        donor.setAvailable(true);
-
-        Donor savedDonor = donorRepository.save(donor);
+        donor.setIsAvailable(true);
+        Donor savedDonor = donorRepository.save(donor); // Saving the donor details
 
         return modelMapper.map(savedDonor, DonorDto.class);
 
     }
 
+    /*
+     * Function to update the donor availability
+     */
     public DonorDto updateAvailability(AvailabilityDto availabilityDto) {
         String userId = UserContextHolder.getCurrentUserId();
         User user = (User) userRepository.findById(userId)
@@ -68,7 +78,7 @@ public class DonorService {
 
         log.info("Attempting to update availability of the donor with email: {}", user.getEmail());
 
-        donor.setAvailable(availabilityDto.isAvailable());
+        donor.setIsAvailable(availabilityDto.isAvailable());
 
         return modelMapper.map(donorRepository.save(donor), DonorDto.class);
     }
