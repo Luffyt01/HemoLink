@@ -27,6 +27,6 @@ public class MatchLog {
 
     private String donorId;
     private LocalDateTime matchedAt;
-    private NotificationStatus notificationStatus;
+    private NotificationStatus status;
 
 }

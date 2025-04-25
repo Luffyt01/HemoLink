@@ -21,6 +21,8 @@ public interface BloodRequestRepository extends JpaRepository<BloodRequest, UUID
 
     boolean existsByHospitalId(String hospitalId);
 
-
     List<BloodRequest> findByStatusAndExpiryTimeBefore(RequestStatus requestStatus, LocalDateTime now);
+
+    @Query("SELECT r FROM BloodRequest  r WHERE r.status = 'ACTIVE' AND r.urgency = 'HIGH' ")
+    List<BloodRequest> findUrgentRequests();
 }

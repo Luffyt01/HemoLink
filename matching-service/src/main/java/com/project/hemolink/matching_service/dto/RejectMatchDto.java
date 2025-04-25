@@ -8,5 +8,6 @@ import lombok.NoArgsConstructor;
 public class RejectMatchDto {
 
     private String matchId;
+    private String donorId;
     private String reason;
 }

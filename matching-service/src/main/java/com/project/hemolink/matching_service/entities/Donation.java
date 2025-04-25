@@ -26,7 +26,7 @@ public class Donation {
 
     @ManyToOne
     @JoinColumn(name = "request_id")
-    private BloodRequest request;
+    private BloodRequest requestId;
 
     private LocalDateTime scheduledAt;
     private LocalDateTime completedAt;

@@ -27,5 +27,11 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(DonorNotAvailableException.class)
+    public ResponseEntity<ApiError> handleDonorNotAvailableException(DonorNotAvailableException e){
+        ApiError apiError = new ApiError(e.getLocalizedMessage(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
+    }
+
 
 }

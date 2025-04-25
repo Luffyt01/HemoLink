@@ -1,10 +1,7 @@
 package com.project.hemolink.user_service.services;
 
 import com.project.hemolink.user_service.auth.UserContextHolder;
-import com.project.hemolink.user_service.dto.AvailabilityDto;
-import com.project.hemolink.user_service.dto.CompleteDonorProfileDto;
-import com.project.hemolink.user_service.dto.DonorDto;
-import com.project.hemolink.user_service.dto.PointDTO;
+import com.project.hemolink.user_service.dto.*;
 import com.project.hemolink.user_service.entities.Donor;
 import com.project.hemolink.user_service.entities.User;
 import com.project.hemolink.user_service.entities.enums.BloodType;
@@ -17,10 +14,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Point;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.util.ReflectionUtils;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -97,5 +98,19 @@ public class DonorService {
         Donor savedDonor = donorRepository.save(donor);
         log.info("Location updated");
         return modelMapper.map(savedDonor, DonorDto.class);
+    }
+
+    public DonorDto findDonorById(String donorId) {
+        String userId = UserContextHolder.getCurrentUserId();
+
+        Donor donor = donorRepository.findById(UUID.fromString(donorId))
+                .orElseThrow(() -> new ResourceNotFoundException("Donor not found with id: "+donorId));
+
+        return modelMapper.map(donor, DonorDto.class);
+    }
+
+
+    public List<DonorMatchDto> findNearByEligibleDonors(Point point, BloodType bloodType, int i, LocalDate minLastDonation, PageRequest of) {
+
     }
 }

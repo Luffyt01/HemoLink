@@ -1,6 +1,6 @@
-package com.project.hemolink.matching_service.dto;
+package com.project.hemolink.user_service.dto;
 
-import com.project.hemolink.matching_service.entities.enums.BloodType;
+import com.project.hemolink.user_service.entities.enums.BloodType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
