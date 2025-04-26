@@ -1,5 +1,7 @@
 package com.project.hemolink.matching_service.services;
 
+import com.project.hemolink.matching_service.auth.UserContextHolder;
+import com.project.hemolink.matching_service.client.UserServiceClient;
 import com.project.hemolink.matching_service.dto.*;
 import com.project.hemolink.matching_service.entities.BloodRequest;
 import com.project.hemolink.matching_service.entities.enums.RequestStatus;
@@ -29,24 +31,26 @@ import java.util.UUID;
 public class BloodRequestService {
     private final BloodRequestRepository bloodRequestRepository;
     private final ModelMapper modelMapper;
+    private final UserServiceClient userServiceClient;
 
     /*
      * Function to create a request
      */
-    public BloodRequestDto createRequest(RequestDetailDto createRequestDto) {
+    public BloodRequestDto createBloodRequest(CreateRequestDto createRequestDto) {
+        String userId = UserContextHolder.getCurrentUserId();
 
-        // error converting request body
-        log.info("Creating a blood request for hospital with id: {}", createRequestDto.getHospitalId());
-
+        HospitalDto hospitalDto = userServiceClient.getHospitalByUserId(userId).getBody();
+        if (hospitalDto == null){
+            throw new ResourceNotFoundException("Hospital not found with userId: "+userId);
+        }
 
         BloodRequest bloodRequest = new BloodRequest();
-        bloodRequest.setHospitalId(createRequestDto.getHospitalId());
-        bloodRequest.setHospitalName(createRequestDto.getHospitalName());
         bloodRequest.setBloodType(createRequestDto.getBloodType());
         bloodRequest.setUnitsRequired(createRequestDto.getUnitsRequired());
         bloodRequest.setUrgency(createRequestDto.getUrgency());
-        bloodRequest.setLocation(modelMapper.map(createRequestDto.getLocation(), Point.class));
-
+        bloodRequest.setHospitalId(hospitalDto.getId());
+        bloodRequest.setHospitalName(hospitalDto.getHospitalName());
+        bloodRequest.setLocation(modelMapper.map(hospitalDto.getServiceArea(), Point.class));
         bloodRequest.setExpiryTime(setRequestExpiryTime(createRequestDto.getUrgency()));
         bloodRequest.setStatus(RequestStatus.PENDING);
 

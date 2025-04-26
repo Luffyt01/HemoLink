@@ -4,6 +4,7 @@ import com.project.hemolink.user_service.dto.LoginRequestDto;
 import com.project.hemolink.user_service.dto.SignupRequestDto;
 import com.project.hemolink.user_service.dto.UserDto;
 import com.project.hemolink.user_service.services.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -27,14 +28,14 @@ public class AuthController {
     // Function to Sign up the user
 
     @PostMapping("/signup")
-    public ResponseEntity<UserDto> signup(@RequestBody SignupRequestDto signupRequestDto){
+    public ResponseEntity<UserDto> signup(@Valid @RequestBody SignupRequestDto signupRequestDto){
         UserDto userDto = authService.signup(signupRequestDto);
         return new ResponseEntity<>(userDto, HttpStatus.CREATED);
     }
 
     // Function to Login the user
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequestDto loginRequestDto){
+    public ResponseEntity<String> login(@Valid @RequestBody LoginRequestDto loginRequestDto){
         String token = authService.login(loginRequestDto);
 
         return ResponseEntity.ok(token);

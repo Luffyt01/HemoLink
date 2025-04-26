@@ -16,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -44,26 +46,22 @@ public class HospitalService {
         return modelMapper.map(savedHospital, HospitalDto.class);
     }
 
-    public BloodRequestDto createBloodRequest(CreateRequestDto createRequestDto) {
-        log.info("Creating a blood request");
 
-        String userId = UserContextHolder.getCurrentUserId();
+    public HospitalDto findHospitalById(String hospitalId) {
+        log.info("Fetching hospital with hospitalId: {}", hospitalId);
+        Hospital hospital = hospitalRepository.findById(UUID.fromString(hospitalId))
+                .orElseThrow(() -> new ResourceNotFoundException("Hospital not found with hospitalId: "+hospitalId));
+        return modelMapper.map(hospital, HospitalDto.class);
+    }
+
+    public HospitalDto getHospitalByUserId(String userId) {
+        log.info("Fetching the Hospital with userId: {}", userId);
         User user = (User) userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
 
-        if (user.getRole() != UserRole.HOSPITAL){
-            throw new BadRequestException("Unauthorized Access");
-        } else if (!user.isProfileComplete()){
-            throw new BadRequestException("Please, complete the profile before proceeding");
-        }
         Hospital hospital = hospitalRepository.findByUser(user)
-                .orElseThrow(() -> new ResourceNotFoundException("Hospital not found for user with id: "+user.getId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Hospital not found for userId: "+userId));
 
-        RequestDetailDto requestDetailDto = modelMapper.map(createRequestDto, RequestDetailDto.class);
-        requestDetailDto.setHospitalId(hospital.getId());
-        requestDetailDto.setHospitalName(hospital.getHospitalName());
-        requestDetailDto.setLocation(modelMapper.map(hospital.getServiceArea(), PointDTO.class));
-
-        return matchingServiceClient.createRequest(requestDetailDto);
+        return modelMapper.map(hospital, HospitalDto.class);
     }
 }

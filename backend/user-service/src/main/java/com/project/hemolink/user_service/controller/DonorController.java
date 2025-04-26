@@ -43,45 +43,8 @@ public class DonorController {
         return donorService.findDonorById(donorId);
     }
 
-//    @GetMapping("/nearby-eligible")
-//    public ResponseEntity<List<DonorMatchDto>> findNearbyEligibleDonors(
-//            @RequestParam String pointWkt,
-//            @RequestParam BloodType bloodType,
-//            @RequestParam int radiusKm,
-//            @RequestParam int limit
-//            ){
-//
-//        Point point = wktToPoint(pointWkt);
-//        LocalDate minLastDonation = LocalDate.now().minusMonths(3);
-//
-//        return ResponseEntity.ok(
-//                donorService.findNearByEligibleDonors(
-//                        point,
-//                        bloodType,
-//                        radiusKm * 1000,
-//                        minLastDonation,
-//                        PageRequest.of(0,limit)
-//                )
-//        );
-//    }
-
-    private Point wktToPoint(String pointWkt) {
-        try {
-            // Initialize a GeometryFactory with SRID 4326 (WGS84)
-            GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-
-            // Parse WKT string into a JTS Point
-            WKTReader reader = new WKTReader(geometryFactory);
-            Point point = (Point) reader.read(pointWkt);
-
-            // Validate coordinates (optional)
-            if (point.getCoordinate() == null) {
-                throw new IllegalArgumentException("Invalid WKT: No coordinates found");
-            }
-
-            return point;
-        } catch (ParseException e) {
-            throw new IllegalArgumentException("Failed to parse WKT string: " + pointWkt, e);
-        }
+    @GetMapping("/by-user/{userId}")
+    public ResponseEntity<DonorDto> getDonorByUserId(@PathVariable String userId){
+        return ResponseEntity.ok(donorService.getDonorByUserId(userId));
     }
 }
