@@ -43,7 +43,7 @@ export default function SignupPage() {
       await signIn("google", {
         redirect: true,
         callbackUrl: "/",
-        role: role,
+    
       });
     } catch (error) {
       toast.error("Google sign-in failed");
