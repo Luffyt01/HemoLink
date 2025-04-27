@@ -20,6 +20,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BloodRequestDto {
+
     private String id;
     private String hospitalId;
     private String hospitalName;

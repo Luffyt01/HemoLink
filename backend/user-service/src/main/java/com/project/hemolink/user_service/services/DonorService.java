@@ -46,7 +46,7 @@ public class DonorService {
 
         // Fetching the user
         // Checking if the user already exists in the repository
-        User user = (User) userRepository.findById(userId)
+        User user = (User) userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
 
         // Checking if the user profile is already completed
@@ -71,7 +71,7 @@ public class DonorService {
      */
     public DonorDto updateAvailability(AvailabilityDto availabilityDto) {
         String userId = UserContextHolder.getCurrentUserId();
-        User user = (User) userRepository.findById(userId)
+        User user = (User) userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
 
         Donor donor = donorRepository.findByUser(user)
@@ -86,7 +86,7 @@ public class DonorService {
 
     public DonorDto updateLocation(PointDTO updatedLocation){
         String userId = UserContextHolder.getCurrentUserId();
-        User user = (User) userRepository.findById(userId)
+        User user = (User) userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
 
         log.info("Updating the location for the donor with email: {}", user.getEmail());
@@ -101,14 +101,23 @@ public class DonorService {
     }
 
     public DonorDto findDonorById(String donorId) {
-        String userId = UserContextHolder.getCurrentUserId();
-
+        log.info("Fetching Donor by donorId: {}", donorId);
         Donor donor = donorRepository.findById(UUID.fromString(donorId))
                 .orElseThrow(() -> new ResourceNotFoundException("Donor not found with id: "+donorId));
 
         return modelMapper.map(donor, DonorDto.class);
     }
 
-//    public List<DonorMatchDto> findNearByEligibleDonors(Point point, BloodType bloodType, int i, LocalDate minLastDonation, PageRequest of) {
-//    }
+    public DonorDto getDonorByUserId(String userId) {
+        log.info("Fetching Donor by userId: {}", userId);
+        User user = (User) userRepository.findById(UUID.fromString(userId))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
+
+        Donor donor = donorRepository.findByUser(user)
+                .orElseThrow(() -> new ResourceNotFoundException("Donor not found with userId: "+userId));
+
+        return modelMapper.map(donor, DonorDto.class);
+    }
+
+
 }

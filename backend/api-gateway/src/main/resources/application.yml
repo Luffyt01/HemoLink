@@ -11,14 +11,14 @@ spring:
             - Path=/api/v1/users/**
           filters:
             - StripPrefix=2
-            - name: AuthenticationFilter
+#            - name: AuthenticationFilter
         - id: matching-service
           uri: lb://MATCHING-SERVICE
           predicates:
             - Path=/api/v1/matching/**
           filters:
             - StripPrefix=2
-            - name: AuthenticationFilter
+#            - name: AuthenticationFilter
 server:
   port: 8080
 
@@ -30,7 +30,7 @@ eureka:
 jwt.secretKey: dshf091283h4sjkfh0932844hkvbxczkue45908hv2o489vhb9a83hrdkvyv90482hf0893
 springdoc:
   api-docs:
-    enabled: true
     path: /v3/api-docs
+    enabled: true
   swagger-ui:
     path: /swagger-ui.html

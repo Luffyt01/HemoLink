@@ -5,10 +5,8 @@ import com.project.hemolink.matching_service.dto.DonorMatchDto;
 import com.project.hemolink.matching_service.dto.HospitalDto;
 import com.project.hemolink.matching_service.entities.enums.BloodType;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,8 +16,15 @@ public interface UserServiceClient {
     @GetMapping("/donors/{donorId}")
     DonorDto getDonor(@PathVariable String donorId);
 
+    @GetMapping("/donors/by-user/{userId}")
+    ResponseEntity<DonorDto> getDonorByUserId(@PathVariable String userId);
+
     @GetMapping("/hospitals/{hospitalId}")
     HospitalDto getHospital(@PathVariable String hospitalId);
+
+    @GetMapping("/hospitals/by-user/{userId}")
+    ResponseEntity<HospitalDto> getHospitalByUserId(@PathVariable String userId);
+
 
     @GetMapping("/donors/eligible")
     List<DonorMatchDto> findNearByEligibleDonors(
