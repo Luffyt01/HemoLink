@@ -11,9 +11,12 @@ import com.project.hemolink.user_service.exception.BadRequestException;
 import com.project.hemolink.user_service.exception.ResourceNotFoundException;
 import com.project.hemolink.user_service.repositories.HospitalRepository;
 import com.project.hemolink.user_service.repositories.UserRepository;
+import com.project.hemolink.user_service.utils.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -26,11 +29,11 @@ public class HospitalService {
     private final UserRepository userRepository;
     private final HospitalRepository hospitalRepository;
     private final ModelMapper modelMapper;
-    private final MatchingServiceClient matchingServiceClient;
+    private final SecurityUtil securityUtil;
 
     public HospitalDto completeProfile(CompleteHospitalProfileDto completeHospitalProfileDto) {
-        String userId = UserContextHolder.getCurrentUserId();
-        User user = (User) userRepository.findById(userId)
+        UUID userId = securityUtil.getCurrentUserId();
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
 
         if (user.isProfileComplete()){
@@ -56,7 +59,7 @@ public class HospitalService {
 
     public HospitalDto getHospitalByUserId(String userId) {
         log.info("Fetching the Hospital with userId: {}", userId);
-        User user = (User) userRepository.findById(userId)
+        User user = (User) userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
 
         Hospital hospital = hospitalRepository.findByUser(user)
