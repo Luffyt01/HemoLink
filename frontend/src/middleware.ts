@@ -54,8 +54,8 @@ export function middleware(request: NextRequest) {
 export const config = {
   // Specify which paths should be protected
   matcher: [
-    "/signIn",
-    "/signUp",
+    // "/signIn",
+    // "/signUp",
    
     "/((?!_next/static|_next/image|favicon.ico|login|signup|api/auth/login|api/auth/signup).*)",
   ],
