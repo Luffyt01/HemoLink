@@ -1,4 +1,5 @@
 "use client"
+import { LoginAction } from '@/actions/auth/Login_Action';
 import { signupAction } from '@/actions/auth/signUp_Action';
 import { GoogleSubmitBtn } from '@/components/CommanComponents/GoogleSubmitBtn';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import Link from 'next/link';
 import { useActionState, useState } from 'react'
 import { useFormStatus } from 'react-dom';
 import { IoEye, IoEyeOff } from "react-icons/io5";
-export default function SignupPage() {
+export default function LoginPage() {
   const [role, setRole] = useState<'DONOR' | 'HOSPITAL'>('DONOR')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -16,11 +17,10 @@ const [googlePending, setGooglePending] = useState(false)
     message: string
     status: number
     errors: {
-        role?: string[]
-      phone?: string[]
+        
       email?: string[]
       password?: string[]
-      confirmPassword?: string[]
+      
     }
   }
     const intial : FormState = {
@@ -28,7 +28,7 @@ const [googlePending, setGooglePending] = useState(false)
         message:"",
         status:0,
     }
-   const [state, fromAction] = useActionState<FormState>(signupAction, intial);
+   const [state, fromAction] = useActionState<FormState>(LoginAction, intial);
 
    const handleGoogleSignIn = async () => {
     setGooglePending(true)
@@ -89,17 +89,7 @@ const [googlePending, setGooglePending] = useState(false)
                 {state?.errors?.email && <p className="text-sm text-red-500">{state.errors.email}</p>}
             </div>
 
-            {/* Phone Number Field */}
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-              <input
-                name="phone"
-                type="tel"
-                required
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-rose-400 focus:ring-1 focus:ring-rose-200"
-                />
-                {state.errors?.phone && <p className="text-sm text-red-500">{state.errors?.phone}</p>}
-            </div>
+            
 
             {/* Password Field */}
             <div className="relative">
@@ -122,26 +112,6 @@ const [googlePending, setGooglePending] = useState(false)
                   {state.errors?.password && <p className="text-sm text-red-500">{state.errors?.password}</p>}
             </div>
 
-            {/* Confirm Password Field */}
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-              <div className="relative">
-                <input
-                  name="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  required
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-rose-400 focus:ring-1 focus:ring-rose-200 pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-rose-500"
-                  >
-                  {showConfirmPassword ? <IoEye size={25}/> : <IoEyeOff size={25}/>}
-                </button>
-              </div>
-                    {state.errors?.confirmPassword && <p className="text-sm text-red-500">{state.errors?.confirmPassword}</p>}
-            </div>
 
             {/* <button
               type="submit"
@@ -173,9 +143,9 @@ const [googlePending, setGooglePending] = useState(false)
         
         <div className="bg-gradient-to-r from-rose-50 to-red-50 p-4 text-center">
           <p className="text-sm text-gray-600">
-            Already have an account?{' '}
-            <Link href="/signIn" prefetch className="font-medium text-rose-600 hover:text-rose-500">
-              Sign In
+          Don't have an account?{' '}
+            <Link href="/signUp" prefetch className="font-medium text-rose-600 hover:text-rose-500">
+              Sign Up
             </Link>
           </p>
         </div>
@@ -189,7 +159,7 @@ function SubmitButton() {
   return (
     <button
       type="submit"
-      className="w-full rounded-md bg-primary px-4 py-2 text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
+      className="w-full mt-3 rounded-md bg-primary px-4 py-2 text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
       disabled={pending}
       aria-disabled={pending}>
       {pending ? "Processing..." : "Register"}
