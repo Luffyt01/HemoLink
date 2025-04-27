@@ -3,10 +3,12 @@ import { LoginAction } from '@/actions/auth/Login_Action';
 import { signupAction } from '@/actions/auth/signUp_Action';
 import { GoogleSubmitBtn } from '@/components/CommanComponents/GoogleSubmitBtn';
 import { Button } from '@/components/ui/button';
+import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { useActionState, useState } from 'react'
 import { useFormStatus } from 'react-dom';
 import { IoEye, IoEyeOff } from "react-icons/io5";
+import { toast } from 'sonner';
 export default function LoginPage() {
   const [role, setRole] = useState<'DONOR' | 'HOSPITAL'>('DONOR')
   const [showPassword, setShowPassword] = useState(false)
@@ -20,6 +22,7 @@ const [googlePending, setGooglePending] = useState(false)
         
       email?: string[]
       password?: string[]
+      role?: string[]
       
     }
   }
@@ -33,9 +36,10 @@ const [googlePending, setGooglePending] = useState(false)
    const handleGoogleSignIn = async () => {
     setGooglePending(true)
     try {
-      // await signIn("google", { redirect: true, callbackUrl: "/dashboard" })
+    
+      await signIn("google", { redirect: true, callbackUrl: "/",  })
     } catch (error) {
-      // toast.error("Google sign-in failed")
+      toast.error("Google sign-in failed")
     } finally {
       setGooglePending(false)
     }
