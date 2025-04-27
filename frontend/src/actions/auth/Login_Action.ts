@@ -6,32 +6,18 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 
 const schema = z.object({
-    role: z.enum(['DONOR', 'HOSPITAL']),
+    
 
-  phone:z.string().min(10, 'Phone number must be at least 10 digits').regex(/^\d+$/, 'Phone number must contain only digits'),
   email: z.string().email('Invalid email address'),
   password: z
     .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
-    .regex(/[0-9]/, 'Must contain at least one number'),
-    confirmPassword: z.string()
-}).superRefine(({ password, confirmPassword }, ctx) => {
-  if (password !== confirmPassword) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Passwords do not match",
-      path: ["confirmPassword"]
-    })
-  }
-
+    .min(2, 'Password must be at least 2 characters')
 })
 interface FormState {
     message: string
     status: number
     errors: {
-        role?: string[]
-      phone?: string[]
+      
       email?: string[]
       password?: string[]
       confirmPassword?: string[]
@@ -42,14 +28,13 @@ interface FormState {
         message:"",
         status:0,
     }
-export async function signupAction(prevState: any, formData: FormData) {
+export async function LoginAction(prevState: any, formData: FormData) {
     console.log(formData)
   const rawData = {
-    role: formData.get('userRole'),
-    phone: formData.get('phone'),
+
     email: formData.get('email'),
     password: formData.get('password'),
-    confirmPassword: formData.get('confirmPassword'),
+    
   }
 console.log(rawData)
   // Validate with Zod
@@ -87,5 +72,5 @@ console.log(rawData)
     }
   }
 
-  redirect('/login')
+//   redirect('/dashboard')
 }
