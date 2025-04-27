@@ -54,7 +54,7 @@ export default function LoginPage() {
       {/* Container - switches layout at md breakpoint */}
       <div className="h-full w-full md:h-[90vh] md:max-h-[700px] md:w-[90vw] md:max-w-5xl bg-white shadow-2xl flex flex-col md:flex-row overflow-hidden">
         {/* Mobile Top Image (hidden on md+) */}
-        <div className="relative h-32 w-full md:hidden">
+        <div className="relative h-32x w-full md:hidden">
           <Image
             src={role === "DONOR" ? "/donor-hero.jpg" : "/donor-hero.jpg"}
             alt={role === "DONOR" ? "Blood donor hero" : "Hospital staff"}
@@ -216,6 +216,7 @@ export default function LoginPage() {
             Don't have an account?{" "}
             <Link
               href="/signUp"
+              prefetch
               className="font-medium text-rose-600 hover:text-rose-500 transition-colors"
             >
               Sign up here
