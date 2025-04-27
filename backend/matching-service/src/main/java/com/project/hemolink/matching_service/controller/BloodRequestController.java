@@ -18,8 +18,8 @@ public class BloodRequestController {
     private final BloodRequestService bloodRequestService;
 
     @PostMapping("/create")
-    public BloodRequestDto createRequest(@RequestBody RequestDetailDto createRequestDto){
-        return bloodRequestService.createRequest(createRequestDto);
+    public BloodRequestDto createRequest(@RequestBody CreateRequestDto createRequestDto){
+        return bloodRequestService.createBloodRequest(createRequestDto);
     }
 
     @GetMapping("/{requestId}")

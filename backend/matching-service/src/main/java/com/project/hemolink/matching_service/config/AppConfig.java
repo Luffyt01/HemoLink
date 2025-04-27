@@ -1,6 +1,8 @@
 package com.project.hemolink.matching_service.config;
 
+import com.project.hemolink.matching_service.dto.BloodRequestDto;
 import com.project.hemolink.matching_service.dto.PointDTO;
+import com.project.hemolink.matching_service.entities.BloodRequest;
 import com.project.hemolink.matching_service.utils.GeometryUtil;
 import org.locationtech.jts.geom.Point;
 import org.modelmapper.ModelMapper;
@@ -26,6 +28,13 @@ public class AppConfig {
             };
             return new PointDTO(coordinates);
         });
+
+        // Configure BloodRequest to BloodRequestDto mapping
+        mapper.typeMap(BloodRequest.class, BloodRequestDto.class)
+                .addMappings(modMapper -> {
+                    modMapper.map(BloodRequest::getId, BloodRequestDto::setId);
+                    modMapper.map(BloodRequest::getHospitalId, BloodRequestDto::setHospitalId);
+                });
         return mapper;
     }
 }

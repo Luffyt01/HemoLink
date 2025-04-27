@@ -17,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -29,7 +31,7 @@ public class ProfileService {
 
     public Object getCompleteProfile(){
         String userId = UserContextHolder.getCurrentUserId();
-        User user = (User) userRepository.findById(userId)
+        User user = (User) userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
 
         UserRole role = user.getRole();
@@ -63,7 +65,7 @@ public class ProfileService {
 
     public void deleteProfile() {
         String userId = UserContextHolder.getCurrentUserId();
-        User user = (User) userRepository.findById(userId)
+        User user = (User) userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
         UserRole role = user.getRole();
 

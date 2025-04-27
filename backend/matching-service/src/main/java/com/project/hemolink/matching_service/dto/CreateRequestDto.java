@@ -18,7 +18,5 @@ public class CreateRequestDto {
     private BloodType bloodType;
     private int unitsRequired;
     private UrgencyLevel urgency;
-    private String hospitalId;
-    private String hospitalName;
-    private Point location;
+
 }
