@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import ClientSessionProvider from "./Provider/ClientSessionProvider";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +37,21 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+         <ClientSessionProvider >
+         <main className="flex-1 overflow-x-hidden md:mt-0">
+                {children}
+                
+              </main>
+              <Toaster
+              richColors
+              position="top-right"
+              toastOptions={{
+                classNames: {
+                  toast: "font-sans",
+                },
+              }}
+            />
+         </ClientSessionProvider>
       </body>
     </html>
   );
