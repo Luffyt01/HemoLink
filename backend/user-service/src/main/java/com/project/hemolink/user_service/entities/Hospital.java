@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.locationtech.jts.geom.Point;
 
+import java.util.UUID;
+
 
 @Entity
 @Getter
@@ -19,7 +21,7 @@ public class Hospital{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    private UUID id;
     private String hospitalName;
 
     @OneToOne

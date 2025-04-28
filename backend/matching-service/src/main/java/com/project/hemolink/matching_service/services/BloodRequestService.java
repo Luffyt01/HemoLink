@@ -115,7 +115,14 @@ public class BloodRequestService {
     }
 
     public Page<BloodRequestDto> getAllRequests(PageRequest pageRequest){
-        String hospitalId = "H1";
+        UUID userId = securityUtil.getCurrentUserId();
+
+        HospitalDto hospitalDto = userServiceClient.getHospitalByUserId(userId.toString()).getBody();
+        if (hospitalDto == null){
+            throw new ResourceNotFoundException("Hospital not found with userId: "+userId);
+        }
+
+        String hospitalId = hospitalDto.getId();
         log.info("Fetching all the requests for hospital with id: {}",hospitalId);
 
         boolean exists = bloodRequestRepository.existsByHospitalId(hospitalId);
@@ -155,6 +162,7 @@ public class BloodRequestService {
                 .orElseThrow(() -> new ResourceNotFoundException("Blood request not found with id: "+requestId));
     }
 
+    // TODO Create controller for following functions
     public List<BloodRequestDto> getUrgentRequests(UrgencyLevel urgencyLevel){
         log.info("Attempting to fetch all the request with {} urgency", urgencyLevel);
         List<BloodRequest> bloodRequests = bloodRequestRepository.findByUrgency(urgencyLevel);

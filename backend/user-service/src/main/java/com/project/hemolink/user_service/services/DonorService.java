@@ -9,6 +9,7 @@ import com.project.hemolink.user_service.exception.BadRequestException;
 import com.project.hemolink.user_service.exception.ResourceNotFoundException;
 import com.project.hemolink.user_service.repositories.DonorRepository;
 import com.project.hemolink.user_service.repositories.UserRepository;
+import com.project.hemolink.user_service.utils.SecurityUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,17 +37,15 @@ public class DonorService {
     private final DonorRepository donorRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final SecurityUtil securityUtil;
 
     /*
      * Function to complete the donor profile
      */
     public DonorDto completeProfile(CompleteDonorProfileDto completeDonorProfileDto) {
         // Getting the userId of the current logged user
-        String userId = UserContextHolder.getCurrentUserId();
-
-        // Fetching the user
-        // Checking if the user already exists in the repository
-        User user = (User) userRepository.findById(UUID.fromString(userId))
+        UUID userId = securityUtil.getCurrentUserId();
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
 
         // Checking if the user profile is already completed

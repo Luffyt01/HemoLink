@@ -15,10 +15,11 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/requests")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('HOSPITAL')")
 public class BloodRequestController {
     private final BloodRequestService bloodRequestService;
 
-    @PreAuthorize("hasRole('HOSPITAL')")
+
     @PostMapping("/create")
     public BloodRequestDto createRequest(@RequestBody CreateRequestDto createRequestDto){
         return bloodRequestService.createBloodRequest(createRequestDto);

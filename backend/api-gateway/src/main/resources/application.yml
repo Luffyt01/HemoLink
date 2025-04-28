@@ -19,7 +19,6 @@ spring:
           filters:
             - StripPrefix=2
       default-filters:
-        - TokenRelay
         - RemoveRequestHeader=Cookie
 server:
   port: 8080
