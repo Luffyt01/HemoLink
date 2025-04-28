@@ -9,6 +9,7 @@ import com.project.hemolink.matching_service.entities.enums.UrgencyLevel;
 import com.project.hemolink.matching_service.exception.BadRequestException;
 import com.project.hemolink.matching_service.exception.ResourceNotFoundException;
 import com.project.hemolink.matching_service.repositories.BloodRequestRepository;
+import com.project.hemolink.matching_service.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Point;
@@ -32,14 +33,15 @@ public class BloodRequestService {
     private final BloodRequestRepository bloodRequestRepository;
     private final ModelMapper modelMapper;
     private final UserServiceClient userServiceClient;
+    private final SecurityUtil securityUtil;
 
     /*
      * Function to create a request
      */
     public BloodRequestDto createBloodRequest(CreateRequestDto createRequestDto) {
-        String userId = UserContextHolder.getCurrentUserId();
+        UUID userId = securityUtil.getCurrentUserId();
 
-        HospitalDto hospitalDto = userServiceClient.getHospitalByUserId(userId).getBody();
+        HospitalDto hospitalDto = userServiceClient.getHospitalByUserId(userId.toString()).getBody();
         if (hospitalDto == null){
             throw new ResourceNotFoundException("Hospital not found with userId: "+userId);
         }

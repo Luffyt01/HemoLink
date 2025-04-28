@@ -1,5 +1,6 @@
 package com.project.hemolink.matching_service.client;
 
+import com.project.hemolink.matching_service.config.FeignClientConfig;
 import com.project.hemolink.matching_service.dto.DonorDto;
 import com.project.hemolink.matching_service.dto.DonorMatchDto;
 import com.project.hemolink.matching_service.dto.HospitalDto;
@@ -10,7 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(name = "user-service", path = "/users")
+@FeignClient(name = "user-service",
+        path = "/users",
+        configuration = FeignClientConfig.class)
 public interface UserServiceClient {
 
     @GetMapping("/donors/{donorId}")
@@ -38,4 +41,6 @@ public interface UserServiceClient {
     void updateDonorAvailability(
             @PathVariable String donorId,
             @RequestParam boolean available);
+
+
 }

@@ -1,6 +1,6 @@
-package com.project.hemolink.user_service.services;
+package com.project.hemolink.matching_service.security;
 
-import com.project.hemolink.user_service.entities.User;
+import com.project.hemolink.matching_service.dto.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;

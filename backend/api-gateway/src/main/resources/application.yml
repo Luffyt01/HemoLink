@@ -18,7 +18,9 @@ spring:
             - Path=/api/v1/matching/**
           filters:
             - StripPrefix=2
-#            - name: AuthenticationFilter
+      default-filters:
+        - TokenRelay
+        - RemoveRequestHeader=Cookie
 server:
   port: 8080
 
