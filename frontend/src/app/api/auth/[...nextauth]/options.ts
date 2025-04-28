@@ -44,10 +44,10 @@ export const authOptions: NextAuthOptions = {
           prompt: "consent",
           access_type: "offline",
           response_type: "code",
-          // scope: "openid email profile",
+          scope: "openid email profile",
         },
       },
-      // allowDangerousEmailAccountLinking: true,
+      allowDangerousEmailAccountLinking: true,
     }),
 
     Credentials({
@@ -110,7 +110,7 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, user, account }) {
-     console.log("22222222222222222222222222222+"+token, user, account)
+    //  console.log("22222222222222222222222222222+"+token, user, account)
       if (user && account) {
         return {
           ...token,
@@ -129,7 +129,7 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token }) {
-      console.log("111111111111111111111111111111111111111111111111111111111111111111111"+session, token)
+      // console.log("111111111111111111111111111111111111111111111111111111111111111111111"+session, token)
       session.token = token.accessToken as string
       session.user = {
         ...session.user,
@@ -212,7 +212,7 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/signIn",
     error: "/signIn",
-    newUser: "/signUp",
+    newUser: "/signup",
   },
 
   session: {
