@@ -12,6 +12,8 @@ interface LocationPickerProps {
   initialLocation?: { lat: number; lng: number }
 }
 
+
+
 export default function LocationPicker({ 
   onLocationChange, 
   initialLocation 
