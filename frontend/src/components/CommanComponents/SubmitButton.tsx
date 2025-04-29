@@ -11,7 +11,7 @@ export default function SubmitButton() {
     <Button
       type="submit"
       disabled={pending}
-      className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white shadow-md px-8 transition-colors duration-300"
+      className="bg-gradient-to-r cursor-pointer from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white shadow-md px-8 transition-colors duration-300"
       aria-disabled={pending}
     >
       {pending ? (

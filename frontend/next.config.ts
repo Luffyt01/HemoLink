@@ -18,11 +18,18 @@ const nextConfig = {
       },
     ],
   },
+  compiler: {
+    styledComponents: true,
+    removeConsole: {
+      exclude: ['error'],
+    },
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
+    dirs: ['pages', 'utils']
   },
   compiler: {
     styledComponents: {
@@ -41,6 +48,13 @@ const nextConfig = {
    
     webVitalsAttribution: ['CLS', 'LCP'],
     viewTransition: true,
+  },
+  turbopack: {
+    // Example: adding an alias and custom file extension
+    resolveAlias: {
+      underscore: 'lodash',
+    },
+    resolveExtensions: ['.mdx', '.tsx', '.ts', '.jsx', '.js', '.json'],
   },
 
 }
