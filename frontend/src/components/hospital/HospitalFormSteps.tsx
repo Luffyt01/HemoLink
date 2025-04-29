@@ -17,13 +17,14 @@ import {
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { MapPin, Loader2, CheckCircle2 } from "lucide-react"
+import { MapPin, Loader2, CheckCircle2, Clock, Building2, Mail, Phone, Globe } from "lucide-react"
 import dynamic from "next/dynamic"
-import { BloodType, formSchema } from "./schema"
 import { toast } from "sonner"
 import { Textarea } from "../ui/textarea"
-import SubmitButton from "../CommanComponents/SubmitButton"
 import { Card } from "../ui/card"
+import SubmitButton from "../CommanComponents/SubmitButton"
+import { formSchema, HospitalType } from "./hospitalSchema"
+import { completeHospitalProfile } from "@/actions/Hospital/Hospital-Complete-Profile"
 import { useRouter } from "next/navigation"
 
 // Lazy loaded components
@@ -32,61 +33,69 @@ const LocationPicker = dynamic(() => import("@/components/CommanComponents/locat
   loading: () => <div className="h-[300px] bg-gray-100 rounded-lg animate-pulse" />
 })
 
-interface DonorProfileFormProps {
+
+interface HospitalProfileFormProps {
   session: any
   isGeolocating: boolean
   setIsGeolocating: (value: boolean) => void
   formAction: (formData: FormData) => Promise<any>
-  // onFormAction: (state: any) => any
+//   onFormAction: (state: any) => any
 }
 
-export default function DonorProfileForm({
+export default function HospitalProfileForm({
   session,
   isGeolocating,
   setIsGeolocating,
   formAction,
-  // onFormAction
-}: DonorProfileFormProps) {
+//   onFormAction
+}: HospitalProfileFormProps) {
   const [currentStep, setCurrentStep] = useState(1)
-  const [state, formActionWithState] = useActionState(formAction, null)
-    const router = useRouter()
-  
+  const [state, formActionWithState] = useActionState(completeHospitalProfile, null)
+  const router = useRouter()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      age: 18,
+      hospitalName: "",
+      licenseNumber: "",
+      hospitalType: undefined,
+      establishmentYear: new Date().getFullYear(),
       address: "",
-      bloodType: undefined,
       location: { lat: 28.6139, lng: 77.2090 }, // Default location (India)
-      isAvailable: true,
-      phone: "",
-      emergencyContact: "",
+      mainPhone: "",
+      emergencyPhone: "",
+      email: "",
+      website: "",
+      operatingHours: "24/7",
+      description: "",
     },
   })
 
   // Handle server response
   useEffect(() => {
     if (state) {
-      // onFormAction(state)
+    //   onFormAction(state)
       
       if (state.fieldErrors) {
         Object.entries(state.fieldErrors).forEach(([field, message]) => {
-          form.setError(field as any, { type: 'server', message: message as string })
+          form.setError(field as any, { type: 'server', message: Array.isArray(message) ? message.join(", ") : message })
         })
       }
       
       // If successful submission, show success
       if (state.success) {
-        toast.success("Profile saved successfully!", {
+        toast.success("Hospital profile saved successfully!", {
           icon: <CheckCircle2 className="text-green-500" />,
-        })
-        // Redirect to the dashboard or another page
-        router.push("/hospital/dashboard")
 
+        })
+        
+            router.push("/hospital/dashboard")
+          
+            // window.location.href = '/hospital/dashboard';
+          
       }
     }
   }, [state, form,router])
+//   }, [state, form, onFormAction,])
 
   // Auto-detect location
   const handleDetectLocation = () => {
@@ -132,8 +141,8 @@ export default function DonorProfileForm({
   // Handle step navigation with validation
   const handleNextStep = async () => {
     const fields = currentStep === 1 
-      ? ['name', 'age', 'phone', 'emergencyContact'] 
-      : ['bloodType', 'address', 'location']
+      ? ['hospitalName', 'licenseNumber', 'hospitalType', 'establishmentYear'] 
+      : ['address', 'location', 'mainPhone', 'emergencyPhone', 'email', 'operatingHours']
     
     const isValid = await form.trigger(fields as any)
     if (isValid) {
@@ -147,85 +156,76 @@ export default function DonorProfileForm({
   // Form field configurations
   const step1Fields = [
     { 
-      name: "name", 
-      label: "Full Name", 
+      name: "hospitalName", 
+      label: "Hospital Name", 
       type: "text", 
-      placeholder: "John Doe",
-      description: "As it appears on your ID"
+      placeholder: "City General Hospital",
+      description: "Official name of your hospital",
+      icon: <Building2 className="w-4 h-4" />
     },
     { 
-      name: "age", 
-      label: "Age", 
-      type: "number", 
-      description: "Must be between 18-40 years",
-      render: ({ field }: any) => (
-        <Input
-          type="number"
-          min={18}
-          max={40}
-          {...field}
-          onChange={(e) => field.onChange(parseInt(e.target.value) )}
-          className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-pink-500"
-        />
-      )
+      name: "licenseNumber", 
+      label: "License Number", 
+      type: "text", 
+      placeholder: "MH-12345-2023",
+      description: "Government issued hospital license number",
+      icon: <CheckCircle2 className="w-4 h-4" />
     },
     { 
-      name: "phone", 
-      label: "Phone Number", 
-      type: "tel", 
-      placeholder: "+91xxxxxxxxxx",
-      description: "We'll use this to contact you"
-    },
-    { 
-      name: "emergencyContact", 
-      label: "Emergency Contact", 
-      type: "text",
-      placeholder: "Name and phone number",
-      description: "Who should we contact in case of emergency?"
-    }
-  ]
-
-  const step2Fields = [
-    {
-      name: "bloodType",
-      label: "Blood Type",
+      name: "hospitalType", 
+      label: "Hospital Type", 
       type: "select",
-      description: "Select your blood group",
+      description: "Select the type of your hospital",
+      icon: <Building2 className="w-4 h-4" />,
       render: ({ field }: any) => (
         <Select onValueChange={field.onChange} defaultValue={field.value}>
-          <SelectTrigger className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-pink-500">
-            <SelectValue placeholder="Select your blood type" />
+          <SelectTrigger className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500">
+            <SelectValue placeholder="Select hospital type" />
           </SelectTrigger>
           <SelectContent className="bg-white">
-            {Object.values(BloodType).map((type) => (
-              <SelectItem key={type} value={type} className="hover:bg-pink-50 focus:bg-pink-50">
-                <div className="flex items-center">
-                  <span className="font-medium">{type.replace('_', ' ')}</span>
-                  {type.includes('POSITIVE') && (
-                    <span className="ml-2 text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">
-                      Most Needed
-                    </span>
-                  )}
-                </div>
+            {Object.values(HospitalType).map((type) => (
+              <SelectItem key={type} value={type} className="hover:bg-blue-50 focus:bg-blue-50">
+                {type}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       )
     },
+    { 
+      name: "establishmentYear", 
+      label: "Establishment Year", 
+      type: "number", 
+      description: "Year when the hospital was established",
+      render: ({ field }: any) => (
+        <Input
+          type="number"
+          min={1800}
+          max={new Date().getFullYear()}
+          {...field}
+          onChange={(e) => field.onChange(parseInt(e.target.value))}
+          className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500"
+        />
+      )
+    }
+  ]
+
+  const step2Fields = [
     {
       name: "address",
       label: "Full Address",
       type: "textarea",
-      placeholder: "Street, City, Postal Code",
-      description: "Where can donors reach you?",
+      placeholder: "123 Medical Street, Health District, City, Postal Code",
+      description: "Complete physical address of the hospital",
+      icon: <MapPin className="w-4 h-4" />,
       props: { rows: 3 }
     },
     {
       name: "location",
-      label: "Pin Your Location",
+      label: "Hospital Location",
       type: "custom",
       description: "Drag the pin to adjust your exact location",
+      icon: <MapPin className="w-4 h-4" />,
       render: ({ field }: any) => (
         <div className="space-y-2">
           <div className="flex justify-between items-center">
@@ -253,6 +253,46 @@ export default function DonorProfileForm({
           />
         </div>
       )
+    },
+    {
+      name: "mainPhone",
+      label: "Main Phone Number",
+      type: "tel",
+      placeholder: "+91 1234567890",
+      description: "Primary contact number for the hospital",
+      icon: <Phone className="w-4 h-4" />
+    },
+    {
+      name: "emergencyPhone",
+      label: "Emergency Phone Number",
+      type: "tel",
+      placeholder: "+91 9876543210",
+      description: "24/7 emergency contact number",
+      icon: <Phone className="w-4 h-4 text-red-500" />
+    },
+    {
+      name: "email",
+      label: "Email Address",
+      type: "email",
+      placeholder: "contact@hospitalname.com",
+      description: "Official email address for communications",
+      icon: <Mail className="w-4 h-4" />
+    },
+    {
+      name: "website",
+      label: "Website URL",
+      type: "url",
+      placeholder: "https://www.hospitalname.com",
+      description: "Official website (if available)",
+      icon: <Globe className="w-4 h-4" />
+    },
+    {
+      name: "operatingHours",
+      label: "Operating Hours",
+      type: "text",
+      placeholder: "24/7 or 9:00 AM - 9:00 PM",
+      description: "Regular operating hours of the hospital",
+      icon: <Clock className="w-4 h-4" />
     }
   ]
 
@@ -261,7 +301,7 @@ export default function DonorProfileForm({
       {/* Progress Bar */}
       <div className="h-2 bg-gray-100 mb-6 rounded-full">
         <div 
-          className="h-full bg-gradient-to-r from-red-400 to-pink-500 transition-all duration-500 ease-out rounded-full" 
+          className="h-full bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-500 ease-out rounded-full" 
           style={{ width: `${(currentStep / 3) * 100}%` }}
         />
       </div>
@@ -273,7 +313,7 @@ export default function DonorProfileForm({
             {[1, 2, 3].map((step) => (
               <div 
                 key={step} 
-                className={`flex items-center justify-center w-8 h-8 rounded-full ${currentStep >= step ? 'bg-pink-500 text-white' : 'bg-gray-100 text-gray-500'}`}
+                className={`flex items-center justify-center w-8 h-8 rounded-full ${currentStep >= step ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-500'}`}
                 onClick={() => currentStep > step && setCurrentStep(step)}
               >
                 {step}
@@ -281,10 +321,13 @@ export default function DonorProfileForm({
             ))}
           </div>
 
-          {/* Step 1: Personal Information */}
+          {/* Step 1: Basic Information */}
           {currentStep === 1 && (
-            <Card className=" p-3 md:p-6 space-y-1">
-              <h2 className="text-xl font-bold text-gray-800">Personal Information</h2>
+            <Card className="p-3 md:p-6 space-y-1">
+              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <Building2 className="w-5 h-5" />
+                Basic Hospital Information
+              </h2>
               {step1Fields.map((field) => (
                 <FormField
                   key={field.name}
@@ -292,14 +335,17 @@ export default function DonorProfileForm({
                   name={field.name as keyof z.infer<typeof formSchema>}
                   render={({ field: formField }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 font-medium">{field.label}</FormLabel>
+                      <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
+                        {field.icon}
+                        {field.label}
+                      </FormLabel>
                       <FormControl>
                         {field.render ? field.render({ field: formField }) : (
                           <Input
                             type={field.type}
                             placeholder={field.placeholder}
                             {...formField}
-                            className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-pink-500"
+                            className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500"
                           />
                         )}
                       </FormControl>
@@ -316,10 +362,13 @@ export default function DonorProfileForm({
             </Card>
           )}
 
-          {/* Step 2: Medical Information */}
+          {/* Step 2: Contact & Location */}
           {currentStep === 2 && (
-            <Card className=" p-3 md:p-6 space-y-1">
-              <h2 className="text-xl font-bold text-gray-800">Medical Information</h2>
+            <Card className="p-3 md:p-6 space-y-1">
+              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                Contact & Location Information
+              </h2>
               {step2Fields.map((field) => (
                 <FormField
                   key={field.name}
@@ -327,14 +376,19 @@ export default function DonorProfileForm({
                   name={field.name as keyof z.infer<typeof formSchema>}
                   render={({ field: formField }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 font-medium">{field.label}</FormLabel>
+                      {field.icon && (
+                        <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
+                          {field.icon}
+                          {field.label}
+                        </FormLabel>
+                      )}
                       <FormControl>
                         {field.render ? field.render({ field: formField }) : (
                           field.type === "textarea" ? (
                             <Textarea
                               placeholder={field.placeholder}
                               {...formField}
-                              className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-pink-500"
+                              className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500"
                               rows={field.props?.rows || 3}
                             />
                           ) : (
@@ -342,7 +396,7 @@ export default function DonorProfileForm({
                               type={field.type}
                               placeholder={field.placeholder}
                               {...formField}
-                              className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-pink-500"
+                              className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500"
                             />
                           )
                         )}
@@ -360,39 +414,66 @@ export default function DonorProfileForm({
             </Card>
           )}
 
-          {/* Step 3: Review and Availability */}
+          {/* Step 3: Review & Additional Info */}
           {currentStep === 3 && (
             <Card className="p-6 space-y-6">
-              <h2 className="text-xl font-bold text-gray-800">Review & Availability</h2>
+              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5" />
+                Review & Additional Information
+              </h2>
               
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <h3 className="font-medium text-blue-800">Availability</h3>
+                <h3 className="font-medium text-blue-800 flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Operating Hours
+                </h3>
                 <p className="text-blue-600 text-sm mt-1">
-                  When are you typically available for donations?
+                  Verify your hospital's operating schedule
                 </p>
               </div>
 
               <FormField
                 control={form.control}
-                name="isAvailable"
+                name="operatingHours"
                 render={({ field }) => (
-                  <FormItem className="flex items-center space-x-3 space-y-0 rounded-md border p-4 bg-gray-50">
+                  <FormItem>
+                    <FormLabel className="text-gray-700 font-medium">
+                      Current Operating Hours
+                    </FormLabel>
                     <FormControl>
-                      <input
-                        type="checkbox"
-                        checked={field.value}
-                        onChange={field.onChange}
-                        className="h-5 w-5 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                      <Input
+                        type="text"
+                        {...field}
+                        className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500"
                       />
                     </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="text-gray-700 font-medium">
-                        I'm currently available to donate
-                      </FormLabel>
-                      <FormDescription className="text-gray-500 text-sm">
-                        You can change this anytime in your profile
-                      </FormDescription>
-                    </div>
+                    <FormDescription className="text-gray-500 text-sm">
+                      You can update these hours anytime
+                    </FormDescription>
+                    <FormMessage className="text-red-500 text-sm" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 font-medium">
+                      Hospital Description (Optional)
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Brief description about your hospital, specialties, facilities..."
+                        {...field}
+                        className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                      />
+                    </FormControl>
+                    <FormDescription className="text-gray-500 text-sm">
+                      This will be displayed on your public profile
+                    </FormDescription>
+                    <FormMessage className="text-red-500 text-sm" />
                   </FormItem>
                 )}
               />
@@ -406,13 +487,15 @@ export default function DonorProfileForm({
 
               {/* Summary of entered data */}
               <div className="space-y-4">
-                <h3 className="font-medium text-gray-700">Your Details:</h3>
+                <h3 className="font-medium text-gray-700">Hospital Details:</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {Object.entries(form.getValues()).map(([key, value]) => {
-                    if (key === 'location') return null
+                    if (key === 'location' || key === "description") return null
                     return (
                       <div key={key} className="bg-gray-50 p-3 rounded">
-                        <p className="text-sm font-medium text-gray-500 capitalize">{key.replace(/([A-Z])/g, ' $1')}</p>
+                        <p className="text-sm font-medium text-gray-500 capitalize">
+                          {key.replace(/([A-Z])/g, ' $1').replace('hospital ', '')}
+                        </p>
                         <p className="text-gray-800">
                           {value?.toString() || <span className="text-gray-400">Not provided</span>}
                         </p>
@@ -443,7 +526,7 @@ export default function DonorProfileForm({
               <Button
                 type="button"
                 onClick={handleNextStep}
-                className="bg-gradient-to-r from-red-500 cursor-pointer to-pink-600 hover:from-red-600 hover:to-pink-700 text-white shadow-md flex-1 sm:flex-none"
+                className="bg-gradient-to-r from-blue-500 cursor-pointer to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md flex-1 sm:flex-none"
               >
                 Continue
               </Button>
@@ -457,7 +540,7 @@ export default function DonorProfileForm({
                 >
                   Edit Information
                 </Button>
-                <SubmitButton  />
+                <SubmitButton />
               </div>
             )}
           </div>
