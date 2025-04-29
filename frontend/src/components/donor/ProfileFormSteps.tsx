@@ -55,7 +55,7 @@ export default function DonorProfileForm({
       age: 18,
       address: "",
       bloodType: undefined,
-      location: { lat: 0, lng: 0 },
+      location: { lat: 28.6139, lng: 77.2090 }, // Default location (india)  
       isAvailable: true,
       phone: "",
       emergencyContact: "",
@@ -371,7 +371,7 @@ export default function DonorProfileForm({
                 type="button"
                 variant="outline"
                 onClick={() => setCurrentStep(currentStep - 1)}
-                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                className="border-gray-300 cursor-pointer text-gray-700 hover:bg-gray-50"
               >
                 Back
               </Button>
@@ -383,7 +383,7 @@ export default function DonorProfileForm({
               <Button
                 type="button"
                 onClick={handleNextStep}
-                className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white shadow-md"
+                className="bg-gradient-to-r from-red-500 cursor-pointer to-pink-600 hover:from-red-600 hover:to-pink-700 text-white shadow-md"
               >
                 Continue
               </Button>
