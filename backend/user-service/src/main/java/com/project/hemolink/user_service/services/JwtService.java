@@ -31,6 +31,26 @@ public class JwtService {
                 .compact();
     }
 
+    public String expireTokenImmediately(String token){
+        Claims claims = parseTokenClaims(token);
+
+        return Jwts.builder()
+                .subject(claims.getSubject())
+                .claims(claims)
+                .issuedAt(claims.getIssuedAt())
+                .expiration(new Date())
+                .signWith(getSecretKey())
+                .compact();
+    }
+
+    public Claims parseTokenClaims(String token){
+        return Jwts.parser()
+                .verifyWith(getSecretKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
     public String generateRefreshToken(User user){
         return Jwts.builder()
                 .subject(user.getId().toString())
@@ -40,7 +60,10 @@ public class JwtService {
     }
 
 
+
+
     public String getUserIdFromToken(String token){
+
         Claims claims = Jwts.parser()
                 .verifyWith(getSecretKey())
                 .build()

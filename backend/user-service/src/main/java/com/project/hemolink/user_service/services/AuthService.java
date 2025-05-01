@@ -6,9 +6,11 @@ import com.project.hemolink.user_service.dto.SignupRequestDto;
 import com.project.hemolink.user_service.dto.UserDto;
 import com.project.hemolink.user_service.entities.User;
 import com.project.hemolink.user_service.exception.BadRequestException;
+import com.project.hemolink.user_service.exception.InvalidTokenException;
 import com.project.hemolink.user_service.exception.ResourceNotFoundException;
 import com.project.hemolink.user_service.repositories.UserRepository;
 import com.project.hemolink.user_service.utils.PasswordUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -20,6 +22,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.lang.module.ResolutionException;
 import java.util.UUID;
@@ -70,6 +73,14 @@ public class AuthService {
     }
 
 
+    public void logout(HttpServletRequest request) {
+        final String requestTokenHeader = request.getHeader("Authorization");
+        if(requestTokenHeader == null || !requestTokenHeader.startsWith("Bearer")) {
+            throw new InvalidTokenException("Authorization header is missing or invalid");
+        }
 
+        String token = requestTokenHeader.split("Bearer ")[1];
 
+        jwtService.expireTokenImmediately(token);
+    }
 }

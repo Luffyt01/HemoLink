@@ -11,13 +11,14 @@ spring:
             - Path=/api/v1/users/**
           filters:
             - StripPrefix=2
-#            - name: AuthenticationFilter
+            - name: AuthenticationFilter
         - id: matching-service
           uri: lb://MATCHING-SERVICE
           predicates:
             - Path=/api/v1/matching/**
           filters:
             - StripPrefix=2
+            - name: AuthenticationFilter
       default-filters:
         - RemoveRequestHeader=Cookie
 server:
