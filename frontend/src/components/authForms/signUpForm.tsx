@@ -3,11 +3,14 @@ import { signupAction } from "@/actions/auth/signUp_Action";
 import { GoogleSubmitBtn } from "@/components/CommanComponents/GoogleSubmitBtn";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import { FaHandHoldingHeart, FaHospital } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
+import { any } from "zod";
+import { useRouter } from "next/navigation";
 
 interface SignupFormProps {
   role: "DONOR" | "HOSPITAL";
@@ -20,7 +23,8 @@ interface SignupFormProps {
 interface FormState {
   message: string;
   status: number;
-  errors: {
+  data?: any;
+  errors?: {
     role?: string[];
     phone?: string[];
     email?: string[];
@@ -43,12 +47,36 @@ export default function SignupForm({
     errors: {},
     message: "",
     status: 0,
+    data:any,
   };
-
+  const router = useRouter()
   const [state, formAction] = useActionState<FormState>(
     signupAction,
     initialState
   );
+  useEffect(() => {
+    console.log(state)
+    if (!state) return
+    
+    if (state.status === 422) {
+      const errorMessages = state.errors
+        ? Object.entries(state.errors)
+            .map(([field, errors]) => `${field}: ${errors?.join(', ')}`)
+            .join('\n')
+        : "Validation failed"
+      // toast.error(errorMessages)
+    } 
+    else if (state.status === 500) {
+      toast.error(state.message || "An error occurred")
+    }
+    else if (state.status === 200) {
+      toast.success(state.message || "Account created successfully")
+      setTimeout(() => {
+        router.push('/login') // or your login route
+      }, 1500) // 1.5 second delay to let user see the success message
+    }
+  }, [state])
+
 
   return (
     <motion.div

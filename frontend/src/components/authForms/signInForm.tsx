@@ -4,12 +4,13 @@ import { GoogleSubmitBtn } from "@/components/CommanComponents/GoogleSubmitBtn";
 import { Button } from "@/components/ui/button";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import { FaHandHoldingHeart, FaHospital } from "react-icons/fa";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
   // State management
@@ -34,9 +35,43 @@ export default function LoginForm() {
     message: "",
     status: 0,
   };
-
+  const [error, setError] = useState('');
   // Form action handler
   const [state, fromAction] = useActionState<FormState>(LoginAction, intial);
+  const router = useRouter();
+
+  const [isLoading, setIsLoading] = useState(false);
+  useEffect(() => {
+    const handleStateChange = async () => {
+      // console.log(state);
+      if (state.status === 200) {
+        try {
+          const result = await signIn('credentials', {
+            redirect: false,
+            email: state.email,
+            password: state.password,
+          });
+          console.log(result +"1111111111111111111");
+          if (result?.error) {
+            // Handle specific error messages
+            if (result.error.includes('credentials')) {
+              toast.error('Invalid email or password');
+            } else {
+              setError(result.error);
+            }
+          } else {
+            // Redirect on success
+            toast.success("Login successful!");
+            router.push("/");
+          }
+        } catch (err) {
+          setError('An unexpected error occurred. Please try again.');
+        }
+      }
+    };
+
+    handleStateChange();
+  }, [state,router]);
 
   // Handle Google sign-in
   const handleGoogleSignIn = async () => {
