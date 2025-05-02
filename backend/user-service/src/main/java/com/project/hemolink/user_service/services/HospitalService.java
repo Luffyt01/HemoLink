@@ -45,6 +45,7 @@ public class HospitalService {
         hospital.setUser(userRepository.save(user));
         hospital.setVerificationStatus(VerificationStatus.PENDING);
 
+        hospital.setMainPhoneNo(user.getPhone());
         Hospital savedHospital = hospitalRepository.save(hospital);
         return modelMapper.map(savedHospital, HospitalDto.class);
     }

@@ -41,10 +41,10 @@ public class AuthController {
     // Function to Login the user
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto loginRequestDto){
-
         return ResponseEntity.ok(authService.login(loginRequestDto));
     }
 
+    // Function to logout the user
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request){
         authService.logout(request);

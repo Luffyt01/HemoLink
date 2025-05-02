@@ -22,7 +22,6 @@ import java.util.List;
 @RequestMapping("/donors")
 @PreAuthorize("hasRole('DONOR')")
 @RequiredArgsConstructor
-
 public class DonorController {
     private final DonorService donorService;
 

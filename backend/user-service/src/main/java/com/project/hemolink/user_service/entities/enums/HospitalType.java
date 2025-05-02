@@ -1,0 +1,16 @@
+package com.project.hemolink.user_service.entities.enums;
+
+public enum HospitalType {
+    GENERAL_HOSPITAL,
+    TEACHING_HOSPITAL,
+    SPECIALTY_HOSPITAL,
+    CHILDREN_HOSPITAL,
+    TRAUMA_CENTER,
+    CANCER_CENTER,
+    BLOOD_BANK,
+    RESEARCH_HOSPITAL,
+    COMMUNITY_HOSPITAL,
+    GOVERNMENT_HOSPITAL,
+    PRIVATE_HOSPITAL,
+    MILITARY_HOSPITAL
+}

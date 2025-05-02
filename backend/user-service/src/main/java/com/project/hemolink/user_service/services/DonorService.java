@@ -58,7 +58,6 @@ public class DonorService {
         Donor donor = modelMapper.map(completeDonorProfileDto, Donor.class);
         user.setProfileComplete(true); // Marking the profile completed
         donor.setUser(userRepository.save(user));
-        donor.setIsAvailable(true);
         Donor savedDonor = donorRepository.save(donor); // Saving the donor details
 
         return modelMapper.map(savedDonor, DonorDto.class);

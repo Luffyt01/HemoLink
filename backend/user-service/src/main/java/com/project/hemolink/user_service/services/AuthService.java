@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -56,9 +57,6 @@ public class AuthService {
         log.info("AUTHENTICATED: {}", authentication.isAuthenticated());
         log.info("USERNAME: {}", authentication.getName());
 
-//        User user = userRepository.findByEmail(authentication.getName())
-//                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: "+authentication.getName()));
-
         User user = (User) authentication.getPrincipal();
 
         String accessToken = jwtService.generateAccessToken(user);
@@ -69,6 +67,8 @@ public class AuthService {
         loginResponseDto.setEmail(loginRequestDto.getEmail());
         loginResponseDto.setRole(user.getRole());
         loginResponseDto.setProfileComplete(user.isProfileComplete());
+        loginResponseDto.setPhoneNo(user.getPhone());
+        loginResponseDto.setStatusCode(HttpStatus.OK);
         return loginResponseDto;
     }
 
