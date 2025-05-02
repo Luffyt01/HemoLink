@@ -61,32 +61,25 @@ export const authOptions: NextAuthOptions = {
           if (!credentials?.email || !credentials?.password) {
             throw new Error("Email and password are required")
           }
+          console.log(credentials.email, credentials.password)
 
-          // const response = await axios.post(
-          //   loginApi,
-          //   {
-          //     email: credentials.email,
-          //     password: credentials.password,
-          //   },
-          //   { timeout: 30000 }
-          // )
+          const response = await axios.post(
+            `${process.env.BACKEND_APP_URL}/auth/login`,
+            {
+              email: credentials.email,
+              password: credentials.password,
+            },
+            {
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            }
+            
+          )
           
-          const response ={
-            status: 200,
-            data: {
-            
-                  id: "12345",
-                  phone: null,
-                  email: credentials.email,
-                  role: "DONOR",
-                  accessToken: "mocked_token",
-                }
-               
-            
-            
-          }
+          console.log(response,"2222222222222222222")
           const data = response.data
-        // console.log(data+" 11111111111111111")
+        // console.log(data)
 
           if (response.status !== 200) {
             throw new Error( "Authentication failed")
@@ -94,10 +87,10 @@ export const authOptions: NextAuthOptions = {
 
           return {
             id: data.id,
-            
             email: data.email,
             token: data.accessToken,
             role: data.role,  
+            profileComplete: data.profileComplete,
             provider: "credentials",
           }
         } catch (error) {
