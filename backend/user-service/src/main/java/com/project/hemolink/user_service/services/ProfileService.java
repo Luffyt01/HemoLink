@@ -8,6 +8,7 @@ import com.project.hemolink.user_service.entities.Donor;
 import com.project.hemolink.user_service.entities.Hospital;
 import com.project.hemolink.user_service.entities.User;
 import com.project.hemolink.user_service.entities.enums.UserRole;
+import com.project.hemolink.user_service.exception.ProfileOperationException;
 import com.project.hemolink.user_service.exception.ResourceNotFoundException;
 import com.project.hemolink.user_service.repositories.DonorRepository;
 import com.project.hemolink.user_service.repositories.HospitalRepository;
@@ -29,25 +30,26 @@ public class ProfileService {
     private final HospitalRepository hospitalRepository;
     private final ModelMapper modelMapper;
 
-    public Object getCompleteProfile(){
-        String userId = UserContextHolder.getCurrentUserId();
-        User user = (User) userRepository.findById(UUID.fromString(userId))
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
+    public Object getCompleteProfile() {
+        try {
+            String userId = UserContextHolder.getCurrentUserId();
+            User user = userRepository.findById(UUID.fromString(userId))
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        UserRole role = user.getRole();
+            log.info("Fetching profile for {}: {}", user.getRole(), user.getEmail());
 
-        log.info("Fetching profile for {} with email: {}", role.toString().toLowerCase(), user.getEmail());
+            return switch (user.getRole()) {
+                case DONOR -> getDonorProfile(user);
+                case HOSPITAL -> getHospitalProfile(user);
+                default -> modelMapper.map(user, UserDto.class);
+            };
 
-        switch (role){
-            case DONOR -> {
-                return getDonorProfile(user);
-            }
-            case HOSPITAL -> {
-                return getHospitalProfile(user);
-            }
-            default -> {
-                return modelMapper.map(user, UserDto.class);
-            }
+        } catch (ResourceNotFoundException e) {
+            log.error("Profile fetch error: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error fetching profile", e);
+            throw new ProfileOperationException("Failed to fetch profile");
         }
     }
 
@@ -64,22 +66,29 @@ public class ProfileService {
     }
 
     public void deleteProfile() {
-        String userId = UserContextHolder.getCurrentUserId();
-        User user = (User) userRepository.findById(UUID.fromString(userId))
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-        UserRole role = user.getRole();
+        try {
+            String userId = UserContextHolder.getCurrentUserId();
+            User user = userRepository.findById(UUID.fromString(userId))
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        log.info("Deleting profile for {} with email: {}", role.toString().toLowerCase(), user.getEmail());
+            log.info("Deleting profile for {}: {}", user.getRole(), user.getEmail());
 
-        if (role.equals(UserRole.DONOR)){
-            deleteDonorProfile(user);
-        } else if (role.equals(UserRole.HOSPITAL)){
-            deleteHospitalProfile(user);
+            if (user.getRole().equals(UserRole.DONOR)) {
+                deleteDonorProfile(user);
+            } else if (user.getRole().equals(UserRole.HOSPITAL)) {
+                deleteHospitalProfile(user);
+            }
+
+            userRepository.delete(user);
+            log.info("Profile deleted successfully");
+
+        } catch (ResourceNotFoundException e) {
+            log.error("Profile deletion error: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error deleting profile", e);
+            throw new ProfileOperationException("Failed to delete profile");
         }
-
-        userRepository.delete(user);
-
-        log.info("Profile deleted successfully");
     }
 
     public void deleteDonorProfile(User user){
