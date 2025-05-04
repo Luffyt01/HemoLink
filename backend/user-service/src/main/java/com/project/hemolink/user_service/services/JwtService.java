@@ -4,6 +4,7 @@ import com.project.hemolink.user_service.entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -12,10 +13,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
 
     @Value("${jwt.secretKey}")
     private String jwtSecretKey;
+    private final TokenBlacklistService blacklistService;
+
 
     private SecretKey getSecretKey(){
         return Keys.hmacShaKeyFor(jwtSecretKey.getBytes(StandardCharsets.UTF_8));
@@ -32,16 +36,22 @@ public class JwtService {
                 .compact();
     }
 
-    public String expireTokenImmediately(String token){
-        Claims claims = parseTokenClaims(token);
+//    public String expireTokenImmediately(String token){
+//        Claims claims = parseTokenClaims(token);
+//
+//        return Jwts.builder()
+//                .subject(claims.getSubject())
+//                .claims(claims)
+//                .issuedAt(claims.getIssuedAt())
+//                .expiration(new Date())
+//                .signWith(getSecretKey())
+//                .compact();
+//    }
 
-        return Jwts.builder()
-                .subject(claims.getSubject())
-                .claims(claims)
-                .issuedAt(claims.getIssuedAt())
-                .expiration(new Date())
-                .signWith(getSecretKey())
-                .compact();
+    public long getRemainingValidity (String token){
+        Claims claims = parseTokenClaims(token);
+        Date expiration = claims.getExpiration();
+        return (expiration.getTime() - System.currentTimeMillis())/1000;
     }
 
     public Claims parseTokenClaims(String token){

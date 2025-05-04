@@ -112,30 +112,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ApiError> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
-        String errorMessage = "Invalid request payload";
-
-        // Extract underlying cause if it's an enum issue
-        Throwable cause = ex.getCause();
-        if (cause instanceof InvalidFormatException invalidFormatException) {
-            if (invalidFormatException.getTargetType().isEnum()) {
-                Object[] enumConstants = invalidFormatException.getTargetType().getEnumConstants();
-                String allowedValues = enumConstants != null
-                        ? "Allowed values: " + String.join(", ",
-                        java.util.Arrays.stream(enumConstants)
-                                .map(Object::toString)
-                                .toList())
-                        : "";
-                errorMessage = "Invalid value for field of type Enum. " + allowedValues;
-            } else {
-                errorMessage = "Invalid format for field: " + invalidFormatException.getOriginalMessage();
-            }
-        }
-
-        ApiError apiError = new ApiError(errorMessage, HttpStatus.BAD_REQUEST);
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
-    }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiError> handleBadCredentialError(BadCredentialsException e){

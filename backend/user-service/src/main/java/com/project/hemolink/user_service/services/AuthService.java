@@ -40,6 +40,7 @@ public class AuthService {
 
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final TokenBlacklistService blacklistService;
 
 
 
@@ -94,7 +95,7 @@ public class AuthService {
             }
 
             String token = requestTokenHeader.split("Bearer ")[1];
-            jwtService.expireTokenImmediately(token);
+            blacklistService.blacklistToken(token, jwtService.getRemainingValidity(token));
             log.info("User logged out successfully");
 
         } catch (InvalidTokenException e) {

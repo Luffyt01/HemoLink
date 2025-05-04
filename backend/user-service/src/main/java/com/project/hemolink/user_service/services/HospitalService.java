@@ -7,16 +7,14 @@ import com.project.hemolink.user_service.entities.Hospital;
 import com.project.hemolink.user_service.entities.User;
 import com.project.hemolink.user_service.entities.enums.UserRole;
 import com.project.hemolink.user_service.entities.enums.VerificationStatus;
-import com.project.hemolink.user_service.exception.BadRequestException;
-import com.project.hemolink.user_service.exception.ProfileCompletionException;
-import com.project.hemolink.user_service.exception.ProfileOperationException;
-import com.project.hemolink.user_service.exception.ResourceNotFoundException;
+import com.project.hemolink.user_service.exception.*;
 import com.project.hemolink.user_service.repositories.HospitalRepository;
 import com.project.hemolink.user_service.repositories.UserRepository;
 import com.project.hemolink.user_service.utils.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.boot.json.JsonParseException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -67,9 +65,6 @@ public class HospitalService {
         } catch (ProfileCompletionException e) {
             log.error("Profile completion error: {}", e.getMessage());
             throw e;
-        } catch (Exception e) {
-            log.error("Unexpected error completing hospital profile", e);
-            throw new ProfileOperationException("Failed to complete hospital profile");
         }
     }
 
