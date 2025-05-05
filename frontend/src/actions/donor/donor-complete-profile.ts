@@ -17,8 +17,8 @@ export async function completeDonorProfile(prevState: any, formData: FormData) {
       address: formData.get('address'),
       bloodType: formData.get('bloodType'),
       location: {
-        lat: formData.get('location[lat]'),
-        lng:formData.get('location[lng]')
+        lat: Number(formData.get('location[lat]')),
+        lng:Number(formData.get('location[lng]'))
       },
       isAvailable: formData.get('isAvailable') === 'true',
       phone: formData.get('phone'),
@@ -26,7 +26,10 @@ export async function completeDonorProfile(prevState: any, formData: FormData) {
     }
 
     console.log('Parsed Data Before Validation:', parsedData)
-
+    interface location1 {
+      coordinates: [number, number]; // Tuple of two numbers
+      type: string; // Typically "Point" for GeoJSON
+    }
     // const validatedData = schema.parse(parsedData)
     // console.log('Validated Data:', validatedData)
     const response  = axios.post (`${process.env.BACKEND_APP_URL}/donors/completeProfile`,{
@@ -38,9 +41,10 @@ export async function completeDonorProfile(prevState: any, formData: FormData) {
       location: {
         coordinates: [
           parsedData.location.lng,
-          parsedData.location.lat
+         parsedData.location.lat
         ],
-      },
+        type: "Point"
+      } as location1,
       isAvailable: parsedData.isAvailable,
     },{
       headers: {

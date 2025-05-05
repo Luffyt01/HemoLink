@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { MapPin, Loader2, CheckCircle2, Clock, Building2, Mail, Phone, Globe } from "lucide-react"
+import { MapPin, Loader2, CheckCircle2, Clock, Building2, Mail, Phone, Globe, AlertCircle } from "lucide-react"
 import dynamic from "next/dynamic"
 import { toast } from "sonner"
 import { Textarea } from "../ui/textarea"
@@ -27,6 +27,7 @@ import { formSchema, HospitalType } from "./hospitalSchema"
 import { completeHospitalProfile } from "@/actions/Hospital/Hospital-Complete-Profile"
 import { useRouter } from "next/navigation"
 import { useAuthStore } from "@/lib/stores/useAuthStore"
+import { Badge } from "../ui/badge"
 
 // Lazy loaded components
 const LocationPicker = dynamic(() => import("@/components/CommanComponents/location-picker"), {
@@ -34,26 +35,21 @@ const LocationPicker = dynamic(() => import("@/components/CommanComponents/locat
   loading: () => <div className="h-[300px] bg-gray-100 rounded-lg animate-pulse" />
 })
 
-
 interface HospitalProfileFormProps {
-  session: any
   isGeolocating: boolean
   setIsGeolocating: (value: boolean) => void
   formAction: (formData: FormData) => Promise<any>
-//   onFormAction: (state: any) => any
 }
 
 export default function HospitalProfileForm({
- 
   isGeolocating,
   setIsGeolocating,
   formAction,
-//   onFormAction
 }: HospitalProfileFormProps) {
   const [currentStep, setCurrentStep] = useState(1)
   const [state, formActionWithState] = useActionState(completeHospitalProfile, null)
   const router = useRouter()
-  const {session} = useAuthStore();
+  const { session } = useAuthStore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -63,42 +59,56 @@ export default function HospitalProfileForm({
       hospitalType: undefined,
       establishmentYear: new Date().getFullYear(),
       address: "",
-      location: { lat: 28.6139, lng: 77.2090 }, // Default location (India)
+      location: { lat: 28.6139, lng: 77.2090 },
       mainPhone: session?.user?.phone || "",
       emergencyPhone: "",
-      email: "",
+      email: session?.user?.email || "",
       website: "",
       operatingHours: "24/7",
       description: "",
+      hospitalStatus: "OPENED"
     },
   })
+
+  // Status options with icons and colors
+  const statusOptions = [
+    { 
+      value: "OPENED", 
+      label: "Open", 
+      icon: <CheckCircle2 className="w-4 h-4 text-green-500" />,
+      color: "bg-green-100 text-green-800 hover:bg-green-200"
+    },
+    { 
+      value: "CLOSED", 
+      label: "Temporarily Closed", 
+      icon: <AlertCircle className="w-4 h-4 text-red-500" />,
+      color: "bg-red-100 text-red-800 hover:bg-red-200"
+    },
+    { 
+      value: "UNDER_MAINTENANCE", 
+      label: "Under Maintenance", 
+      icon: <Clock className="w-4 h-4 text-yellow-500" />,
+      color: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+    }
+  ]
 
   // Handle server response
   useEffect(() => {
     if (state) {
-    //   onFormAction(state)
-      
       if (state.fieldErrors) {
         Object.entries(state.fieldErrors).forEach(([field, message]) => {
           form.setError(field as any, { type: 'server', message: Array.isArray(message) ? message.join(", ") : message })
         })
       }
       
-      // If successful submission, show success
       if (state.success) {
         toast.success("Hospital profile saved successfully!", {
           icon: <CheckCircle2 className="text-green-500" />,
-
         })
-        
-            router.push("/hospital/dashboard")
-          
-            // window.location.href = '/hospital/dashboard';
-          
+        router.push("/hospital/dashboard")
       }
     }
-  }, [state, form,router])
-//   }, [state, form, onFormAction,])
+  }, [state, form, router])
 
   // Auto-detect location
   const handleDetectLocation = () => {
@@ -125,10 +135,8 @@ export default function HospitalProfileForm({
     
     Object.entries(values).forEach(([key, value]) => {
       if (key === 'location') {
-        if (typeof value === 'object' && value !== null && 'lat' in value && 'lng' in value) {
-          formData.append('location[lat]', value.lat.toString())
-          formData.append('location[lng]', value.lng.toString())
-        }
+        formData.append('location[lat]', value.lat.toString())
+        formData.append('location[lng]', value.lng.toString())
       } else {
         formData.append(key, value?.toString() ?? '')
       }
@@ -263,7 +271,17 @@ export default function HospitalProfileForm({
       type: "tel",
       placeholder: "+91 1234567890",
       description: "Primary contact number for the hospital",
-      icon: <Phone className="w-4 h-4" />
+      icon: <Phone className="w-4 h-4" />,
+      render: ({ field }: any) => (
+        <Input
+          type="tel"
+          placeholder={field.placeholder}
+          {...field}
+          className="bg-gray-100 border-gray-200 focus:ring-0 cursor-not-allowed"
+          readOnly
+          disabled
+        />
+      )
     },
     {
       name: "emergencyPhone",
@@ -279,7 +297,17 @@ export default function HospitalProfileForm({
       type: "email",
       placeholder: "contact@hospitalname.com",
       description: "Official email address for communications",
-      icon: <Mail className="w-4 h-4" />
+      icon: <Mail className="w-4 h-4" />,
+      render: ({ field }: any) => (
+        <Input
+          type="email"
+          placeholder={field.placeholder}
+          {...field}
+          className="bg-gray-100 border-gray-200 focus:ring-0 cursor-not-allowed"
+          readOnly
+          disabled
+        />
+      )
     },
     {
       name: "website",
@@ -296,6 +324,46 @@ export default function HospitalProfileForm({
       placeholder: "24/7 or 9:00 AM - 9:00 PM",
       description: "Regular operating hours of the hospital",
       icon: <Clock className="w-4 h-4" />
+    }
+  ]
+
+  const step3Fields = [
+    {
+      name: "hospitalStatus",
+      label: "Hospital Status",
+      type: "select",
+      description: "Current operational status of the hospital",
+      icon: <CheckCircle2 className="w-4 h-4" />,
+      render: ({ field }: any) => (
+        <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <SelectTrigger className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500">
+            <SelectValue placeholder="Select hospital status" />
+          </SelectTrigger>
+          <SelectContent className="bg-white">
+            {statusOptions.map((status) => (
+              <SelectItem 
+                key={status.value} 
+                value={status.value}
+                className={status.color}
+              >
+                <div className="flex items-center gap-2">
+                  {status.icon}
+                  {status.label}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )
+    },
+    {
+      name: "description",
+      label: "Hospital Description",
+      type: "textarea",
+      placeholder: "Brief description about your hospital, specialties, facilities...",
+      description: "This will be displayed on your public profile",
+      icon: <Building2 className="w-4 h-4" />,
+      props: { rows: 5 }
     }
   ]
 
@@ -322,6 +390,31 @@ export default function HospitalProfileForm({
                 {step}
               </div>
             ))}
+          </div>
+
+          {/* Status Badge (Visible on all steps) */}
+          <div className="flex justify-end">
+            <FormField
+              control={form.control}
+              name="hospitalStatus"
+              render={({ field }) => (
+                <Badge 
+                  variant="outline" 
+                  className={`px-3 py-1 text-sm ${
+                    field.value === "OPENED" 
+                      ? "bg-green-100 text-green-800 border-green-200" 
+                      : field.value === "CLOSED" 
+                        ? "bg-red-100 text-red-800 border-red-200" 
+                        : "bg-yellow-100 text-yellow-800 border-yellow-200"
+                  }`}
+                >
+                  {statusOptions.find(s => s.value === field.value)?.icon}
+                  <span className="ml-1">
+                    {statusOptions.find(s => s.value === field.value)?.label}
+                  </span>
+                </Badge>
+              )}
+            />
           </div>
 
           {/* Step 1: Basic Information */}
@@ -425,62 +518,80 @@ export default function HospitalProfileForm({
                 Review & Additional Information
               </h2>
               
+              {/* Status Section */}
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <h3 className="font-medium text-blue-800 flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Operating Hours
-                </h3>
-                <p className="text-blue-600 text-sm mt-1">
-                  Verify your hospital's operating schedule
-                </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-blue-800 flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4" />
+                      Hospital Status
+                    </h3>
+                    <p className="text-blue-600 text-sm mt-1">
+                      Current operational status of your facility
+                    </p>
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="hospitalStatus"
+                    render={({ field }) => (
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <SelectTrigger className="w-[200px] bg-white">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white">
+                          {statusOptions.map((status) => (
+                            <SelectItem 
+                              key={status.value} 
+                              value={status.value}
+                              className={status.color}
+                            >
+                              <div className="flex items-center gap-2">
+                                {status.icon}
+                                {status.label}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
               </div>
 
-              <FormField
-                control={form.control}
-                name="operatingHours"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">
-                      Current Operating Hours
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        {...field}
-                        className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500"
-                      />
-                    </FormControl>
-                    <FormDescription className="text-gray-500 text-sm">
-                      You can update these hours anytime
-                    </FormDescription>
-                    <FormMessage className="text-red-500 text-sm" />
-                  </FormItem>
-                )}
-              />
+              {/* Additional Fields */}
+              {step3Fields.filter(f => f.name !== "hospitalStatus").map((field) => (
+                <FormField
+                  key={field.name}
+                  control={form.control}
+                  name={field.name as keyof z.infer<typeof formSchema>}
+                  render={({ field: formField }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
+                        {field.icon}
+                        {field.label}
+                      </FormLabel>
+                      <FormControl>
+                        {field.render ? field.render({ field: formField }) : (
+                          <Textarea
+                            placeholder={field.placeholder}
+                            {...formField}
+                            className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                            rows={field.props?.rows || 5}
+                          />
+                        )}
+                      </FormControl>
+                      {field.description && (
+                        <FormDescription className="text-gray-500 text-sm">
+                          {field.description}
+                        </FormDescription>
+                      )}
+                      <FormMessage className="text-red-500 text-sm" />
+                    </FormItem>
+                  )}
+                />
+              ))}
 
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">
-                      Hospital Description (Optional)
-                    </FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Brief description about your hospital, specialties, facilities..."
-                        {...field}
-                        className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500 min-h-[120px]"
-                      />
-                    </FormControl>
-                    <FormDescription className="text-gray-500 text-sm">
-                      This will be displayed on your public profile
-                    </FormDescription>
-                    <FormMessage className="text-red-500 text-sm" />
-                  </FormItem>
-                )}
-              />
-
+              {/* Summary Section */}
               <div className="bg-green-50 p-4 rounded-lg border border-green-100">
                 <h3 className="font-medium text-green-800">Review Your Information</h3>
                 <p className="text-green-600 text-sm mt-1">
@@ -488,12 +599,30 @@ export default function HospitalProfileForm({
                 </p>
               </div>
 
-              {/* Summary of entered data */}
               <div className="space-y-4">
-                <h3 className="font-medium text-gray-700">Hospital Details:</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {Object.entries(form.getValues()).map(([key, value]) => {
-                    if (key === 'location' || key === "description") return null
+                    if (key === 'location' || key === "description" ||key === "hospitalStatus" ) return null
+                    
+                    // if (key === "hospitalStatus") {
+                    //   const status = statusOptions.find(s => s.value === value)
+                    //   return (
+                    //     <div key={key} className="bg-gray-50 p-3 rounded">
+                    //       <p className="text-sm font-medium text-gray-500">Status</p>
+                    //       <div className="flex items-center gap-2 mt-1">
+                    //         {status?.icon}
+                    //         <span className={`
+                    //           ${value === "OPENED" ? "text-green-600" : ""}
+                    //           ${value === "CLOSED" ? "text-red-600" : ""}
+                    //           ${value === "UNDER_MAINTENANCE" ? "text-yellow-600" : ""}
+                    //         `}>
+                    //           {status?.label}
+                    //         </span>
+                    //       </div>
+                    //     </div>
+                    //   )
+                    // }
+
                     return (
                       <div key={key} className="bg-gray-50 p-3 rounded">
                         <p className="text-sm font-medium text-gray-500 capitalize">
@@ -522,7 +651,7 @@ export default function HospitalProfileForm({
                 Back
               </Button>
             ) : (
-              <div className="flex-1" /> // Empty div for spacing
+              <div className="flex-1" />
             )}
 
             {currentStep < 3 ? (
