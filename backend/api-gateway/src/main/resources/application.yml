@@ -19,8 +19,7 @@ spring:
           filters:
             - StripPrefix=2
             - name: AuthenticationFilter
-      default-filters:
-        - RemoveRequestHeader=Cookie
+
 server:
   port: 8080
 
@@ -28,8 +27,11 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
 
-jwt.secretKey: dshf091283h4sjkfh0932844hkvbxczkue45908hv2o489vhb9a83hrdkvyv90482hf0893
+jwt.secretKey: ${JWT_SECRET_KEY}
 springdoc:
   api-docs:
     path: /v3/api-docs

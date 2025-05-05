@@ -16,6 +16,8 @@ import com.project.hemolink.user_service.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -30,6 +32,8 @@ public class ProfileService {
     private final HospitalRepository hospitalRepository;
     private final ModelMapper modelMapper;
 
+
+    @Cacheable(value = "userProfiles", key = "#root.methodName + ':'+ T(com.project.hemolink.user_service.auth.UserContextHolder).getCurrentUserId()")
     public Object getCompleteProfile() {
         try {
             String userId = UserContextHolder.getCurrentUserId();
@@ -53,18 +57,21 @@ public class ProfileService {
         }
     }
 
+    @Cacheable(value = "userProfiles", key = "#root.methodName + ':'+ T(com.project.hemolink.user_service.auth.UserContextHolder).getCurrentUserId()")
     public DonorDto getDonorProfile(User user){
         Donor donor = donorRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Donor not found with email: "+user.getEmail()));
         return modelMapper.map(donor, DonorDto.class);
     }
 
+    @Cacheable(value = "userProfiles", key = "#root.methodName + ':'+ T(com.project.hemolink.user_service.auth.UserContextHolder).getCurrentUserId()")
     public HospitalDto getHospitalProfile(User user){
         Hospital hospital = hospitalRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Hospital not found with email: "+user.getEmail()));
         return modelMapper.map(hospital, HospitalDto.class);
     }
 
+    @CacheEvict(value = "userProfiles", key = "'getCompleteProfile:' + T(com.project.hemolink.user_service.auth.UserContextHolder).getCurrentUserId()")
     public void deleteProfile() {
         try {
             String userId = UserContextHolder.getCurrentUserId();

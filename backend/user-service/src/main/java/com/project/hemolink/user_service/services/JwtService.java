@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.util.Calendar;
 import java.util.Date;
 
 @Service
@@ -26,12 +27,17 @@ public class JwtService {
     }
 
     public String generateAccessToken(User user){
+        Date currentDate = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentDate);
+        calendar.add(Calendar.DAY_OF_YEAR, 7);
+        Date expirationDate = calendar.getTime();
         return Jwts.builder()
                 .subject(user.getId().toString())
                 .claim("email",user.getEmail())
                 .claim("role",user.getRole().toString())
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() * 1000L * 60 * 60 * 24 * 7)) // 7 days
+                .issuedAt(currentDate)
+                .expiration(expirationDate) // 7 days
                 .signWith(getSecretKey())
                 .compact();
     }

@@ -12,6 +12,8 @@ import com.project.hemolink.user_service.utils.PasswordUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -33,7 +35,8 @@ public class UserService  implements UserDetailsService {
     /*
      * Function to signup the user
      */
-    @Transactional
+//    @Transactional
+    @CachePut(cacheNames = "users", key="#result.id")
     public UserDto signup(SignupRequestDto signupRequestDto) {
         try {
             log.info("Attempting to signup user with email: {}", signupRequestDto.getEmail());
@@ -62,13 +65,8 @@ public class UserService  implements UserDetailsService {
 
     @Transactional(readOnly = true)
     public User getUserByEmail(String email) {
-        try {
-            return userRepository.findByEmail(email)
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
-        } catch (Exception e) {
-            log.error("Error fetching user by email: {}", email, e);
-            throw new UserOperationException("Failed to fetch user by email");
-        }
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
     }
 
     @Transactional(readOnly = true)
@@ -78,6 +76,7 @@ public class UserService  implements UserDetailsService {
                     .orElseThrow(() -> new BadCredentialsException("Invalid credentials, user not found with email: "+username));
 
     }
+
 
     public User getUserById(String userId){
         return userRepository.findById(UUID.fromString(userId))

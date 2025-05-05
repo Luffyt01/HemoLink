@@ -16,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Point;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +47,7 @@ public class DonorService {
      * Function to complete the donor profile
      */
     @Transactional
+    @CachePut(value = "donors", key = "#result.id")
     public DonorDto completeProfile(CompleteDonorProfileDto completeDonorProfileDto) {
         try {
             // Fetching the userId of current logged user
@@ -82,6 +85,7 @@ public class DonorService {
      * Function to update the user availability (TRUE, FALSE)
      */
     @Transactional
+    @CachePut(value = "donors", key = "#result.id")
     public DonorDto updateAvailability(AvailabilityDto availabilityDto) {
         try {
 
@@ -108,6 +112,8 @@ public class DonorService {
 
 
 
+    @CachePut(value = "donors", key = "#result.id")
+    @Transactional
     public DonorDto updateLocation(PointDTO updatedLocation){
         String userId = UserContextHolder.getCurrentUserId();
         User user = (User) userRepository.findById(UUID.fromString(userId))
@@ -124,6 +130,7 @@ public class DonorService {
         return modelMapper.map(savedDonor, DonorDto.class);
     }
 
+    @Cacheable(value = "donors", key = "#donorId")
     public DonorDto findDonorById(String donorId) {
         log.info("Fetching Donor by donorId: {}", donorId);
         Donor donor = donorRepository.findById(UUID.fromString(donorId))
@@ -132,6 +139,7 @@ public class DonorService {
         return modelMapper.map(donor, DonorDto.class);
     }
 
+    @Cacheable(value = "donors", key = "#result.id")
     public DonorDto getDonorByUserId(String userId) {
         log.info("Fetching Donor by userId: {}", userId);
         User user = (User) userRepository.findById(UUID.fromString(userId))
