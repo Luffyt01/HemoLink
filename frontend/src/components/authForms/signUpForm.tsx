@@ -69,11 +69,14 @@ export default function SignupForm({
     else if (state.status === 500) {
       toast.error(state.message || "An error occurred")
     }
+    else if (state.status === 400) {
+      toast.error(state.message || "An error occurred")
+    }
     else if (state.status === 200) {
       toast.success(state.message || "Account created successfully")
       setTimeout(() => {
-        router.push('/login') // or your login route
-      }, 1500) // 1.5 second delay to let user see the success message
+        router.push('/signIn') // or your login route
+      }, 900) //  .9 second delay to let user see the success message
     }
   }, [state])
 

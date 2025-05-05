@@ -1,44 +1,50 @@
 /** @format */
-import NextAuth, { type NextAuthOptions, type User } from "next-auth"
-import GoogleProvider from "next-auth/providers/google"
-import Credentials from "next-auth/providers/credentials"
-import axios from "axios"
-// import { loginApi, loginGoogleApi } from "@/lib/EndPointApi"
-import type { JWT } from "next-auth/jwt"
-import type { Session } from "next-auth"
+import NextAuth, { type NextAuthOptions, type User, type Account } from "next-auth";
+import type { AdapterUser } from "next-auth/adapters";
+import GoogleProvider from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
+import axios from "axios";
+import type { JWT } from "next-auth/jwt";
+import type { Session } from "next-auth";
 
+// Enhanced type definitions
 interface CustomUser extends User {
-  id: string
-  token?: string
-  phone?: string | null
-  email: string
-  role?: string
-  provider?: string
-  googleId?: string | null
+  id: string;
+  token?: string;
+  phone?: string | null;
+  email: string;
+  role?: string;
+  provider?: string;
+  googleId?: string | null;
+  profileComplete?: boolean;
 }
 
-interface CustomSession extends Session {
-  token?: string
-  user: CustomUser
+export interface CustomSession extends Session {
+  token?: string;
+  user: CustomUser;
 }
 
-// Enhanced environment variable handling
-const getEnvVar = (key: string): string => {
-  const value = process.env[key]
-  if (!value) throw new Error(`Missing environment variable: ${key}`)
-  return value
+interface CustomJWT extends JWT {
+  accessToken?: string;
+  user?: Omit<CustomUser, "token">;
 }
 
-// Configured axios instance
+// Environment variable validation
+const getRequiredEnvVar = (key: string): string => {
+  const value = process.env[key];
+  if (!value) throw new Error(`Missing required environment variable: ${key}`);
+  return value;
+};
 
+// API configuration
+const API_BASE_URL = getRequiredEnvVar("BACKEND_APP_URL");
+const AUTH_TIMEOUT = 60000; // 30 seconds
 
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
-      // clientId: getEnvVar("GOOGLE_CLIENT_ID"),
-      // clientSecret: getEnvVar("GOOGLE_CLIENT_SECRET"),
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: getRequiredEnvVar("GOOGLE_CLIENT_ID"),
+      clientSecret: getRequiredEnvVar("GOOGLE_CLIENT_SECRET"),
       authorization: {
         params: {
           prompt: "consent",
@@ -59,9 +65,8 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         try {
           if (!credentials?.email || !credentials?.password) {
-            throw new Error("Email and password are required")
+            throw new Error("Email and password are required");
           }
-          console.log(credentials.email, credentials.password)
 
           const response = await axios.post(
             `${process.env.BACKEND_APP_URL}/auth/login`,
@@ -70,90 +75,83 @@ export const authOptions: NextAuthOptions = {
               password: credentials.password,
             },
             {
-              headers: {
-                'Content-Type': 'application/json'
-              }
+              headers: { "Content-Type": "application/json" },
+              timeout: AUTH_TIMEOUT,
             }
-            
-          )
-          
-          console.log(response,"2222222222222222222")
-          const data = response.data
-        // console.log(data)
+          );
 
           if (response.status !== 200) {
-            throw new Error( "Authentication failed")
+            throw new Error("Authentication failed");
           }
 
+          const data = response.data;
           return {
             id: data.id,
             email: data.email,
             token: data.accessToken,
-            role: data.role,  
+            role: data.role,
+            phone: data.phoneNo,
             profileComplete: data.profileComplete,
-            provider: "credentials",
-          }
+          } as CustomUser;
         } catch (error) {
-          console.error("Credentials auth error:", error)
-          return null
+          // console.error("Credentials auth error:", error.response.data);
+          if (axios.isAxiosError(error)) {
+            console.log(error.response?.data?.message)
+            throw new Error(
+              error.response?.data?.error.split(':')[0] || "Authentication failed"
+            );
+          }
+          throw error;
         }
       },
     }),
   ],
-
   callbacks: {
-    async jwt({ token, user, account }) {
-    //  console.log("22222222222222222222222222222+"+token, user, account)
+    async jwt({ token, user, account }: { token: JWT; user: User | AdapterUser; account: Account | null }) {
       if (user && account) {
+        const customUser = user as CustomUser;
         return {
           ...token,
-          accessToken: (user as CustomUser).token,
+          accessToken: customUser.token,
           user: {
-            role: (user as CustomUser).role,
             id: user.id,
-            email: user.email,
+            email: user.email || "",
+            role: customUser.role,
+            phone: customUser.phone,
             image: user.image,
-            provider: (user as CustomUser).provider || account.provider,
-            googleId: (user as CustomUser).googleId,
+            provider: account.provider,
+            googleId: customUser.googleId,
+            profileComplete: customUser.profileComplete,
           },
-        }
+        };
       }
-      return token
+      return token;
     },
 
-    async session({ session, token }) {
-      // console.log("111111111111111111111111111111111111111111111111111111111111111111111"+session, token)
-      session.token = token.accessToken as string
-      session.user = {
+    async session({ session, token }: { session: Session & { user: { email?: string } }; token: JWT }) {
+      const customSession = session as CustomSession;
+      customSession.token = (token as CustomJWT).accessToken;
+      customSession.user = {
         ...session.user,
-        ...(typeof token.user === "object" && token.user !== null ? token.user : {}),
-        role: (token.user as CustomUser)?.role || "",
-        id: (token.user as CustomUser | undefined)?.id as string,
-      }
-      // console.log(session)
-      return session
+        ...(token as CustomJWT).user,
+        id: (token as CustomJWT).user?.id || "",
+        email: session.user?.email || (token as CustomJWT).user?.email || "",
+        role: (token as CustomJWT).user?.role || "",
+        phone: (token as CustomJWT).user?.phone || "",
+        profileComplete: (token as CustomJWT).user?.profileComplete || false,
+      };
+      return customSession;
     },
-   
+
     async signIn({ user, account, profile }) {
       try {
         if (account?.provider === "google") {
           if (!profile?.email) {
-            throw new Error("No email found in Google profile")
+            throw new Error("No email found in Google profile");
           }
-          
 
-          // const response = await axios.post(
-          //   loginGoogleApi,
-          //   {
-          //     email: profile.email,
-          //     role: profile?.role || "DONOR",
-          //     name: profile.name || user.name || profile.email.split("@")[0],
-          //     image: profile.image || null,
-          //     googleId: profile.sub,
-          //   },
-          //   { timeout: 30000 }
-          // )
-  const response = {
+          // Mock response for demonstration - replace with actual API call
+          const mockResponse = {
             data: {
               success: true,
               message: "Google authentication successful",
@@ -163,43 +161,44 @@ export const authOptions: NextAuthOptions = {
                   phone: null,
                   email: profile.email,
                   role: "DONOR",
+                  profileComplete: false,
                 },
                 token: "mocked_token",
               },
             },
-          } as any // Mocked response for demonstration
+          };
 
-          // console.log(response.data)
-          if (!response) {
-            throw new Error("Google authentication failed")
-  }
-          const data = response.data
+          const data = mockResponse.data;
 
           if (!data.success) {
-            throw new Error(data.message || "Google authentication failed")
+            throw new Error(data.message || "Google authentication failed");
           }
 
-          // Update user object with data from your API
-          user.id = data.data.user.id;
-          user.role = data.data.user.role ||"";
-          
-          (user as CustomUser).token = data.data.token;
-          (user as CustomUser).googleId = profile?.sub || null;
-          (user as CustomUser).provider = "google";
+          // Update user object with data from API
+          Object.assign(user, {
+            id: data.data.user.id,
+            role: data.data.user.role,
+            token: data.data.token,
+            googleId: profile.sub,
+            provider: "google",
+            profileComplete: data.data.user.profileComplete,
+          });
         }
 
-        return true
+        return true;
       } catch (error) {
-        console.error("SignIn callback error:", error)
-        return `/login?error=${encodeURIComponent(
-          axios.isAxiosError(error)
-            ? error.response?.data?.message || error.message
-            : error instanceof Error
-            ? error.message
-            : "Authentication failed"
-        )}`
+        console.error("SignIn callback error:", error);
+        let errorMessage = "Authentication failed";
+        
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        } else if (axios.isAxiosError(error)) {
+          errorMessage = error.response?.data?.message || error.message;
+        }
+
+        return `/login?error=${encodeURIComponent(errorMessage)}`;
       }
-    },   
+    },
   },
 
   pages: {
@@ -210,14 +209,16 @@ export const authOptions: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 10 * 24 * 60 * 60, // 10 days `
+    maxAge: 7 * 24 * 60 * 60, // 7 days
   },
 
   jwt: {
-    secret: getEnvVar("NEXTAUTH_SECRET"),
-    maxAge: 10 * 24 * 60 * 60, // 10 days
+    secret: getRequiredEnvVar("NEXTAUTH_SECRET"),
+    maxAge: 7 * 24 * 60 * 60, // 7 days
   },
 
-  secret: getEnvVar("NEXTAUTH_SECRET"),
-//   debug: process.env.NODE_ENV === "development",
-}
+  secret: getRequiredEnvVar("NEXTAUTH_SECRET"),
+  debug: process.env.NODE_ENV === "development",
+};
+
+export default NextAuth(authOptions);

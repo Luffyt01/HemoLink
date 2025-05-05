@@ -46,7 +46,7 @@ export async function signupAction(prevState: FormState, formData: FormData): Pr
     password: formData.get('password'),
     confirmPassword: formData.get('confirmPassword'),
   }
-
+console.log("rawData",rawData)
   // Validate with Zod
   const result = schema.safeParse(rawData)
 
@@ -58,6 +58,7 @@ export async function signupAction(prevState: FormState, formData: FormData): Pr
       data: null
     }
   }
+  console.log(result.data)
 
   try {
     const response = await axios.post(
@@ -85,17 +86,24 @@ console.log(response)
       errors: {},
     }
   } catch (error) {
-    console.log(error.response)
+    console.log("error",error)
     if (error instanceof AxiosError) {
       if (error.response?.status === 422) {
         return {
           status: 422,
-          message: error.response?.data?.message || 'Validation failed',
+          message: error.response?.data?.error || 'Validation failed',
           errors: error.response?.data?.errors || {},
           data: null
         }
       }
-      
+      if (error.response?.status === 400) {
+        return {
+          status: 400,
+          message: error.response?.data?.error || 'Validation failed',
+          errors: error.response?.data?.errors || {},
+          data: null
+        }
+      }
       return {
         status: error.response?.status || 500,
         message: error.response?.data?.message || 'An unexpected error occurred',

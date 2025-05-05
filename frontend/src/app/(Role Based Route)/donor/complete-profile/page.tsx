@@ -1,14 +1,15 @@
 'use client'
 
 import { useState } from "react"
-import { useSession } from "next-auth/react"
+
 import { toast } from "sonner"
 import { completeDonorProfile } from '@/actions/donor/donor-complete-profile'
 import DonorProfileForm from "@/components/donor/ProfileFormSteps"
 
 export default function CompleteProfilePage() {
-  const { data: session } = useSession()
+
   const [isGeolocating, setIsGeolocating] = useState(false)
+
 
   // Handle form submission success/error
   // const handleFormAction = (state: any) => {
@@ -38,7 +39,7 @@ export default function CompleteProfilePage() {
         {/* Form Container */}
         <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
           <DonorProfileForm 
-            session={session}
+            
             isGeolocating={isGeolocating}
             setIsGeolocating={setIsGeolocating}
             formAction={completeDonorProfile}

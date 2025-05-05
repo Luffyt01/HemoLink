@@ -8,10 +8,6 @@ const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
-// const inter = Inter({
-//   subsets: ["latin"],
-//   variable: "--font-inter", 
-// })
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -23,7 +19,11 @@ export const metadata: Metadata = {
     default: "HemoLink",
     template: "%s | HemoLink",
   },
-  metadataBase: new URL(process.env.NEXTAUTH_URL || "http://localhost:3000"),
+  metadataBase: new URL(
+    process.env.NEXTAUTH_URL || 
+    process.env.VERCEL_URL || 
+    "http://localhost:3000"
+  ),
   description: "A platform connecting blood donors with hospitals through real-time matching",
 };
 
@@ -34,24 +34,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-         <ClientSessionProvider >
-         <main className="flex-1 overflow-x-hidden md:mt-0">
-                {children}
-                
-              </main>
-              <Toaster
-              richColors
-              position="top-right"
-              toastOptions={{
-                classNames: {
-                  toast: "font-sans",
-                },
-              }}
-            />
-         </ClientSessionProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <ClientSessionProvider>
+          <main className="flex-1 overflow-x-hidden md:mt-0">
+            {children}
+          </main>
+          <Toaster
+            richColors
+            position="top-right"
+            toastOptions={{
+              classNames: {
+                toast: "font-sans",
+              },
+            }}
+          />
+        </ClientSessionProvider>
       </body>
     </html>
   );
