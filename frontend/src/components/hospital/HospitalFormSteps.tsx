@@ -26,6 +26,7 @@ import SubmitButton from "../CommanComponents/SubmitButton"
 import { formSchema, HospitalType } from "./hospitalSchema"
 import { completeHospitalProfile } from "@/actions/Hospital/Hospital-Complete-Profile"
 import { useRouter } from "next/navigation"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 
 // Lazy loaded components
 const LocationPicker = dynamic(() => import("@/components/CommanComponents/location-picker"), {
@@ -43,7 +44,7 @@ interface HospitalProfileFormProps {
 }
 
 export default function HospitalProfileForm({
-  session,
+ 
   isGeolocating,
   setIsGeolocating,
   formAction,
@@ -52,6 +53,8 @@ export default function HospitalProfileForm({
   const [currentStep, setCurrentStep] = useState(1)
   const [state, formActionWithState] = useActionState(completeHospitalProfile, null)
   const router = useRouter()
+  const {session} = useAuthStore();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -61,7 +64,7 @@ export default function HospitalProfileForm({
       establishmentYear: new Date().getFullYear(),
       address: "",
       location: { lat: 28.6139, lng: 77.2090 }, // Default location (India)
-      mainPhone: "",
+      mainPhone: session?.user?.phone || "",
       emergencyPhone: "",
       email: "",
       website: "",
@@ -131,8 +134,8 @@ export default function HospitalProfileForm({
       }
     })
 
-    if (session?.user?.id) {
-      formData.append('userId', session.user.id)
+    if (session?.token) {
+      formData.append('token', session.token)
     }
 
     return formActionWithState(formData)

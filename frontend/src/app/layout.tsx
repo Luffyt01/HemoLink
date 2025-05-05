@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientSessionProvider from "./Provider/ClientSessionProvider";
 import { Toaster } from "sonner";
+import HydrationWrapper from "@/components/CommanComponents/HydrationWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,8 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ClientSessionProvider>
+          <HydrationWrapper>
+
           <main className="flex-1 overflow-x-hidden md:mt-0">
             {children}
           </main>
@@ -47,7 +50,8 @@ export default function RootLayout({
                 toast: "font-sans",
               },
             }}
-          />
+            />
+            </HydrationWrapper>
         </ClientSessionProvider>
       </body>
     </html>

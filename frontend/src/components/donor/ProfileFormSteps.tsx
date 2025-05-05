@@ -25,7 +25,7 @@ import { Textarea } from "../ui/textarea"
 import SubmitButton from "../CommanComponents/SubmitButton"
 import { Card } from "../ui/card"
 import { useRouter } from "next/navigation"
-import { getSession, useSession } from "next-auth/react"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 
 // Lazy loaded components
 const LocationPicker = dynamic(() => import("@/components/CommanComponents/location-picker"), {
@@ -51,6 +51,7 @@ export default  function DonorProfileForm({
   const [currentStep, setCurrentStep] = useState(1)
   const [state, formActionWithState] = useActionState(formAction, null)
   const router = useRouter()
+  const {session } = useAuthStore();
   
 
 
@@ -67,8 +68,9 @@ export default  function DonorProfileForm({
       bloodType: undefined,
       location: { lat: 28.6139, lng: 77.2090 }, // Default location (India)
       isAvailable: true,
-      phone:  "",
+      phone:session?.user?.phone || "",
       emergencyContact: "",
+      
     },
   })
 
@@ -129,8 +131,8 @@ export default  function DonorProfileForm({
       }
     })
 
-    if (session?.user?.id) {
-      formData.append('userId', session.user.id)
+    if (session?.token) {
+      formData.append('token', session?.token)
     }
 
     return formActionWithState(formData)

@@ -3,12 +3,18 @@ import { z } from "zod"
 // Hospital type enum
 export const HospitalType = {
   GENERAL: "General Hospital",
-  SPECIALTY: "Specialty Hospital",
   TEACHING: "Teaching Hospital",
+  SPECIALTY: "Specialty Hospital",
+  CHILDREN: "Children's Hospital",
+  TRAUMA: "Trauma Center",
+  CANCER: "Cancer Center",
+  BLOOD_BANK: "Blood Bank",
   RESEARCH: "Research Hospital",
+  COMMUNITY: "Community Hospital",
   GOVERNMENT: "Government Hospital",
   PRIVATE: "Private Hospital",
-} as const
+  MILITARY: "Military Hospital",
+} as const;
 
 // Form schema
 export const formSchema = z.object({

@@ -16,19 +16,24 @@ export async function completeHospitalProfile(prevState: any, formData: FormData
     // Parse form data into structured object
     const parsedData = {
       hospitalName: formData.get('hospitalName'),
-      licenseNumber: formData.get('licenseNumber'),
+      licenceNumber: formData.get('licenseNumber'),
       hospitalType: formData.get('hospitalType'),
-      establishmentYear: Number(formData.get('establishmentYear')),
+      establishmentYear:{ 
+       value: Number(formData.get('establishmentYear')),
+      } ,
       address: formData.get('address'),
-      location: {
-        lat: Number(formData.get('location[lat]')),
-        lng: Number(formData.get('location[lng]'))
+      serviceArea: { 
+        coordinates: [
+          String(formData.get('location[lat]')), // Explicit string conversion
+          String(formData.get('location[lng]')) 
+        ]
       },
       mainPhone: formData.get('mainPhone'),
-      emergencyPhone: formData.get('emergencyPhone'),
+      emergencyPhoneNo: formData.get('emergencyPhone'),
       email: formData.get('email'),
       website: formData.get('website'),
-      operatingHours: formData.get('operatingHours'),
+      hospitalStatus: formData.get('hospitalStatus'),
+      workingHours: formData.get('operatingHours'),
       description: formData.get('description')
     }
 
