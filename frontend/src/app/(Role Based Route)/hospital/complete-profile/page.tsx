@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useSession } from "next-auth/react";
+
 import { toast } from "sonner";
 
 import HospitalProfileForm from "@/components/hospital/HospitalFormSteps";
 import { completeHospitalProfile } from "@/actions/Hospital/Hospital-Complete-Profile";
 
 export default function CompleteHospitalProfilePage() {
-  const { data: session } = useSession();
+ 
   const [isGeolocating, setIsGeolocating] = useState(false);
 
   // Handle form submission success/error
@@ -44,7 +44,7 @@ export default function CompleteHospitalProfilePage() {
         {/* Form Container */}
         <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
           <HospitalProfileForm
-            session={session}
+          
             isGeolocating={isGeolocating}
             setIsGeolocating={setIsGeolocating}
             formAction={completeHospitalProfile}

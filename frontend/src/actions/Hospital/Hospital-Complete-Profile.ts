@@ -1,5 +1,6 @@
 'use server'
 
+import axios from 'axios';
 import { z } from 'zod'
 
 
@@ -11,24 +12,35 @@ export async function completeHospitalProfile(prevState: any, formData: FormData
   for (const [key, value] of formData.entries()) {
     console.log(key, value)
   }
-
+  interface ServiceArea1 {
+    coordinates: [number, number]; // Tuple of two numbers
+    type: string; // Typically "Point" for GeoJSON
+  }
+  
   try {
     // Parse form data into structured object
     const parsedData = {
       hospitalName: formData.get('hospitalName'),
-      licenseNumber: formData.get('licenseNumber'),
+      licenceNumber: formData.get('licenseNumber'),
       hospitalType: formData.get('hospitalType'),
-      establishmentYear: Number(formData.get('establishmentYear')),
+      establishmentYear:{ 
+       value: Number(formData.get('establishmentYear')),
+       leap:false
+      } ,
       address: formData.get('address'),
-      location: {
-        lat: Number(formData.get('location[lat]')),
-        lng: Number(formData.get('location[lng]'))
-      },
-      mainPhone: formData.get('mainPhone'),
-      emergencyPhone: formData.get('emergencyPhone'),
-      email: formData.get('email'),
+      serviceArea: {
+        coordinates: [
+          Number(formData.get('location[lat]')), // Convert to number
+          Number(formData.get('location[lng]'))  // Convert to number
+        ],
+        type: "Point" // Standard GeoJSON type for point coordinates
+      } as ServiceArea1,
+      // mainPhone: formData.get('mainPhone'),
+      emergencyPhoneNo: formData.get('emergencyPhone'),
+      // email: formData.get('email'),
       website: formData.get('website'),
-      operatingHours: formData.get('operatingHours'),
+      hospitalStatus: formData.get('hospitalStatus'),
+      workingHours: formData.get('operatingHours'),
       description: formData.get('description')
     }
 
@@ -36,15 +48,12 @@ export async function completeHospitalProfile(prevState: any, formData: FormData
 
   
 
-    // Here you would typically save to database
-    // Example:
-    // const hospital = await db.hospital.create({
-    //   data: {
-    //     ...validatedData,
-    //     latitude: validatedData.location.lat,
-    //     longitude: validatedData.location.lng
-    //   }
-    // })
+    const response =axios.post(`${process.env.BACKEND_APP_URL}/hospitals/completeProfile`, parsedData,{
+      headers: {
+        'Authorization': `${formData.get('token')}`,
+        'Content-Type': 'application/json'
+      }
+    })
 
     return { 
       success: true,

@@ -2,7 +2,7 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false,
 
   images: {
     formats: ["image/avif", "image/webp"],
@@ -18,12 +18,7 @@ const nextConfig = {
       },
     ],
   },
-  compiler: {
-    styledComponents: true,
-    removeConsole: {
-      exclude: ['error'],
-    },
-  },
+ 
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -39,6 +34,8 @@ const nextConfig = {
       fileName: false,
       pure: true,
       minify: true,
+    }, removeConsole: {
+      exclude: ['error'],
     },
     // Enable SWC for faster compilation (replaces Babel)
     emotion: true,

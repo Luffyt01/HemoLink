@@ -25,6 +25,7 @@ import { Textarea } from "../ui/textarea"
 import SubmitButton from "../CommanComponents/SubmitButton"
 import { Card } from "../ui/card"
 import { useRouter } from "next/navigation"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 
 // Lazy loaded components
 const LocationPicker = dynamic(() => import("@/components/CommanComponents/location-picker"), {
@@ -33,15 +34,15 @@ const LocationPicker = dynamic(() => import("@/components/CommanComponents/locat
 })
 
 interface DonorProfileFormProps {
-  session: any
+  // session: any
   isGeolocating: boolean
   setIsGeolocating: (value: boolean) => void
   formAction: (formData: FormData) => Promise<any>
   // onFormAction: (state: any) => any
 }
 
-export default function DonorProfileForm({
-  session,
+export default  function DonorProfileForm({
+  
   isGeolocating,
   setIsGeolocating,
   formAction,
@@ -49,8 +50,15 @@ export default function DonorProfileForm({
 }: DonorProfileFormProps) {
   const [currentStep, setCurrentStep] = useState(1)
   const [state, formActionWithState] = useActionState(formAction, null)
-    const router = useRouter()
+  const router = useRouter()
+  const {session } = useAuthStore();
   
+
+
+ 
+
+  
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -60,8 +68,9 @@ export default function DonorProfileForm({
       bloodType: undefined,
       location: { lat: 28.6139, lng: 77.2090 }, // Default location (India)
       isAvailable: true,
-      phone: "",
+      phone:session?.user?.phone || "",
       emergencyContact: "",
+      
     },
   })
 
@@ -82,7 +91,7 @@ export default function DonorProfileForm({
           icon: <CheckCircle2 className="text-green-500" />,
         })
         // Redirect to the dashboard or another page
-        router.push("/hospital/dashboard")
+        router.push("/donor/dashboard")
 
       }
     }
@@ -122,8 +131,8 @@ export default function DonorProfileForm({
       }
     })
 
-    if (session?.user?.id) {
-      formData.append('userId', session.user.id)
+    if (session?.token) {
+      formData.append('token', session?.token)
     }
 
     return formActionWithState(formData)
