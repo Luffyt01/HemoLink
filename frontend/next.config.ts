@@ -34,8 +34,6 @@ const nextConfig = {
       fileName: false,
       pure: true,
       minify: true,
-    }, removeConsole: {
-      exclude: ['error'],
     },
     // Enable SWC for faster compilation (replaces Babel)
     emotion: true,

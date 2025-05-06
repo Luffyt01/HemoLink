@@ -1,9 +1,10 @@
 // components/HydrationWrapper.tsx
 'use client';
 
-import { useHydrationStore } from '@/lib/hydration';
+
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useHydrationStore } from '@/lib/hydration';
 
 export default function HydrationWrapper({ 
   children 

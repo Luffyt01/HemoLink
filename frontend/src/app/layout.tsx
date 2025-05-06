@@ -5,6 +5,7 @@ import ClientSessionProvider from "./Provider/ClientSessionProvider";
 import { Toaster } from "sonner";
 import HydrationWrapper from "@/components/CommanComponents/HydrationWrapper";
 
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -33,6 +34,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
