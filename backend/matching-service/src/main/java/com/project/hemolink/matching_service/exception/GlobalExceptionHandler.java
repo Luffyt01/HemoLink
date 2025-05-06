@@ -1,10 +1,18 @@
 package com.project.hemolink.matching_service.exception;
 
-
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -27,11 +35,110 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(DonorNotAvailableException.class)
-    public ResponseEntity<ApiError> handleDonorNotAvailableException(DonorNotAvailableException e){
-        ApiError apiError = new ApiError(e.getLocalizedMessage(), HttpStatus.NOT_FOUND);
-        return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiError> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        // Collect all validation errors
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+
+        // Create a formatted error message
+        String errorMessage = "Validation failed: " +
+                errors.entrySet().stream()
+                        .map(entry -> entry.getKey() + " - " + entry.getValue())
+                        .collect(Collectors.joining(", "));
+
+        // Return consistent ApiError response
+        ApiError apiError = new ApiError(errorMessage, HttpStatus.UNPROCESSABLE_ENTITY);
+        return new ResponseEntity<>(apiError, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ApiError> handleInvalidTokenException(InvalidTokenException e){
+        ApiError apiError = new ApiError(e.getLocalizedMessage(), HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
     }
 
 
+
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiError> handleAuthenticationException(AuthenticationException ex) {
+        ApiError apiError = new ApiError(ex.getLocalizedMessage(), HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
+    }
+
+
+
+    @ExceptionHandler(UserOperationException.class)
+    public ResponseEntity<ApiError> handleUserOperationException(UserOperationException ex) {
+        ApiError apiError = new ApiError(ex.getLocalizedMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    }
+
+
+
+    // Fallback handler
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiError> handleGenericException(Exception ex) {
+        ApiError apiError = new ApiError("An unexpected error occurred: " + ex.getMessage(),
+                HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(JsonParseException.class)
+    public ResponseEntity<ApiError> handleJsonParseException(JsonParseException e) {
+        String errorMessage = "Malformed JSON input: " + e.getOriginalMessage();
+        ApiError apiError = new ApiError(errorMessage, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidFormatException.class)
+    public ResponseEntity<ApiError> handleInvalidFormatException(InvalidFormatException e) {
+        String errorMessage = "Invalid value provided for a field. " + e.getOriginalMessage();
+        ApiError apiError = new ApiError(errorMessage, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    }
+
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiError> handleBadCredentialError(BadCredentialsException e){
+        ApiError apiError = new ApiError(e.getLocalizedMessage(), HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(DonationException.class)
+    public ResponseEntity<ApiError> handleDonationException(DonationException ex) {
+        return new ResponseEntity<>(
+                new ApiError(ex.getMessage(), HttpStatus.CONFLICT),
+                HttpStatus.CONFLICT
+        );
+    }
+
+    @ExceptionHandler(RequestExpiredException.class)
+    public ResponseEntity<ApiError> handleRequestExpired(RequestExpiredException ex) {
+        return new ResponseEntity<>(
+                new ApiError(ex.getMessage(), HttpStatus.GONE),
+                HttpStatus.GONE
+        );
+    }
+
+    @ExceptionHandler(MatchConflictException.class)
+    public ResponseEntity<ApiError> handleMatchConflict(MatchConflictException ex) {
+        return new ResponseEntity<>(
+                new ApiError(ex.getMessage(), HttpStatus.CONFLICT),
+                HttpStatus.CONFLICT
+        );
+    }
+
+    @ExceptionHandler(InvalidDonationStatusException.class)
+    public ResponseEntity<ApiError> handleInvalidDonationStatus(InvalidDonationStatusException ex) {
+        return new ResponseEntity<>(
+                new ApiError(ex.getMessage(), HttpStatus.BAD_REQUEST),
+                HttpStatus.BAD_REQUEST
+        );
+    }
 }

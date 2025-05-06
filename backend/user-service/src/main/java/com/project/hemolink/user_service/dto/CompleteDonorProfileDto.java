@@ -27,9 +27,7 @@ public class CompleteDonorProfileDto {
     @Max(value = 65, message = "Donor must be at most 65 years old")
     private Integer age;
 
-    @NotBlank(message = "Emergency contact is required")
-    @Pattern(regexp = "^[+]?[0-9]{10,15}$",
-            message = "Emergency contact must be a valid phone number (10-15 digits)")
+
     private String emergencyContact;
 
     @NotBlank(message = "Address is required")

@@ -42,18 +42,6 @@ public class JwtService {
                 .compact();
     }
 
-//    public String expireTokenImmediately(String token){
-//        Claims claims = parseTokenClaims(token);
-//
-//        return Jwts.builder()
-//                .subject(claims.getSubject())
-//                .claims(claims)
-//                .issuedAt(claims.getIssuedAt())
-//                .expiration(new Date())
-//                .signWith(getSecretKey())
-//                .compact();
-//    }
-
     public long getRemainingValidity (String token){
         Claims claims = parseTokenClaims(token);
         Date expiration = claims.getExpiration();
