@@ -1,7 +1,7 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { useActionState, useEffect, useState } from "react";
+import { startTransition, useActionState, useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
@@ -68,7 +68,7 @@ export default function HospitalProfileForm({
   formAction,
 }: HospitalProfileFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  const [state, formActionWithState] = useActionState(
+  const [state, formActionWithState,isPending] = useActionState(
     completeHospitalProfile,
     null
   );
@@ -133,8 +133,6 @@ export default function HospitalProfileForm({
   // Handle server response
   useEffect(() => {
     if (state) {
-     
-
       if (state.success) {
         toast.success("Hospital profile saved successfully!", {
           icon: <CheckCircle2 className="text-green-500" />,
@@ -199,8 +197,12 @@ export default function HospitalProfileForm({
     if (session?.token) {
       formData.append("token", session.token);
     }
+    console.log("first")
 
-    return formActionWithState(formData);
+  startTransition(() => {
+      formActionWithState(formData);
+    });
+    return;
   };
 
   // Handle step navigation with validation
@@ -773,7 +775,19 @@ export default function HospitalProfileForm({
                 >
                   Edit Information
                 </Button>
-                <SubmitButton />
+                {/* <SubmitButton /> */}
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="bg-gradient-to-r cursor-pointer from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white shadow-md flex-1"
+                  aria-disabled={isPending}
+                >
+                  {isPending ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    "Complete Profile"
+                  )}
+                </Button>
               </div>
             )}
           </div>

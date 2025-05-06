@@ -8,10 +8,7 @@ import { z } from 'zod'
 
 export async function completeHospitalProfile(prevState: any, formData: FormData) {
   // For debugging:
-  console.log('Raw FormData entries:')
-  for (const [key, value] of formData.entries()) {
-    console.log(key, value)
-  }
+
   interface ServiceArea1 {
     coordinates: [number, number]; // Tuple of two numbers
     type: string; // Typically "Point" for GeoJSON
@@ -23,10 +20,7 @@ export async function completeHospitalProfile(prevState: any, formData: FormData
       hospitalName: formData.get('hospitalName'),
       licenceNumber: formData.get('licenseNumber'),
       hospitalType: formData.get('hospitalType'),
-      establishmentYear:{ 
-       value: Number(formData.get('establishmentYear')),
-       leap:false
-      } ,
+      establishmentYear:Number(formData.get('establishmentYear')) ,
       address: formData.get('address'),
       serviceArea: {
         coordinates: [
@@ -44,7 +38,7 @@ export async function completeHospitalProfile(prevState: any, formData: FormData
       description: formData.get('description')
     }
 
-    // console.log('Parsed Data Before Validation:', parsedData)
+    console.log('Parsed Data Before Validation:', parsedData)
 
   
 
@@ -56,11 +50,12 @@ export async function completeHospitalProfile(prevState: any, formData: FormData
     })
 
     return { 
+      status:200,
       success: true,
       message: 'Hospital profile saved successfully' 
     }
   } catch (error) {
-    // console.error('Validation Error:', error)
+    console.error('Validation Error:', error.response?.data)
     
     
     if(error instanceof axios.AxiosError) {
