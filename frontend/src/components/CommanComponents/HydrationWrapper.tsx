@@ -1,45 +1,30 @@
 // components/HydrationWrapper.tsx
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useHydrationStore } from '@/lib/hydration'
-import { usePathname, useSearchParams } from 'next/navigation'
+
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useHydrationStore } from '@/lib/hydration';
 
 export default function HydrationWrapper({ 
   children 
 }: { 
   children: React.ReactNode 
 }) {
-  const { _hasHydrated, setHydrated } = useHydrationStore()
-  const [showLoader, setShowLoader] = useState(true)
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const { _hasHydrated, setHydrated } = useHydrationStore();
+  const [showLoader, setShowLoader] = useState(true);
   
   useEffect(() => {
-    // Skip hydration if already hydrated or not on client side
-    if (_hasHydrated || typeof window === 'undefined') {
-      setShowLoader(false)
-      return
-    }
-
-    // Check if this is the initial page load
-    const isInitialLoad = performance.navigation.type === performance.navigation.TYPE_NAVIGATE ||
-                         performance.navigation.type === performance.navigation.TYPE_RELOAD
-
-    if (isInitialLoad) {
+    if (!_hasHydrated) {
+      // Simulate loading delay (remove in production)
       const timer = setTimeout(() => {
-        setHydrated(true)
-        setShowLoader(false)
-      }, 1500) // Adjust timing as needed
+        setHydrated(true);
+        setShowLoader(false);
+      }, 1500); // Adjust timing as needed
       
-      return () => clearTimeout(timer)
-    } else {
-      // For client-side navigation, skip loading
-      setHydrated(true)
-      setShowLoader(false)
+      return () => clearTimeout(timer);
     }
-  }, [_hasHydrated, setHydrated, pathname, searchParams])
+  }, [_hasHydrated, setHydrated]);
 
   return (
     <>
@@ -84,10 +69,18 @@ export default function HydrationWrapper({
         )}
       </AnimatePresence>
 
-      {/* Always render children but control visibility */}
-      <div className={showLoader ? 'invisible' : 'visible'}>
-        {children}
-      </div>
+      <AnimatePresence>
+        {!_hasHydrated ? null : (
+          <motion.div
+            key="content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            {children}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
-  )
+  );
 }
