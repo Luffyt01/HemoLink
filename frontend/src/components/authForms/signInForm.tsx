@@ -275,7 +275,7 @@ const SubmitButton = ({ isLoading }: { isLoading: boolean }) => (
     disabled={isLoading}
     whileHover={{ scale: 1.01 }}
     whileTap={{ scale: 0.99 }}
-    className={`w-full h-12 rounded-xl bg-gradient-to-r mt-2 from-rose-600 to-red-600 text-white font-medium shadow-md hover:shadow-lg transition-all duration-300 ${
+    className={`w-full h-12 cursor-pointer  rounded-xl bg-gradient-to-r mt-2 from-rose-600 to-red-600 text-white font-medium shadow-md hover:shadow-lg transition-all duration-300 ${
       isLoading ? "opacity-75" : "hover:from-rose-700 hover:to-red-700"
     }`}
   >
@@ -352,7 +352,7 @@ const GoogleSignInButton = ({
     <Button
       variant="outline"
       onClick={onClick}
-      className="w-full h-12 rounded-xl border-gray-300 hover:bg-rose-50 transition-colors duration-200"
+      className="w-full cursor-pointer h-12 rounded-xl border-gray-300 hover:bg-rose-50 transition-colors duration-200"
       disabled={pending}
     >
       <GoogleSubmitBtn pending={pending} />

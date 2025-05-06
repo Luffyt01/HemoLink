@@ -76,7 +76,7 @@ export default function SignupForm({
       toast.success(state.message || "Account created successfully")
       setTimeout(() => {
         router.push('/signIn') // or your login route
-      }, 900) //  .9 second delay to let user see the success message
+      }, 700) //  .9 second delay to let user see the success message
     }
   }, [state])
 
@@ -278,7 +278,7 @@ export default function SignupForm({
       <Button
         variant="outline"
         onClick={onGoogleSignIn}
-        className="w-full h-12 rounded-xl cursor-pointer border-gray-300 hover:bg-rose-50"
+        className="w-full h-12 cursor-pointer  rounded-xl  border-gray-300 hover:bg-rose-50"
         disabled={googlePending}
       >
         <GoogleSubmitBtn
@@ -315,7 +315,7 @@ function SubmitButton() {
       whileTap={{ scale: 0.99 }}
     >
       {pending ? (
-        <span className="flex items-center justify-center gap-2">
+        <span className="flex items-center cursor-pointer  justify-center gap-2">
           <svg
             className="animate-spin h-5 w-5 text-white"
             xmlns="http://www.w3.org/2000/svg"
