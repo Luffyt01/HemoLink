@@ -6,6 +6,8 @@ import com.project.hemolink.matching_service.entities.Donation;
 import com.project.hemolink.matching_service.entities.enums.DonationStatus;
 import com.project.hemolink.matching_service.entities.enums.RequestStatus;
 import com.project.hemolink.matching_service.exception.BadRequestException;
+import com.project.hemolink.matching_service.exception.InvalidDonationStatusException;
+import com.project.hemolink.matching_service.exception.RequestExpiredException;
 import com.project.hemolink.matching_service.exception.ResourceNotFoundException;
 import com.project.hemolink.matching_service.repositories.BloodRequestRepository;
 import com.project.hemolink.matching_service.repositories.DonationRepository;
@@ -37,7 +39,11 @@ public class DonationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Donation not found with id: "+donationId));
 
         if (donation.getStatus() == status) {
-            throw new BadRequestException("Status already set to "+ status);
+            throw new InvalidDonationStatusException("Status already set to " + status);
+        }
+
+        if (status == DonationStatus.COMPLETED && donation.getRequest().getStatus() == RequestStatus.EXPIRED) {
+            throw new RequestExpiredException("Cannot complete donation for expired request");
         }
 
         if (status == DonationStatus.COMPLETED){
