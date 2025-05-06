@@ -5,8 +5,8 @@ import { Loader2 } from "lucide-react"
 import { useFormStatus } from 'react-dom'
 
 export default function SubmitButton() {
-  const { pending } = useFormStatus()
-  
+  const { pending } = useFormStatus();
+  console.log(pending)
   return (
     <Button
       type="submit"

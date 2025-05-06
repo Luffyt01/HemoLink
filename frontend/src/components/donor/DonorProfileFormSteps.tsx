@@ -55,7 +55,7 @@ export default function DonorProfileForm({
   formAction,
 }: DonorProfileFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  const [state, formActionWithState] = useActionState(formAction, null);
+  const [state, formActionWithState,isPending] = useActionState(formAction, null);
   const router = useRouter();
   const { session } = useAuthStore();
   const [locationState, setLocationState] = useState({
@@ -63,6 +63,7 @@ export default function DonorProfileForm({
     lng: 77.209,
     address: "",
   });
+  
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -541,7 +542,19 @@ export default function DonorProfileForm({
                 >
                   Edit Information
                 </Button>
-                <SubmitButton />
+                {/* <SubmitButton /> */}
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="bg-gradient-to-r cursor-pointer from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white shadow-md flex-1"
+                  aria-disabled={isPending}
+                >
+                  {isPending ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    "Complete Profile"
+                  )}
+                </Button>
               </div>
             )}
           </div>
