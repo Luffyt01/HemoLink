@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import { useForm } from "react-hook-form"
-import { useActionState, useEffect, useState } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
+import { useForm } from "react-hook-form";
+import { useActionState, useEffect, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
 import {
   Form,
@@ -13,32 +13,53 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Button } from "@/components/ui/button"
-import { MapPin, Loader2, CheckCircle2, Clock, Building2, Mail, Phone, Globe, AlertCircle } from "lucide-react"
-import dynamic from "next/dynamic"
-import { toast } from "sonner"
-import { Textarea } from "../ui/textarea"
-import { Card } from "../ui/card"
-import SubmitButton from "../CommanComponents/SubmitButton"
-import { formSchema, HospitalType } from "./hospitalSchema"
-import { completeHospitalProfile } from "@/actions/Hospital/Hospital-Complete-Profile"
-import { useRouter } from "next/navigation"
-import { useAuthStore } from "@/lib/stores/useAuthStore"
-import { Badge } from "../ui/badge"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import {
+  MapPin,
+  Loader2,
+  CheckCircle2,
+  Clock,
+  Building2,
+  Mail,
+  Phone,
+  Globe,
+  AlertCircle,
+} from "lucide-react";
+import dynamic from "next/dynamic";
+import { toast } from "sonner";
+import { Textarea } from "../ui/textarea";
+import { Card } from "../ui/card";
+import SubmitButton from "../CommanComponents/SubmitButton";
+import { formSchema, HospitalType } from "./hospitalSchema";
+import { completeHospitalProfile } from "@/actions/Hospital/Hospital-Complete-Profile";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/lib/stores/useAuthStore";
+import { Badge } from "../ui/badge";
 
 // Lazy loaded components
-const LocationPicker = dynamic(() => import("@/components/CommanComponents/location-picker"), {
-  ssr: false,
-  loading: () => <div className="h-[300px] bg-gray-100 rounded-lg animate-pulse" />
-})
+const LocationPicker = dynamic(
+  () => import("@/components/CommanComponents/location-picker"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[300px] bg-gray-100 rounded-lg animate-pulse" />
+    ),
+  }
+);
 
 interface HospitalProfileFormProps {
-  isGeolocating: boolean
-  setIsGeolocating: (value: boolean) => void
-  formAction: (formData: FormData) => Promise<any>
+  isGeolocating: boolean;
+  setIsGeolocating: (value: boolean) => void;
+  formAction: (formData: FormData) => Promise<any>;
 }
 
 export default function HospitalProfileForm({
@@ -46,11 +67,18 @@ export default function HospitalProfileForm({
   setIsGeolocating,
   formAction,
 }: HospitalProfileFormProps) {
-  const [currentStep, setCurrentStep] = useState(1)
-  const [state, formActionWithState] = useActionState(completeHospitalProfile, null)
-  const router = useRouter()
-  const { session } = useAuthStore()
-
+  const [currentStep, setCurrentStep] = useState(1);
+  const [state, formActionWithState] = useActionState(
+    completeHospitalProfile,
+    null
+  );
+  const router = useRouter();
+  const { session } = useAuthStore();
+  const [locationState, setLocationState] = useState({
+    lat: 28.6139,
+    lng: 77.209,
+    address: "",
+  });
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,132 +87,166 @@ export default function HospitalProfileForm({
       hospitalType: undefined,
       establishmentYear: new Date().getFullYear(),
       address: "",
-      location: { lat: 28.6139, lng: 77.2090 },
+      location: { lat: 28.6139, lng: 77.209 },
       mainPhone: session?.user?.phone || "",
       emergencyPhone: "",
       email: session?.user?.email || "",
       website: "",
       operatingHours: "24/7",
       description: "",
-      hospitalStatus: "OPENED"
+      hospitalStatus: "OPENED",
     },
-  })
+  });
+  useEffect(() => {
+    if (locationState.address) {
+      form.setValue("address", locationState.address, { shouldValidate: true });
+    }
+    form.setValue(
+      "location",
+      { lat: locationState.lat, lng: locationState.lng },
+      { shouldValidate: true }
+    );
+  }, [locationState, form]);
 
   // Status options with icons and colors
   const statusOptions = [
-    { 
-      value: "OPENED", 
-      label: "Open", 
+    {
+      value: "OPENED",
+      label: "Open",
       icon: <CheckCircle2 className="w-4 h-4 text-green-500" />,
-      color: "bg-green-100 text-green-800 hover:bg-green-200"
+      color: "bg-green-100 text-green-800 hover:bg-green-200",
     },
-    { 
-      value: "CLOSED", 
-      label: "Temporarily Closed", 
+    {
+      value: "CLOSED",
+      label: "Temporarily Closed",
       icon: <AlertCircle className="w-4 h-4 text-red-500" />,
-      color: "bg-red-100 text-red-800 hover:bg-red-200"
+      color: "bg-red-100 text-red-800 hover:bg-red-200",
     },
-    { 
-      value: "UNDER_MAINTENANCE", 
-      label: "Under Maintenance", 
+    {
+      value: "UNDER_MAINTENANCE",
+      label: "Under Maintenance",
       icon: <Clock className="w-4 h-4 text-yellow-500" />,
-      color: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-    }
-  ]
+      color: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
+    },
+  ];
 
   // Handle server response
   useEffect(() => {
     if (state) {
-      if (state.fieldErrors) {
-        Object.entries(state.fieldErrors).forEach(([field, message]) => {
-          form.setError(field as any, { type: 'server', message: Array.isArray(message) ? message.join(", ") : message })
-        })
-      }
-      
+     
+
       if (state.success) {
         toast.success("Hospital profile saved successfully!", {
           icon: <CheckCircle2 className="text-green-500" />,
-        })
-        router.push("/hospital/dashboard")
+        });
+        router.push("/hospital/dashboard");
+      }
+      if (!state.success && state.error) {
+        toast.error(state.error, {
+          icon: <Loader2 className="text-red-500" />,
+        });
       }
     }
-  }, [state, form, router])
+  }, [state, form, router]);
 
   // Auto-detect location
   const handleDetectLocation = () => {
-    setIsGeolocating(true)
+    setIsGeolocating(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        form.setValue('location', {
+        const newLocation = {
           lat: position.coords.latitude,
-          lng: position.coords.longitude
-        }, { shouldValidate: true, shouldDirty: true })
-        setIsGeolocating(false)
-        toast.success("Location detected successfully")
+          lng: position.coords.longitude,
+          address: locationState.address, // Preserve existing address
+        };
+        setLocationState(newLocation);
+        setIsGeolocating(false);
+        toast.success("Location detected successfully");
       },
       (error) => {
-        toast.error("Could not detect your location. Please select manually.")
-        setIsGeolocating(false)
+        toast.error("Could not detect your location. Please select manually.");
+        setIsGeolocating(false);
       }
-    )
-  }
+    );
+  };
+  useEffect(() => {
+    if (locationState.address) {
+      form.setValue("address", locationState.address, { shouldValidate: true });
+    }
+    form.setValue(
+      "location",
+      {
+        lat: locationState.lat,
+        lng: locationState.lng,
+      },
+      { shouldValidate: true }
+    );
+  }, [locationState, form]);
 
   // Handle form submission
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    const formData = new FormData()
-    
+    const formData = new FormData();
+
     Object.entries(values).forEach(([key, value]) => {
-      if (key === 'location') {
-        formData.append('location[lat]', value.lat.toString())
-        formData.append('location[lng]', value.lng.toString())
+      if (key === "location") {
+        formData.append("location[lat]", value.lat.toString());
+        formData.append("location[lng]", value.lng.toString());
       } else {
-        formData.append(key, value?.toString() ?? '')
+        formData.append(key, value?.toString() ?? "");
       }
-    })
+    });
 
     if (session?.token) {
-      formData.append('token', session.token)
+      formData.append("token", session.token);
     }
 
-    return formActionWithState(formData)
-  }
+    return formActionWithState(formData);
+  };
 
   // Handle step navigation with validation
   const handleNextStep = async () => {
-    const fields = currentStep === 1 
-      ? ['hospitalName', 'licenseNumber', 'hospitalType', 'establishmentYear'] 
-      : ['address', 'location', 'mainPhone', 'emergencyPhone', 'email', 'operatingHours']
-    
-    const isValid = await form.trigger(fields as any)
+    const fields =
+      currentStep === 1
+        ? ["hospitalName", "licenseNumber", "hospitalType", "establishmentYear"]
+        : [
+            "address",
+            "location",
+            "mainPhone",
+            "emergencyPhone",
+            "email",
+            "operatingHours",
+          ];
+
+    const isValid = await form.trigger(fields as any);
     if (isValid) {
-      setCurrentStep(currentStep + 1)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      setCurrentStep(currentStep + 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      toast.error("Please fill all required fields correctly")
+      toast.error("Please fill all required fields correctly");
     }
-  }
+  };
 
   // Form field configurations
   const step1Fields = [
-    { 
-      name: "hospitalName", 
-      label: "Hospital Name", 
-      type: "text", 
+    {
+      name: "hospitalName",
+      label: "Hospital Name",
+      type: "text",
       placeholder: "City General Hospital",
       description: "Official name of your hospital",
-      icon: <Building2 className="w-4 h-4" />
+      icon: <Building2 className="w-4 h-4" />,
     },
-    { 
-      name: "licenseNumber", 
-      label: "License Number", 
-      type: "text", 
+    {
+      name: "licenseNumber",
+      label: "License Number",
+      type: "text",
       placeholder: "MH-12345-2023",
       description: "Government issued hospital license number",
-      icon: <CheckCircle2 className="w-4 h-4" />
+      icon: <CheckCircle2 className="w-4 h-4" />,
     },
-    { 
-      name: "hospitalType", 
-      label: "Hospital Type", 
+    {
+      name: "hospitalType",
+      label: "Hospital Type",
       type: "select",
       description: "Select the type of your hospital",
       icon: <Building2 className="w-4 h-4" />,
@@ -195,18 +257,22 @@ export default function HospitalProfileForm({
           </SelectTrigger>
           <SelectContent className="bg-white">
             {Object.values(HospitalType).map((type) => (
-              <SelectItem key={type} value={type} className="hover:bg-blue-50 focus:bg-blue-50">
+              <SelectItem
+                key={type}
+                value={type}
+                className="hover:bg-blue-50 focus:bg-blue-50"
+              >
                 {type}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-      )
+      ),
     },
-    { 
-      name: "establishmentYear", 
-      label: "Establishment Year", 
-      type: "number", 
+    {
+      name: "establishmentYear",
+      label: "Establishment Year",
+      type: "number",
       description: "Year when the hospital was established",
       render: ({ field }: any) => (
         <Input
@@ -217,9 +283,9 @@ export default function HospitalProfileForm({
           onChange={(e) => field.onChange(parseInt(e.target.value))}
           className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500"
         />
-      )
-    }
-  ]
+      ),
+    },
+  ];
 
   const step2Fields = [
     {
@@ -229,7 +295,7 @@ export default function HospitalProfileForm({
       placeholder: "123 Medical Street, Health District, City, Postal Code",
       description: "Complete physical address of the hospital",
       icon: <MapPin className="w-4 h-4" />,
-      props: { rows: 3 }
+      props: { rows: 3 },
     },
     {
       name: "location",
@@ -241,7 +307,7 @@ export default function HospitalProfileForm({
         <div className="space-y-2">
           <div className="flex justify-between items-center">
             <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
-              <MapPin className="w-4 h-4" /> 
+              <MapPin className="w-4 h-4" />
               {field.label}
             </FormLabel>
             <Button
@@ -252,18 +318,28 @@ export default function HospitalProfileForm({
               disabled={isGeolocating}
               className="text-xs"
             >
-              {isGeolocating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Auto-detect"}
+              {isGeolocating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Auto-detect"
+              )}
             </Button>
           </div>
           <LocationPicker
             onLocationChange={(location) => {
-              field.onChange(location)
-              form.setValue('address', location.address || '', { shouldValidate: true })
+              setLocationState({
+                lat: location.lat,
+                lng: location.lng,
+                address: location.address || "",
+              });
             }}
-            initialLocation={field.value}
+            initialLocation={{
+              lat: locationState.lat,
+              lng: locationState.lng,
+            }}
           />
         </div>
-      )
+      ),
     },
     {
       name: "mainPhone",
@@ -281,7 +357,7 @@ export default function HospitalProfileForm({
           readOnly
           disabled
         />
-      )
+      ),
     },
     {
       name: "emergencyPhone",
@@ -289,7 +365,7 @@ export default function HospitalProfileForm({
       type: "tel",
       placeholder: "+91 9876543210",
       description: "24/7 emergency contact number",
-      icon: <Phone className="w-4 h-4 text-red-500" />
+      icon: <Phone className="w-4 h-4 text-red-500" />,
     },
     {
       name: "email",
@@ -307,7 +383,7 @@ export default function HospitalProfileForm({
           readOnly
           disabled
         />
-      )
+      ),
     },
     {
       name: "website",
@@ -315,7 +391,7 @@ export default function HospitalProfileForm({
       type: "url",
       placeholder: "https://www.hospitalname.com",
       description: "Official website (if available)",
-      icon: <Globe className="w-4 h-4" />
+      icon: <Globe className="w-4 h-4" />,
     },
     {
       name: "operatingHours",
@@ -323,9 +399,9 @@ export default function HospitalProfileForm({
       type: "text",
       placeholder: "24/7 or 9:00 AM - 9:00 PM",
       description: "Regular operating hours of the hospital",
-      icon: <Clock className="w-4 h-4" />
-    }
-  ]
+      icon: <Clock className="w-4 h-4" />,
+    },
+  ];
 
   const step3Fields = [
     {
@@ -341,8 +417,8 @@ export default function HospitalProfileForm({
           </SelectTrigger>
           <SelectContent className="bg-white">
             {statusOptions.map((status) => (
-              <SelectItem 
-                key={status.value} 
+              <SelectItem
+                key={status.value}
                 value={status.value}
                 className={status.color}
               >
@@ -354,25 +430,26 @@ export default function HospitalProfileForm({
             ))}
           </SelectContent>
         </Select>
-      )
+      ),
     },
     {
       name: "description",
       label: "Hospital Description",
       type: "textarea",
-      placeholder: "Brief description about your hospital, specialties, facilities...",
+      placeholder:
+        "Brief description about your hospital, specialties, facilities...",
       description: "This will be displayed on your public profile",
       icon: <Building2 className="w-4 h-4" />,
-      props: { rows: 5 }
-    }
-  ]
+      props: { rows: 5 },
+    },
+  ];
 
   return (
     <div className="max-w-3xl mx-auto my-3">
       {/* Progress Bar */}
       <div className="h-2 bg-gray-100 mb-6 rounded-full">
-        <div 
-          className="h-full bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-500 ease-out rounded-full" 
+        <div
+          className="h-full bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-500 ease-out rounded-full"
           style={{ width: `${(currentStep / 3) * 100}%` }}
         />
       </div>
@@ -382,9 +459,13 @@ export default function HospitalProfileForm({
           {/* Step Indicators */}
           <div className="flex justify-center gap-4 mb-8">
             {[1, 2, 3].map((step) => (
-              <div 
-                key={step} 
-                className={`flex items-center justify-center w-8 h-8 rounded-full ${currentStep >= step ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-500'}`}
+              <div
+                key={step}
+                className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                  currentStep >= step
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-100 text-gray-500"
+                }`}
                 onClick={() => currentStep > step && setCurrentStep(step)}
               >
                 {step}
@@ -398,19 +479,19 @@ export default function HospitalProfileForm({
               control={form.control}
               name="hospitalStatus"
               render={({ field }) => (
-                <Badge 
-                  variant="outline" 
+                <Badge
+                  variant="outline"
                   className={`px-3 py-1 text-sm ${
-                    field.value === "OPENED" 
-                      ? "bg-green-100 text-green-800 border-green-200" 
-                      : field.value === "CLOSED" 
-                        ? "bg-red-100 text-red-800 border-red-200" 
-                        : "bg-yellow-100 text-yellow-800 border-yellow-200"
+                    field.value === "OPENED"
+                      ? "bg-green-100 text-green-800 border-green-200"
+                      : field.value === "CLOSED"
+                      ? "bg-red-100 text-red-800 border-red-200"
+                      : "bg-yellow-100 text-yellow-800 border-yellow-200"
                   }`}
                 >
-                  {statusOptions.find(s => s.value === field.value)?.icon}
+                  {statusOptions.find((s) => s.value === field.value)?.icon}
                   <span className="ml-1">
-                    {statusOptions.find(s => s.value === field.value)?.label}
+                    {statusOptions.find((s) => s.value === field.value)?.label}
                   </span>
                 </Badge>
               )}
@@ -436,7 +517,9 @@ export default function HospitalProfileForm({
                         {field.label}
                       </FormLabel>
                       <FormControl>
-                        {field.render ? field.render({ field: formField }) : (
+                        {field.render ? (
+                          field.render({ field: formField })
+                        ) : (
                           <Input
                             type={field.type}
                             placeholder={field.placeholder}
@@ -479,22 +562,22 @@ export default function HospitalProfileForm({
                         </FormLabel>
                       )}
                       <FormControl>
-                        {field.render ? field.render({ field: formField }) : (
-                          field.type === "textarea" ? (
-                            <Textarea
-                              placeholder={field.placeholder}
-                              {...formField}
-                              className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500"
-                              rows={field.props?.rows || 3}
-                            />
-                          ) : (
-                            <Input
-                              type={field.type}
-                              placeholder={field.placeholder}
-                              {...formField}
-                              className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500"
-                            />
-                          )
+                        {field.render ? (
+                          field.render({ field: formField })
+                        ) : field.type === "textarea" ? (
+                          <Textarea
+                            placeholder={field.placeholder}
+                            {...formField}
+                            className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500"
+                            rows={field.props?.rows || 3}
+                          />
+                        ) : (
+                          <Input
+                            type={field.type}
+                            placeholder={field.placeholder}
+                            {...formField}
+                            className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500"
+                          />
                         )}
                       </FormControl>
                       {field.description && (
@@ -517,7 +600,7 @@ export default function HospitalProfileForm({
                 <CheckCircle2 className="w-5 h-5" />
                 Review & Additional Information
               </h2>
-              
+
               {/* Status Section */}
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
                 <div className="flex items-center justify-between">
@@ -534,14 +617,17 @@ export default function HospitalProfileForm({
                     control={form.control}
                     name="hospitalStatus"
                     render={({ field }) => (
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <SelectTrigger className="w-[200px] bg-white">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-white">
                           {statusOptions.map((status) => (
-                            <SelectItem 
-                              key={status.value} 
+                            <SelectItem
+                              key={status.value}
                               value={status.value}
                               className={status.color}
                             >
@@ -559,41 +645,47 @@ export default function HospitalProfileForm({
               </div>
 
               {/* Additional Fields */}
-              {step3Fields.filter(f => f.name !== "hospitalStatus").map((field) => (
-                <FormField
-                  key={field.name}
-                  control={form.control}
-                  name={field.name as keyof z.infer<typeof formSchema>}
-                  render={({ field: formField }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
-                        {field.icon}
-                        {field.label}
-                      </FormLabel>
-                      <FormControl>
-                        {field.render ? field.render({ field: formField }) : (
-                          <Textarea
-                            placeholder={field.placeholder}
-                            {...formField}
-                            className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500 min-h-[120px]"
-                            rows={field.props?.rows || 5}
-                          />
+              {step3Fields
+                .filter((f) => f.name !== "hospitalStatus")
+                .map((field) => (
+                  <FormField
+                    key={field.name}
+                    control={form.control}
+                    name={field.name as keyof z.infer<typeof formSchema>}
+                    render={({ field: formField }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
+                          {field.icon}
+                          {field.label}
+                        </FormLabel>
+                        <FormControl>
+                          {field.render ? (
+                            field.render({ field: formField })
+                          ) : (
+                            <Textarea
+                              placeholder={field.placeholder}
+                              {...formField}
+                              className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                              rows={field.props?.rows || 5}
+                            />
+                          )}
+                        </FormControl>
+                        {field.description && (
+                          <FormDescription className="text-gray-500 text-sm">
+                            {field.description}
+                          </FormDescription>
                         )}
-                      </FormControl>
-                      {field.description && (
-                        <FormDescription className="text-gray-500 text-sm">
-                          {field.description}
-                        </FormDescription>
-                      )}
-                      <FormMessage className="text-red-500 text-sm" />
-                    </FormItem>
-                  )}
-                />
-              ))}
+                        <FormMessage className="text-red-500 text-sm" />
+                      </FormItem>
+                    )}
+                  />
+                ))}
 
               {/* Summary Section */}
               <div className="bg-green-50 p-4 rounded-lg border border-green-100">
-                <h3 className="font-medium text-green-800">Review Your Information</h3>
+                <h3 className="font-medium text-green-800">
+                  Review Your Information
+                </h3>
                 <p className="text-green-600 text-sm mt-1">
                   Please verify all details before submitting
                 </p>
@@ -602,8 +694,13 @@ export default function HospitalProfileForm({
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {Object.entries(form.getValues()).map(([key, value]) => {
-                    if (key === 'location' || key === "description" ||key === "hospitalStatus" ) return null
-                    
+                    if (
+                      key === "location" ||
+                      key === "description" ||
+                      key === "hospitalStatus"
+                    )
+                      return null;
+
                     // if (key === "hospitalStatus") {
                     //   const status = statusOptions.find(s => s.value === value)
                     //   return (
@@ -626,13 +723,17 @@ export default function HospitalProfileForm({
                     return (
                       <div key={key} className="bg-gray-50 p-3 rounded">
                         <p className="text-sm font-medium text-gray-500 capitalize">
-                          {key.replace(/([A-Z])/g, ' $1').replace('hospital ', '')}
+                          {key
+                            .replace(/([A-Z])/g, " $1")
+                            .replace("hospital ", "")}
                         </p>
                         <p className="text-gray-800">
-                          {value?.toString() || <span className="text-gray-400">Not provided</span>}
+                          {value?.toString() || (
+                            <span className="text-gray-400">Not provided</span>
+                          )}
                         </p>
                       </div>
-                    )
+                    );
                   })}
                 </div>
               </div>
@@ -679,5 +780,5 @@ export default function HospitalProfileForm({
         </form>
       </Form>
     </div>
-  )
+  );
 }

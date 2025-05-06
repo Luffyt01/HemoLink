@@ -50,7 +50,7 @@ export default function LocationPicker({
         
         const mapInstance = new google.maps.Map(mapRef.current, {
           center: initialCoords,
-          zoom: 5, // Zoom out to show more of India
+          zoom: 8, // Zoom out to show more of India
           streetViewControl: false,
           mapTypeControl: false,
           fullscreenControl: false,

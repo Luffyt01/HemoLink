@@ -44,13 +44,13 @@ export async function completeHospitalProfile(prevState: any, formData: FormData
       description: formData.get('description')
     }
 
-    console.log('Parsed Data Before Validation:', parsedData)
+    // console.log('Parsed Data Before Validation:', parsedData)
 
   
 
-    const response =axios.post(`${process.env.BACKEND_APP_URL}/hospitals/completeProfile`, parsedData,{
+    const response = await axios.post(`${process.env.BACKEND_APP_URL}/hospitals/completeProfile`, parsedData,{
       headers: {
-        'Authorization': `${formData.get('token')}`,
+        'Authorization': `Bearer ${formData.get('token')}`,
         'Content-Type': 'application/json'
       }
     })
@@ -60,19 +60,44 @@ export async function completeHospitalProfile(prevState: any, formData: FormData
       message: 'Hospital profile saved successfully' 
     }
   } catch (error) {
-    console.error('Validation Error:', error)
+    // console.error('Validation Error:', error)
     
-    if (error instanceof z.ZodError) {
-      // Format Zod errors into a more usable structure
-      const fieldErrors = error.flatten().fieldErrors
-      return { 
-        success: false,
-        error: 'Validation failed',
-        fieldErrors,
-        message: 'Please correct the errors in the form'
+    
+    if(error instanceof axios.AxiosError) {
+      
+      if(error?.response?.data.statusCode === 'PRECONDITION_FAILED'){
+        return { 
+          success: false,
+          status: 400,
+          error: error?.response?.data?.error.split(':')[0] || 'Network error',
+          details: error?.response?.data 
+        }
+      }
+      if(error?.response?.data.statusCode === 'UNAUTHORIZED' ){
+        return { 
+          status: 401,
+          success: false,
+          error: error?.response?.data?.error.split(':')[0] || 'Network error',
+          details: error?.response?.data 
+        }
+      }
+      if(error?.response?.data.statusCode === 'FORBIDDEN'){
+        return { 
+          status: 403,
+          success: false,
+          error: error?.response?.data?.error.split(':')[0] || 'Network error',
+          details: error?.response?.data 
+        }
+      }
+      if(error?.response?.data.statusCode === 'NOT_FOUND'){
+        return { 
+          status: 404,
+          success: false,
+          error: error?.response?.data?.error.split(':')[0] || 'Network error',
+          details: error?.response?.data 
+        }
       }
     }
-    
     return { 
       success: false,
       error: error instanceof Error ? error.message : 'Something went wrong',

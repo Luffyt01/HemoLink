@@ -1,6 +1,7 @@
 'use server'
 
 import axios from 'axios'
+import { stat } from 'fs'
 import { z } from 'zod'
 
 export async function completeDonorProfile(prevState: any, formData: FormData) {
@@ -8,6 +9,7 @@ export async function completeDonorProfile(prevState: any, formData: FormData) {
   // for (const [key, value] of formData.entries()) {
   //   console.log(key, value)
   // }
+  // console.log("dddddddddddddddddddddddddddddddddddddddddddddd")
 
   try {
     const parsedData = {
@@ -25,14 +27,13 @@ export async function completeDonorProfile(prevState: any, formData: FormData) {
       emergencyContact: formData.get('emergencyContact')
     }
 
-    console.log('Parsed Data Before Validation:', parsedData)
+    // console.log('Parsed Data Before Validation:', parsedData)
     interface location1 {
       coordinates: [number, number]; // Tuple of two numbers
       type: string; // Typically "Point" for GeoJSON
     }
-    // const validatedData = schema.parse(parsedData)
-    // console.log('Validated Data:', validatedData)
-    const response  = axios.post (`${process.env.BACKEND_APP_URL}/donors/completeProfile`,{
+   
+    const inputData  = {
       name: parsedData.name,
       age: parsedData.age,
       emergencyContact: parsedData.emergencyContact,
@@ -46,38 +47,70 @@ export async function completeDonorProfile(prevState: any, formData: FormData) {
         type: "Point"
       } as location1,
       isAvailable: parsedData.isAvailable,
-    },{
+    }
+    console.log(inputData)
+    const response  = await axios.post(`${process.env.BACKEND_APP_URL}/donors/completeProfile`,inputData,{
       headers: {
-        'Authorization': `${parsedData.token}`,
+        'Authorization': `Bearer ${parsedData.token}`,
         'Content-Type': 'application/json'
       }
     }
   )
 
-    console.log('Response:', response.data)
+    console.log('Response:', response)
+    console.log('Response:222222222222222222222222222222222222',response.data)
     
 
 
   
 
-    return { success: true }
+    return { 
+      success: true,
+      sataus:200
+     }
   } catch (error) {
-    console.error('Validation Error:', error)
+    console.error('Validation Error:', error.response)
     
-    if (error instanceof z.ZodError) {
-      return { 
-        error: error.errors[0]?.message || 'Validation failed',
-        details: error.errors 
-      }
-    }
+  
     if(error instanceof axios.AxiosError) {
-      return { 
-        error: error.response?.data?.message || 'Network error',
-        details: error.response?.data 
+      
+      if(error?.response?.data.statusCode === 'PRECONDITION_FAILED'){
+        return { 
+          success: false,
+          status: 400,
+          error: error?.response?.data?.error.split(':')[0] || 'Network error',
+          details: error?.response?.data 
+        }
+      }
+      if(error?.response?.data.statusCode === 'UNAUTHORIZED' ){
+        return { 
+          status: 401,
+          success: false,
+          error: error?.response?.data?.error.split(':')[0] || 'Network error',
+          details: error?.response?.data 
+        }
+      }
+      if(error?.response?.data.statusCode === 'FORBIDDEN'){
+        return { 
+          status: 403,
+          success: false,
+          error: error?.response?.data?.error.split(':')[0] || 'Network error',
+          details: error?.response?.data 
+        }
+      }
+      if(error?.response?.data.statusCode === 'NOT_FOUND'){
+        return { 
+          status: 404,
+          success: false,
+          error: error?.response?.data?.error.split(':')[0] || 'Network error',
+          details: error?.response?.data 
+        }
       }
     }
     
     return { 
+      success: false,
+      status: 500,
       error: error instanceof Error ? error.message : 'Something went wrong' 
     }
   }
