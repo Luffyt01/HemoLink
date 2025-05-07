@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -44,6 +45,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender javaMailSender;
+    private final PasswordResetTokenService passwordResetTokenService;
 
 
 
@@ -116,6 +118,26 @@ public class AuthService {
     }
 
     public void initiatePasswordReset(String email) {
+        log.info("Resetting password for user with email: {}", email);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: "+email));
+
+        String token = UUID.randomUUID().toString();
+
+        passwordResetTokenService.createPasswordResetToken(user,token);
+
+        sendPasswordResetEmail(user.getEmail(), token);
+
+    }
+
+    private void sendPasswordResetEmail(String email, String token) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Password Reset Request");
+        message.setText("To reset your password, click link below: \n\n" +
+                "https://www.myalsdf.com?token="+token);
+        javaMailSender.send(message);
     }
 
 
