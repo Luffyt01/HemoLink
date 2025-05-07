@@ -1,9 +1,6 @@
 package com.project.hemolink.user_service.services;
 
-import com.project.hemolink.user_service.dto.LoginRequestDto;
-import com.project.hemolink.user_service.dto.LoginResponseDto;
-import com.project.hemolink.user_service.dto.SignupRequestDto;
-import com.project.hemolink.user_service.dto.UserDto;
+import com.project.hemolink.user_service.dto.*;
 import com.project.hemolink.user_service.entities.User;
 import com.project.hemolink.user_service.exception.AuthenticationException;
 import com.project.hemolink.user_service.exception.BadRequestException;
@@ -16,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -41,6 +41,10 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final TokenBlacklistService blacklistService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JavaMailSender javaMailSender;
+
 
 
 
@@ -105,5 +109,16 @@ public class AuthService {
             log.error("Unexpected error during logout", e);
             throw new AuthenticationException("Logout failed due to unexpected error");
         }
+    }
+
+    public String refreshToken(String refreshToken) {
+        return null;
+    }
+
+    public void initiatePasswordReset(String email) {
+    }
+
+
+    public void completePasswordReset(ResetPasswordRequest resetPasswordRequest) {
     }
 }

@@ -1,9 +1,6 @@
 package com.project.hemolink.user_service.controller;
 
-import com.project.hemolink.user_service.dto.LoginRequestDto;
-import com.project.hemolink.user_service.dto.LoginResponseDto;
-import com.project.hemolink.user_service.dto.SignupRequestDto;
-import com.project.hemolink.user_service.dto.UserDto;
+import com.project.hemolink.user_service.dto.*;
 import com.project.hemolink.user_service.services.AuthService;
 import com.project.hemolink.user_service.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,10 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /*
  * Controller class to handle the authentication logic
@@ -41,6 +35,7 @@ public class AuthController {
     // Function to Login the user
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto loginRequestDto){
+
         return ResponseEntity.ok(authService.login(loginRequestDto));
     }
 
@@ -51,5 +46,25 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
-    // TODO implement refresh token and logout feature
+//    @PostMapping("/refresh-token")
+//    public ResponseEntity<LoginResponseDto> refreshToken(
+//            @RequestBody RefreshTokenRequest refreshTokenRequest) {
+//        return ResponseEntity.ok(authService.refreshToken(refreshTokenRequest));
+//    }
+
+    // Forgot password
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(
+            @RequestParam String email) {
+        authService.initiatePasswordReset(email);
+        return ResponseEntity.accepted().build();
+    }
+
+    // Reset password
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(
+            @RequestBody ResetPasswordRequest resetPasswordRequest) {
+        authService.completePasswordReset(resetPasswordRequest);
+        return ResponseEntity.ok().build();
+    }
 }
