@@ -291,7 +291,7 @@ export default function SignupForm({
       <div className="mt-6 text-center text-sm text-gray-600">
         Already have an account?{" "}
         <Link
-          href="/signIn"
+          href="/signin"
           className="font-medium text-rose-600 hover:text-rose-500"
         >
           Sign in here
