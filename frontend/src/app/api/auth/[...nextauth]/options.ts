@@ -112,6 +112,8 @@ export const authOptions: NextAuthOptions = {
         const customUser = user as CustomUser;
         return {
           ...token,
+          role:customUser.role,
+          
           accessToken: customUser.token,
           user: {
             id: user.id,
