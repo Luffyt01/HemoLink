@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Calendar;
 import java.util.Date;
 
 @Service
@@ -18,6 +19,14 @@ public class PasswordResetTokenService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     public PasswordResetToken createPasswordResetToken(User user, String token){
+        PasswordResetToken existingToken = passwordResetTokenRepository.findByUser(user).orElse(null);
+        if (existingToken != null){
+            if (existingToken.getExpiryDate().before(new Date())){
+                deleteToken(existingToken);
+            }else{
+                throw new BadRequestException("Password reset link is already sent to your email: "+user.getEmail());
+            }
+        }
         PasswordResetToken resetToken = PasswordResetToken.builder()
                 .user(user)
                 .token(token)
@@ -27,9 +36,17 @@ public class PasswordResetTokenService {
     }
 
     public PasswordResetToken validatePasswordToken(String token){
-        return passwordResetTokenRepository.findByToken(token)
-                .orElseThrow(() -> new BadRequestException("Invalid or expired token"));
+        PasswordResetToken passwordResetToken =  passwordResetTokenRepository.findByToken(token)
+                .orElseThrow(() -> new BadRequestException("Invalid token"));
 
+        if (passwordResetToken.getExpiryDate().before(new Date())){
+            throw new BadRequestException("Expired token");
+        }
+        return passwordResetToken;
+    }
+
+    public void deleteToken(PasswordResetToken token){
+        passwordResetTokenRepository.delete(token);
     }
 
 }

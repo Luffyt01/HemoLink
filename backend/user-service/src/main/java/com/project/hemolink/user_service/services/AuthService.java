@@ -1,6 +1,7 @@
 package com.project.hemolink.user_service.services;
 
 import com.project.hemolink.user_service.dto.*;
+import com.project.hemolink.user_service.entities.PasswordResetToken;
 import com.project.hemolink.user_service.entities.User;
 import com.project.hemolink.user_service.exception.AuthenticationException;
 import com.project.hemolink.user_service.exception.BadRequestException;
@@ -141,6 +142,12 @@ public class AuthService {
     }
 
 
+    @Transactional
     public void completePasswordReset(ResetPasswordRequest resetPasswordRequest) {
+        PasswordResetToken token = passwordResetTokenService.validatePasswordToken(resetPasswordRequest.getToken());
+        User user = token.getUser();
+        user.setPassword(passwordEncoder.encode(resetPasswordRequest.getPassword()));
+        userRepository.save(user);
+        passwordResetTokenService.deleteToken(token);
     }
 }
