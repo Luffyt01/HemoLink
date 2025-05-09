@@ -279,7 +279,7 @@ export default function HospitalProfileForm({
       render: ({ field }: any) => (
         <Input
           type="number"
-          min={1800}
+          min={1950}
           max={new Date().getFullYear()}
           {...field}
           onChange={(e) => field.onChange(parseInt(e.target.value))}

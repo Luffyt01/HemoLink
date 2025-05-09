@@ -4,7 +4,7 @@ import { useState } from "react"
 
 import { toast } from "sonner"
 import { completeDonorProfile } from '@/actions/donor/donor-complete-profile'
-import DonorProfileForm from "@/components/donor/DonorProfileFormSteps"
+import DonorProfileForm from "@/components/donor/CompleteProfile/DonorProfileFormSteps"
 
 export default function CompleteProfilePage() {
 

@@ -96,48 +96,61 @@
 
 
 
-
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const publicPaths = [
-  "/",
-  "/signin",  // Using consistent lowercase
+ "/",
+  "/signin",
   "/signup", 
   "/api/auth/signin", 
   "/api/auth/signup",
-  "/api/auth/callback"
+  "/api/auth/callback",
+  "/_next/static",
+  "/_next/image",
+  "/favicon.ico"
 ];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  console.log(`Middleware processing: ${pathname}`);
 
   // Check if the path is public
-  if (publicPaths.some(path => pathname.startsWith(path))) {
+  const isPublicPath = publicPaths.some(path => 
+    pathname === path || pathname.startsWith(path)
+  );
+  
+  
+  if (isPublicPath) {
+    console.log(`Public path accessed: ${pathname}`);
     return NextResponse.next();
   }
-
   try {
-    // Using getToken instead of getServerSession for better edge compatibility
+    console.log("Attempting to get token...");
     const token = await getToken({ 
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
       secureCookie: process.env.NODE_ENV === "production"
     });
 
-    // Handle unauthenticated users
+    console.log("Token:", token ? "Exists" : "Missing");
+
+    // Handle unauthenticated users for non-public paths
     if (!token) {
+      console.log("No token found, redirecting to signin");
       const loginUrl = new URL("/signin", request.url);
       loginUrl.searchParams.set("callbackUrl", encodeURI(request.url));
       return NextResponse.redirect(loginUrl);
     }
 
-    // Get role from token (ensure your JWT callback adds this)
-    const role = token.role || ''; // Default to DONOR if role not specified
-    
+    // Get role from token with default fallback
+    const role = token.role || 'DONOR';
+    console.log(`User role: ${role}`);
+
     // Prevent authenticated users from accessing auth pages
     if (pathname.startsWith("/signin") || pathname.startsWith("/signup")) {
+      console.log("Authenticated user trying to access auth page, redirecting to dashboard");
       return NextResponse.redirect(
         new URL(role === 'HOSPITAL' ? "/hospital/dashboard" : "/donor/dashboard", request.url)
       );
@@ -145,18 +158,21 @@ export async function middleware(request: NextRequest) {
 
     // Role-based route protection
     if (role === 'DONOR' && pathname.startsWith("/hospital")) {
+      console.log("Donor trying to access hospital route, redirecting");
       return NextResponse.redirect(new URL("/donor/dashboard", request.url));
     }
 
     if (role === 'HOSPITAL' && pathname.startsWith("/donor")) {
+      console.log("Hospital trying to access donor route, redirecting");
       return NextResponse.redirect(new URL("/hospital/dashboard", request.url));
     }
 
+    console.log("Access granted");
     return NextResponse.next();
   } catch (error) {
     console.error("Authentication error:", error);
-    // Fallback redirect if there's any error in authentication
     const loginUrl = new URL("/signin", request.url);
+    loginUrl.searchParams.set("error", "AuthenticationFailed");
     return NextResponse.redirect(loginUrl);
   }
 }
@@ -167,6 +183,6 @@ export const config = {
     "/signup",
     "/donor/:path*",
     "/hospital/:path*",
-    "/((?!api|_next/static|_next/image|favicon.ico).*)"
+    
   ]
 };
