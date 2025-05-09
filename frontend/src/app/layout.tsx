@@ -4,7 +4,7 @@ import "./globals.css";
 import ClientSessionProvider from "./Provider/ClientSessionProvider";
 import { Toaster } from "sonner";
 import HydrationWrapper from "@/components/CommanComponents/HydrationWrapper";
-
+import { ThemeProvider } from "./Provider/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,11 +22,12 @@ export const metadata: Metadata = {
     template: "%s | HemoLink",
   },
   metadataBase: new URL(
-    process.env.NEXTAUTH_URL || 
-    process.env.VERCEL_URL || 
-    "http://localhost:3000"
+    process.env.NEXTAUTH_URL ||
+      process.env.VERCEL_URL ||
+      "http://localhost:3000"
   ),
-  description: "A platform connecting blood donors with hospitals through real-time matching",
+  description:
+    "A platform connecting blood donors with hospitals through real-time matching",
 };
 
 export default function RootLayout({
@@ -34,26 +35,33 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
         <ClientSessionProvider>
           <HydrationWrapper>
-
-          <main className="flex-1 overflow-x-hidden md:mt-0">
-            {children}
-          </main>
-          <Toaster
-            richColors
-            position="top-right"
-            toastOptions={{
-              classNames: {
-                toast: "font-sans",
-              },
-            }}
+            <main className="flex-1 overflow-x-hidden md:mt-0">
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                {children}
+              </ThemeProvider>
+            </main>
+            <Toaster
+              richColors
+              position="top-right"
+              toastOptions={{
+                classNames: {
+                  toast: "font-sans",
+                },
+              }}
             />
-            </HydrationWrapper>
+          </HydrationWrapper>
         </ClientSessionProvider>
       </body>
     </html>

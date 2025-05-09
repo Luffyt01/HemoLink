@@ -109,7 +109,9 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user, account }: { token: JWT; user: User | AdapterUser; account: Account | null }) {
       if (user && account) {
+        console.log(user)
         const customUser = user as CustomUser;
+        token.role=customUser.role
         return {
           ...token,
           role:customUser.role,
@@ -204,8 +206,8 @@ export const authOptions: NextAuthOptions = {
   },
 
   pages: {
-    signIn: "/signIn",
-    error: "/signIn",
+    signIn: "/signin",
+    error: "/signin",
     newUser: "/signup",
   },
 
