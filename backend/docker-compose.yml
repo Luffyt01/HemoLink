@@ -1,0 +1,74 @@
+version: "3.8"
+
+services:
+
+  discovery-server:
+    image: luffy010/discovery-server
+    container_name: discovery-server
+    networks:
+      - hemo-link-network
+    ports:
+      - "8761:8761"
+
+
+
+  matching-db:
+    image: postgres
+    container_name: matching-db
+    environment:
+      - POSTGRES_DB=matchingdb
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - post-db-data:/var/lib/postgresql/data
+    networks:
+      - hemo-link-network
+
+  user-db:
+    image: postgres
+    container_name: user-db
+    environment:
+      - POSTGRES_DB=userdb
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+    networks:
+      - hemo-link-network
+
+
+  matching-service:
+    image: luffy010/matching-service
+    container_name: matching-service
+    networks:
+      - hemo-link-network
+    depends_on:
+      - matching-db
+      - discovery-server
+
+  user-service:
+    image: luffy010/user-service
+    container_name: user-service
+    networks:
+      - hemo-link-network
+    depends_on:
+      - user-db
+      - discovery-server
+
+
+
+  api-gateway:
+    image: luffy010/api-gateway
+    container_name: api-gateway
+    networks:
+      - hemo-link-network
+    depends_on:
+      - discovery-server
+
+
+volumes:
+  post-db-data:
+  user-db-data:
+
+networks:
+  hemo-link-network:
