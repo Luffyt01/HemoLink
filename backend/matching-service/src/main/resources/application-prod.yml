@@ -1,0 +1,17 @@
+
+spring:
+  datasource:
+    url: jdbc:postgresql://matching-db:5432/matchingdb
+    username: user
+    password: password
+    hikari:
+      maximum-pool-size: 15
+      connection-timeout: 30000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-server:8761/eureka
+  instance:
+    prefer-ip-address: true
+    hostname: matching-service

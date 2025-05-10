@@ -13,19 +13,19 @@ services:
 
 
   matching-db:
-    image: postgres
+    image: postgis/postgis
     container_name: matching-db
     environment:
       - POSTGRES_DB=matchingdb
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
     volumes:
-      - post-db-data:/var/lib/postgresql/data
+      - matching-db-data:/var/lib/postgresql/data
     networks:
       - hemo-link-network
 
   user-db:
-    image: postgres
+    image: postgis/postgis
     container_name: user-db
     environment:
       - POSTGRES_DB=userdb
@@ -40,34 +40,72 @@ services:
   matching-service:
     image: luffy010/matching-service
     container_name: matching-service
+    ports:
+      - "9010:9010"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - REDIS_DB_HOST=${REDIS_DB_HOST}
+      - REDIS_DB_PORT=${REDIS_DB_PORT}
+      - REDIS_DB_PASSWORD=${REDIS_DB_PASSWORD}
     networks:
       - hemo-link-network
     depends_on:
       - matching-db
       - discovery-server
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9010/matching/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   user-service:
     image: luffy010/user-service
     container_name: user-service
+    ports:
+      - "9020:9020"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - REDIS_DB_HOST=${REDIS_DB_HOST}
+      - REDIS_DB_PORT=${REDIS_DB_PORT}
+      - REDIS_DB_PASSWORD=${REDIS_DB_PASSWORD}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_USERNAME=${EMAIL_USERNAME}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+      - EMAIL_PORT=${EMAIL_PORT}
     networks:
       - hemo-link-network
     depends_on:
       - user-db
       - discovery-server
-
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9010/matching/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 
   api-gateway:
     image: luffy010/api-gateway
     container_name: api-gateway
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
     networks:
       - hemo-link-network
     depends_on:
-      - discovery-server
+      discovery-server:
+        condition: service_healthy
 
 
 volumes:
-  post-db-data:
+  matching-db-data:
   user-db-data:
 
 networks:
