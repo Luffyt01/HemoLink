@@ -20,16 +20,19 @@ spring:
             - StripPrefix=2
             - name: AuthenticationFilter
 
-server:
-  port: 8080
-
 eureka:
   client:
-    service-url:
-      defaultZone: http://discovery-server:8761/eureka
+    serviceUrl:
+      defaultZone: https://${WEBSITE_HOSTNAME}:8761/eureka/eureka
+    healthcheck:
+      enabled: true
   instance:
-    prefer-ip-address: true
-    hostname: localhost
+    preferIpAddress: false
+    hostname: ${WEBSITE_HOSTNAME}
+
+server:
+  port: 8080
+  forward-headers-strategy: framework
 
 jwt.secretKey: ${JWT_SECRET_KEY}
 springdoc:
