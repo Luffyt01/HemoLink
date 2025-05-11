@@ -12,10 +12,12 @@ export default async function DonorLayout({
 
   return (
     <>
-      
+
+     <div className="">
         <Navbar />
+      </div> 
         
-      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto mt-12 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         {children}
       </div>
     </>
