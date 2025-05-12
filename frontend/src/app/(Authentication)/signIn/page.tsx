@@ -72,7 +72,7 @@ export default function LoginPage() {
               <h1 className="text-4xl font-bold text-white mb-4">
                 Give the Gift of Life
               </h1>
-              <p className="text-lg text-white/90">
+              <p className="text-lg text-white/90 ">
                 Your blood donation can save up to 3 lives. Join our community of heroes today.
               </p>
             </motion.div>
