@@ -26,13 +26,15 @@ export default function LoginPage() {
           transition={{ delay: 0.4 }}
           className="relative h-32 w-full md:hidden"
         >
-          <Image
-            src="/donor-hero.jpg"
-            alt="Blood donor hero"
-            fill
-            className="object-cover"
-            priority
-          />
+           <Image
+          src="/donor-hero.jpg"
+          alt="Blood donor hero image"
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          priority
+          quality={80}
+        />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent flex items-end p-4">
             <motion.h1 
               initial={{ y: 10, opacity: 0 }}
@@ -53,12 +55,14 @@ export default function LoginPage() {
           className="hidden md:flex md:w-1/2 relative bg-gradient-to-br from-rose-500 to-red-600"
         >
           <Image
-            src="/donor-hero.jpg"
-            alt="Blood donor hero"
-            fill
-            className="opacity-90"
-            priority
-          />
+          src="/donor-hero.jpg"
+          alt="Blood donor hero image"
+          fill
+          className="object-fill"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          priority
+          quality={80}
+        />
           <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent flex items-center p-10">
             <motion.div
               initial={{ x: -30, opacity: 0 }}
