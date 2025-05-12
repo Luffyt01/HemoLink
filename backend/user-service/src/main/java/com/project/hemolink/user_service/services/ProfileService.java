@@ -8,6 +8,7 @@ import com.project.hemolink.user_service.entities.Donor;
 import com.project.hemolink.user_service.entities.Hospital;
 import com.project.hemolink.user_service.entities.User;
 import com.project.hemolink.user_service.entities.enums.UserRole;
+import com.project.hemolink.user_service.exception.ProfileOperationException;
 import com.project.hemolink.user_service.exception.ResourceNotFoundException;
 import com.project.hemolink.user_service.repositories.DonorRepository;
 import com.project.hemolink.user_service.repositories.HospitalRepository;
@@ -15,6 +16,8 @@ import com.project.hemolink.user_service.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -29,57 +32,70 @@ public class ProfileService {
     private final HospitalRepository hospitalRepository;
     private final ModelMapper modelMapper;
 
-    public Object getCompleteProfile(){
-        String userId = UserContextHolder.getCurrentUserId();
-        User user = (User) userRepository.findById(UUID.fromString(userId))
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
 
-        UserRole role = user.getRole();
+    @Cacheable(value = "userProfiles", key = "#root.methodName + ':'+ T(com.project.hemolink.user_service.auth.UserContextHolder).getCurrentUserId()")
+    public Object getCompleteProfile() {
+        try {
+            String userId = UserContextHolder.getCurrentUserId();
+            User user = userRepository.findById(UUID.fromString(userId))
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        log.info("Fetching profile for {} with email: {}", role.toString().toLowerCase(), user.getEmail());
+            log.info("Fetching profile for {}: {}", user.getRole(), user.getEmail());
 
-        switch (role){
-            case DONOR -> {
-                return getDonorProfile(user);
-            }
-            case HOSPITAL -> {
-                return getHospitalProfile(user);
-            }
-            default -> {
-                return modelMapper.map(user, UserDto.class);
-            }
+            return switch (user.getRole()) {
+                case DONOR -> getDonorProfile(user);
+                case HOSPITAL -> getHospitalProfile(user);
+                default -> modelMapper.map(user, UserDto.class);
+            };
+
+        } catch (ResourceNotFoundException e) {
+            log.error("Profile fetch error: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error fetching profile", e);
+            throw new ProfileOperationException("Failed to fetch profile");
         }
     }
 
+    @Cacheable(value = "userProfiles", key = "#root.methodName + ':'+ T(com.project.hemolink.user_service.auth.UserContextHolder).getCurrentUserId()")
     public DonorDto getDonorProfile(User user){
         Donor donor = donorRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Donor not found with email: "+user.getEmail()));
         return modelMapper.map(donor, DonorDto.class);
     }
 
+    @Cacheable(value = "userProfiles", key = "#root.methodName + ':'+ T(com.project.hemolink.user_service.auth.UserContextHolder).getCurrentUserId()")
     public HospitalDto getHospitalProfile(User user){
         Hospital hospital = hospitalRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Hospital not found with email: "+user.getEmail()));
         return modelMapper.map(hospital, HospitalDto.class);
     }
 
+    @CacheEvict(value = "userProfiles", key = "'getCompleteProfile:' + T(com.project.hemolink.user_service.auth.UserContextHolder).getCurrentUserId()")
     public void deleteProfile() {
-        String userId = UserContextHolder.getCurrentUserId();
-        User user = (User) userRepository.findById(UUID.fromString(userId))
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-        UserRole role = user.getRole();
+        try {
+            String userId = UserContextHolder.getCurrentUserId();
+            User user = userRepository.findById(UUID.fromString(userId))
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        log.info("Deleting profile for {} with email: {}", role.toString().toLowerCase(), user.getEmail());
+            log.info("Deleting profile for {}: {}", user.getRole(), user.getEmail());
 
-        if (role.equals(UserRole.DONOR)){
-            deleteDonorProfile(user);
-        } else if (role.equals(UserRole.HOSPITAL)){
-            deleteHospitalProfile(user);
+            if (user.getRole().equals(UserRole.DONOR)) {
+                deleteDonorProfile(user);
+            } else if (user.getRole().equals(UserRole.HOSPITAL)) {
+                deleteHospitalProfile(user);
+            }
+
+            userRepository.delete(user);
+            log.info("Profile deleted successfully");
+
+        } catch (ResourceNotFoundException e) {
+            log.error("Profile deletion error: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error deleting profile", e);
+            throw new ProfileOperationException("Failed to delete profile");
         }
-
-        userRepository.delete(user);
-
-        log.info("Profile deleted successfully");
     }
 
     public void deleteDonorProfile(User user){

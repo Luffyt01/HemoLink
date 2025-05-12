@@ -7,17 +7,20 @@ import com.project.hemolink.user_service.entities.Hospital;
 import com.project.hemolink.user_service.entities.User;
 import com.project.hemolink.user_service.entities.enums.UserRole;
 import com.project.hemolink.user_service.entities.enums.VerificationStatus;
-import com.project.hemolink.user_service.exception.BadRequestException;
-import com.project.hemolink.user_service.exception.ResourceNotFoundException;
+import com.project.hemolink.user_service.exception.*;
 import com.project.hemolink.user_service.repositories.HospitalRepository;
 import com.project.hemolink.user_service.repositories.UserRepository;
 import com.project.hemolink.user_service.utils.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.boot.json.JsonParseException;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -31,35 +34,67 @@ public class HospitalService {
     private final ModelMapper modelMapper;
     private final SecurityUtil securityUtil;
 
+    @Transactional
+    @CachePut(cacheNames = "hospitals-by-id", key = "#result.id")
     public HospitalDto completeProfile(CompleteHospitalProfileDto completeHospitalProfileDto) {
-        UUID userId = securityUtil.getCurrentUserId();
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
+        try {
+            // Fetching the user id of current logged user
+            UUID userId = securityUtil.getCurrentUserId();
 
-        if (user.isProfileComplete()){
-            throw new BadRequestException("The profile is completed for the hospital with email: "+user.getEmail());
+            // Fetching the user details from repository using the userId
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+            // Checking if the user profile is competed or not
+            if (user.isProfileComplete()) {
+                throw new ProfileCompletionException("Profile already completed for hospital with email: " + user.getEmail());
+            }
+
+            log.info("Completing profile for hospital with email: {}", user.getEmail());
+
+            user.setProfileComplete(true);
+            Hospital hospital = modelMapper.map(completeHospitalProfileDto, Hospital.class);
+            hospital.setUser(userRepository.save(user));
+            hospital.setVerificationStatus(VerificationStatus.PENDING);
+            hospital.setMainPhoneNo(user.getPhone());
+
+            // Saving the complete hospital profile
+            Hospital savedHospital = hospitalRepository.save(hospital);
+            log.info("Hospital profile completed successfully");
+
+            // mapping the saved details to dto class
+            return modelMapper.map(savedHospital, HospitalDto.class);
+
+        } catch (ProfileCompletionException e) {
+            log.error("Profile completion error: {}", e.getMessage());
+            throw e;
         }
-        log.info("Attempting to complete the profile for hospital with email: {}", user.getEmail());
-        user.setProfileComplete(true);
-        Hospital hospital = modelMapper.map(completeHospitalProfileDto, Hospital.class);
-        hospital.setUser(userRepository.save(user));
-        hospital.setVerificationStatus(VerificationStatus.PENDING);
-
-        Hospital savedHospital = hospitalRepository.save(hospital);
-        return modelMapper.map(savedHospital, HospitalDto.class);
     }
 
-
+    @Transactional(readOnly = true)
+    @Cacheable(value = "hospitals-by-id", key = "#hospitalId")
     public HospitalDto findHospitalById(String hospitalId) {
-        log.info("Fetching hospital with hospitalId: {}", hospitalId);
-        Hospital hospital = hospitalRepository.findById(UUID.fromString(hospitalId))
-                .orElseThrow(() -> new ResourceNotFoundException("Hospital not found with hospitalId: "+hospitalId));
-        return modelMapper.map(hospital, HospitalDto.class);
+        try {
+            log.info("Fetching hospital with ID: {}", hospitalId);
+            Hospital hospital = hospitalRepository.findById(UUID.fromString(hospitalId))
+                    .orElseThrow(() -> new ResourceNotFoundException("Hospital not found with ID: " + hospitalId));
+
+            return modelMapper.map(hospital, HospitalDto.class);
+
+        } catch (ResourceNotFoundException e) {
+            log.error("Hospital not found: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Error fetching hospital with ID: {}", hospitalId, e);
+            throw new ProfileOperationException("Failed to fetch hospital details");
+        }
     }
 
+
+    @Cacheable(value = "hospitals-by-user-id", key = "#userId")
     public HospitalDto getHospitalByUserId(String userId) {
         log.info("Fetching the Hospital with userId: {}", userId);
-        User user = (User) userRepository.findById(UUID.fromString(userId))
+        User user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
 
         Hospital hospital = hospitalRepository.findByUser(user)
@@ -68,3 +103,4 @@ public class HospitalService {
         return modelMapper.map(hospital, HospitalDto.class);
     }
 }
+

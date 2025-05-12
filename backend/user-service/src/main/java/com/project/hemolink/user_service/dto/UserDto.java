@@ -1,5 +1,6 @@
 package com.project.hemolink.user_service.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.project.hemolink.user_service.entities.enums.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

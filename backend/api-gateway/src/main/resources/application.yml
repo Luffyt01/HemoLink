@@ -11,23 +11,30 @@ spring:
             - Path=/api/v1/users/**
           filters:
             - StripPrefix=2
-#            - name: AuthenticationFilter
+            - name: AuthenticationFilter
         - id: matching-service
           uri: lb://MATCHING-SERVICE
           predicates:
             - Path=/api/v1/matching/**
           filters:
             - StripPrefix=2
-#            - name: AuthenticationFilter
-server:
-  port: 8080
+            - name: AuthenticationFilter
 
 eureka:
   client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
+    serviceUrl:
+      defaultZone: https://${WEBSITE_HOSTNAME}:8761/eureka/eureka
+    healthcheck:
+      enabled: true
+  instance:
+    preferIpAddress: false
+    hostname: ${WEBSITE_HOSTNAME}
 
-jwt.secretKey: dshf091283h4sjkfh0932844hkvbxczkue45908hv2o489vhb9a83hrdkvyv90482hf0893
+server:
+  port: 8080
+  forward-headers-strategy: framework
+
+jwt.secretKey: ${JWT_SECRET_KEY}
 springdoc:
   api-docs:
     path: /v3/api-docs

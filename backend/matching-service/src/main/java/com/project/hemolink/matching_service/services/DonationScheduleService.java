@@ -8,6 +8,7 @@ import com.project.hemolink.matching_service.entities.BloodRequest;
 import com.project.hemolink.matching_service.entities.Donation;
 import com.project.hemolink.matching_service.entities.enums.DonationStatus;
 import com.project.hemolink.matching_service.exception.DonorNotAvailableException;
+import com.project.hemolink.matching_service.exception.MatchConflictException;
 import com.project.hemolink.matching_service.exception.ResourceNotFoundException;
 import com.project.hemolink.matching_service.repositories.BloodRequestRepository;
 import com.project.hemolink.matching_service.repositories.DonationRepository;
@@ -33,6 +34,12 @@ public class DonationScheduleService {
     public DonationDto confirmDonation(ConfirmMatchDto confirmMatchDto) {
         log.info("Confirming donation for donor with id: {}", confirmMatchDto.getDonorId());
 
+        if (donationRepository.existsByDonorIdAndRequestId(
+                confirmMatchDto.getDonorId(),
+                UUID.fromString(confirmMatchDto.getRequestId())))
+        {
+            throw new MatchConflictException("Donation match already exists");
+        }
         // Verify donor exists and is eligible
         DonorDto donor = userServiceClient.getDonor(confirmMatchDto.getDonorId());
         if (!donor.isAvailable()){

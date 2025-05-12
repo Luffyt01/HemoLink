@@ -5,11 +5,13 @@ import com.project.hemolink.user_service.services.HospitalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/hospitals")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('HOSPITAL')")
 public class HospitalController {
 
     private final HospitalService hospitalService;

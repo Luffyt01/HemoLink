@@ -9,6 +9,7 @@ import com.project.hemolink.matching_service.entities.enums.UrgencyLevel;
 import com.project.hemolink.matching_service.exception.BadRequestException;
 import com.project.hemolink.matching_service.exception.ResourceNotFoundException;
 import com.project.hemolink.matching_service.repositories.BloodRequestRepository;
+import com.project.hemolink.matching_service.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Point;
@@ -32,14 +33,15 @@ public class BloodRequestService {
     private final BloodRequestRepository bloodRequestRepository;
     private final ModelMapper modelMapper;
     private final UserServiceClient userServiceClient;
+    private final SecurityUtil securityUtil;
 
     /*
      * Function to create a request
      */
     public BloodRequestDto createBloodRequest(CreateRequestDto createRequestDto) {
-        String userId = UserContextHolder.getCurrentUserId();
+        UUID userId = securityUtil.getCurrentUserId();
 
-        HospitalDto hospitalDto = userServiceClient.getHospitalByUserId(userId).getBody();
+        HospitalDto hospitalDto = userServiceClient.getHospitalByUserId(userId.toString()).getBody();
         if (hospitalDto == null){
             throw new ResourceNotFoundException("Hospital not found with userId: "+userId);
         }
@@ -113,7 +115,14 @@ public class BloodRequestService {
     }
 
     public Page<BloodRequestDto> getAllRequests(PageRequest pageRequest){
-        String hospitalId = "H1";
+        UUID userId = securityUtil.getCurrentUserId();
+
+        HospitalDto hospitalDto = userServiceClient.getHospitalByUserId(userId.toString()).getBody();
+        if (hospitalDto == null){
+            throw new ResourceNotFoundException("Hospital not found with userId: "+userId);
+        }
+
+        String hospitalId = hospitalDto.getId();
         log.info("Fetching all the requests for hospital with id: {}",hospitalId);
 
         boolean exists = bloodRequestRepository.existsByHospitalId(hospitalId);
@@ -153,6 +162,7 @@ public class BloodRequestService {
                 .orElseThrow(() -> new ResourceNotFoundException("Blood request not found with id: "+requestId));
     }
 
+    // TODO Create controller for following functions
     public List<BloodRequestDto> getUrgentRequests(UrgencyLevel urgencyLevel){
         log.info("Attempting to fetch all the request with {} urgency", urgencyLevel);
         List<BloodRequest> bloodRequests = bloodRequestRepository.findByUrgency(urgencyLevel);
