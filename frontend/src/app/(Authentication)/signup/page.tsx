@@ -40,7 +40,9 @@ export default function SignupPage() {
             alt={role === "DONOR" ? "Blood donor hero" : "Hospital staff"}
             fill
             className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             priority
+            quality={80}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent flex items-end p-4">
             <motion.h1
@@ -59,8 +61,10 @@ export default function SignupPage() {
             src="/donor-hero.jpg"
             alt={role === "DONOR" ? "Blood donor hero" : "Hospital staff"}
             fill
-            className="opacity-90"
+            className="object-fill"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"  
             priority
+            quality={80}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent flex items-center p-10">
             <motion.div key={role} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

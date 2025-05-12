@@ -12,7 +12,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/useAuthStore";
 import { CustomSession } from "@/app/api/auth/[...nextauth]/options";
-
+import { ArrowRight } from "lucide-react";
 export default function LoginForm() {
   const [role, setRole] = useState<"DONOR" | "HOSPITAL">("DONOR");
   const [showPassword, setShowPassword] = useState(false);
@@ -23,37 +23,39 @@ export default function LoginForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     // Get Zustand actions at the component level, not inside the handler
     const { setSession } = useAuthStore.getState();
-    
+
     const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const userRole = formData.get('userRole') as string;
-  
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const userRole = formData.get("userRole") as string;
+
     try {
-      const result = await signIn('credentials', {
+      const result = await signIn("credentials", {
         redirect: false,
         email,
         password,
         // role: userRole, // Make sure your auth API handles this
       });
-  
+
       if (result?.error) {
-        toast.error(result.error.includes('credentials') 
-          ? 'Invalid email or password' 
-          : result.error);
+        toast.error(
+          result.error.includes("credentials")
+            ? "Invalid email or password"
+            : result.error
+        );
         return;
       }
-  
+
       // Get the updated session after successful sign-in
       const session = await getSession();
-      
+
       if (!session?.user) {
         throw new Error("No user data in session");
       }
-  
+
       // Prepare session data for storage
       const customSession: CustomSession = {
         token: session.token, // Make sure your session actually has a token
@@ -67,29 +69,30 @@ export default function LoginForm() {
         },
         expires: session.expires, // If available
       };
-  
+
       // Store session in Zustand
       setSession(customSession);
-  
+
       toast.success("Login successful!");
-      
+
       // Handle redirection
       if (session.user.role) {
         const basePath = session.user.role.toLowerCase();
         const profileComplete = session.user.profileComplete === true;
-        
-        router.push(profileComplete 
-          ? `/${basePath}/dashboard` 
-          : `/${basePath}/complete-profile`);
+
+        router.push(
+          profileComplete
+            ? `/${basePath}/dashboard`
+            : `/${basePath}/complete-profile`
+        );
       } else {
         router.push("/");
       }
-  
     } catch (error) {
       console.error("Login error:", error);
-      toast.error(error instanceof Error 
-        ? error.message 
-        : "An unexpected error occurred");
+      toast.error(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -107,42 +110,54 @@ export default function LoginForm() {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.8 }}
       className="flex-1 p-6 md:p-8 overflow-y-auto"
     >
       <Header />
-      
+
       <RoleToggle role={role} setRole={setRole} />
-      
+
       <form onSubmit={handleSubmit} className="space-y-2 md:space-y-4">
         <input type="hidden" name="userRole" value={role} />
-        
-        <FormField 
+
+        <FormField
           label="Email"
           name="email"
           type="email"
           placeholder="your@email.com"
           delay={1.3}
         />
-        
-        <PasswordField 
+
+        <PasswordField
           showPassword={showPassword}
           setShowPassword={setShowPassword}
         />
-        
+        <div className="mt-3 text-end">
+          <Link
+            href="/forgot-password"
+            className=" text-sm font-medium text-primary hover:text-primary/90 transition-colors duration-200
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2  rounded-sm inline-flex items-center group
+    "
+          >
+            Forgot password?
+            <ArrowRight className="ml-1 transition-transform duration-200 group-hover:translate-x-0.5" />
+          </Link>
+        </div>
+
         <SubmitButton isLoading={isLoading} />
       </form>
 
       <Divider />
-      
-      <GoogleSignInButton 
-        pending={googlePending} 
-        onClick={handleGoogleSignIn} 
+
+      <GoogleSignInButton
+        pending={googlePending}
+        setPending={setGooglePending}
+        onClick={handleGoogleSignIn}
       />
-      
+
       <SignUpLink />
     </motion.div>
   );
@@ -151,7 +166,7 @@ export default function LoginForm() {
 // Reusable Components (keep the same as before)
 const Header = () => (
   <div className="text-center mb-6">
-    <motion.h1 
+    <motion.h1
       initial={{ y: -10, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 1 }}
@@ -159,7 +174,7 @@ const Header = () => (
     >
       Welcome to HemoLink
     </motion.h1>
-    <motion.p 
+    <motion.p
       initial={{ y: -10, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 1.1 }}
@@ -170,11 +185,14 @@ const Header = () => (
   </div>
 );
 
-const RoleToggle = ({ role, setRole }: { 
-  role: "DONOR" | "HOSPITAL", 
-  setRole: (role: "DONOR" | "HOSPITAL") => void 
+const RoleToggle = ({
+  role,
+  setRole,
+}: {
+  role: "DONOR" | "HOSPITAL";
+  setRole: (role: "DONOR" | "HOSPITAL") => void;
 }) => (
-  <motion.div 
+  <motion.div
     initial={{ y: 10, opacity: 0 }}
     animate={{ y: 0, opacity: 1 }}
     transition={{ delay: 1.2 }}
@@ -207,7 +225,7 @@ const FormField = ({
   name,
   type,
   placeholder,
-  delay
+  delay,
 }: {
   label: string;
   name: string;
@@ -235,7 +253,7 @@ const FormField = ({
 
 const PasswordField = ({
   showPassword,
-  setShowPassword
+  setShowPassword,
 }: {
   showPassword: boolean;
   setShowPassword: (show: boolean) => void;
@@ -280,7 +298,7 @@ const SubmitButton = ({ isLoading }: { isLoading: boolean }) => (
     }`}
   >
     {isLoading ? (
-      <motion.span 
+      <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="flex items-center justify-center gap-2"
@@ -320,7 +338,7 @@ const Spinner = () => (
 );
 
 const Divider = () => (
-  <motion.div 
+  <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     transition={{ delay: 1.6 }}
@@ -337,12 +355,14 @@ const Divider = () => (
   </motion.div>
 );
 
-const GoogleSignInButton = ({ 
-  pending, 
-  onClick 
-}: { 
-  pending: boolean, 
-  onClick: () => void 
+const GoogleSignInButton = ({
+  pending,
+  setPending,
+  onClick,
+}: {
+  pending: boolean;
+  setPending: (pending: boolean) => void;
+  onClick: () => void;
 }) => (
   <motion.div
     initial={{ y: 10, opacity: 0 }}
@@ -355,7 +375,7 @@ const GoogleSignInButton = ({
       className="w-full cursor-pointer h-12 rounded-xl border-gray-300 hover:bg-rose-50 transition-colors duration-200"
       disabled={pending}
     >
-      <GoogleSubmitBtn pending={pending} />
+      <GoogleSubmitBtn pending={pending} setPending={setPending} />
     </Button>
   </motion.div>
 );
