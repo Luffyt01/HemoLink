@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-rose-50/50 to-white p-4">
       <Card className="w-full max-w-md shadow-xl border-0 overflow-hidden">
-        <CardHeader className="space-y-1 bg-gradient-to-r from-rose-600 to-red-600 p-6">
+        <CardHeader className="space-y-1 bg-gradient-to-r from-rose-600 to-red-600 p-4 md:p-6">
           <div className="flex items-center gap-2">
             <HeartPulse className="h-8 w-8 text-white" />
             <div>
@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-6">
+        <CardContent className="p-2 md:p-6">
           <div className="mb-6 text-center">
             <h2 className="text-xl font-semibold text-rose-700">Password Recovery</h2>
             <p className="text-sm text-muted-foreground mt-1">
@@ -76,7 +76,7 @@ export default function ForgotPasswordPage() {
                   </FormItem>
                 )}
               /> */}
-              <div className="space-y-3">
+              <div className="space-y-3 px-2">
                 <Label>Email address</Label>
                 <Input
                   placeholder="your@email.com"
@@ -108,10 +108,11 @@ export default function ForgotPasswordPage() {
                 </Button>
                 
                 <Button variant="link" asChild className="text-rose-600 hover:text-rose-800">
-                  <Link href="/signin" className="flex items-center gap-1">
+                  <Link href="/signin" className="flex items-center gap-0.5 sm:gap-1">
                     <ArrowLeft className="h-4 w-4" />
                     Back to login
                   </Link>
+                  
                 </Button>
               </div>
             </form>
