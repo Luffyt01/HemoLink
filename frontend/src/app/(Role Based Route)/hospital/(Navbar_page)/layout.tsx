@@ -1,4 +1,4 @@
-
+import { HospitalNavbar } from "@/components/hospital/Navbar/navbar";
 
 
 export default async function HostpialLayout({
@@ -6,13 +6,13 @@ export default async function HostpialLayout({
 }: {
   children: React.ReactNode;
 }) {
-  
-
   return (
-    <>
-      
-      <div className="mx-auto mt-10 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        {children}  
+    <><div className="h-20">
+
+      <HospitalNavbar />
+    </div>
+      <div className="mx-auto  w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        {children}
       </div>
     </>
   );
