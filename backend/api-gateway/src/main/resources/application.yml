@@ -5,6 +5,14 @@ spring:
   cloud:
     gateway:
       routes:
+        - id: default-route
+          uri: no://op
+          predicates:
+              - Path=/
+          filters:
+            - SetStatus=200
+            - SetResponseHeader=Content-Type,text/plain
+            - SetResponseBody=API Gateway is running
         - id: user-service
           uri: lb://USER-SERVICE
           predicates:
@@ -20,19 +28,18 @@ spring:
             - StripPrefix=2
             - name: AuthenticationFilter
 
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: https://${WEBSITE_HOSTNAME}:8761/eureka/eureka
-    healthcheck:
-      enabled: true
-  instance:
-    preferIpAddress: false
-    hostname: ${WEBSITE_HOSTNAME}
-
 server:
   port: 8080
-  forward-headers-strategy: framework
+  servlet:
+    context-path: /
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-server:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
 
 jwt.secretKey: ${JWT_SECRET_KEY}
 springdoc:
@@ -41,3 +48,9 @@ springdoc:
     enabled: true
   swagger-ui:
     path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
