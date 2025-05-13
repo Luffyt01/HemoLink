@@ -36,14 +36,14 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { toast } from "sonner";
-import { Textarea } from "../ui/textarea";
-import { Card } from "../ui/card";
-import SubmitButton from "../CommanComponents/SubmitButton";
-import { formSchema, HospitalType } from "./hospitalSchema";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import SubmitButton from "@/components/CommanComponents/SubmitButton";
+import { formSchema, HospitalType } from "@/components/hospital/CompleteProfile/hospitalSchema";
 import { completeHospitalProfile } from "@/actions/Hospital/Hospital-Complete-Profile";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/useAuthStore";
-import { Badge } from "../ui/badge";
+import { Badge } from "@/components/ui/badge";
 
 // Lazy loaded components
 const LocationPicker = dynamic(

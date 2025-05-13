@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { toast } from "sonner";
 
-import HospitalProfileForm from "@/components/hospital/HospitalFormSteps";
+import HospitalProfileForm from "@/components/hospital/CompleteProfile/HospitalFormSteps";
 import { completeHospitalProfile } from "@/actions/Hospital/Hospital-Complete-Profile";
 
 export default function CompleteHospitalProfilePage() {
