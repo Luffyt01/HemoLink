@@ -15,3 +15,7 @@ eureka:
   instance:
     prefer-ip-address: true
     hostname: matching-service
+    lease-renewal-interval-in-seconds: 10  # Faster detection
+    lease-expiration-duration-in-seconds: 30
+    metadata-map:
+      zone: primary  # Useful for Azure availability zones
