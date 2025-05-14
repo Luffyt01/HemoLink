@@ -24,6 +24,7 @@ interface AuthStore {
   session: CustomSession | null;
  
   setSession: (session: CustomSession) => void;
+  updateSession: () => void;
   clearSession: () => void;
   isAuthenticated: () => boolean;
  
@@ -66,6 +67,24 @@ export const useAuthStore = create<AuthStore>()(
             return new Date(session.expires) > new Date();
           }
           return true;
+        },
+        updateSession: () => {
+          const { session } = get();
+          if (!session) return;
+          set(
+            {
+              session: {
+                ...session,
+                user: {
+                  ...session.user,
+                  profileComplete: true
+                }
+            }
+          }
+          , false,
+            'auth/updateUser' 
+          )
+       
         },
         
        

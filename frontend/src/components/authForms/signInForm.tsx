@@ -3,7 +3,7 @@ import { GoogleSubmitBtn } from "@/components/CommanComponents/GoogleSubmitBtn";
 import { Button } from "@/components/ui/button";
 import { getSession, signIn } from "next-auth/react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import { FaHandHoldingHeart, FaHospital } from "react-icons/fa";
@@ -13,13 +13,21 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/useAuthStore";
 import { CustomSession } from "@/app/api/auth/[...nextauth]/options";
 import { ArrowRight } from "lucide-react";
+
+
+
+
+
 export default function LoginForm() {
   const [role, setRole] = useState<"DONOR" | "HOSPITAL">("DONOR");
   const [showPassword, setShowPassword] = useState(false);
   const [googlePending, setGooglePending] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-
+  const {clearSession} = useAuthStore.getState();
+  useEffect(()=>{
+    clearSession();
+  },[])
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -55,6 +63,7 @@ export default function LoginForm() {
       if (!session?.user) {
         throw new Error("No user data in session");
       }
+      
 
       // Prepare session data for storage
       const customSession: CustomSession = {
