@@ -7,7 +7,7 @@ const FormSchema = z.object({
     email: z.string().email("Please enter a valid email address"),
 })
 
-const forgotPasswordAction = (prevState: any, formData: FormData) => {
+const forgotPasswordAction =async (prevState: any, formData: FormData) => {
 
 
 
@@ -24,7 +24,10 @@ const forgotPasswordAction = (prevState: any, formData: FormData) => {
         const { email } = validatedFields.data;
 
         console.log(email)
-        // const response  = await axios.post()
+        const response  = await axios.post(`${process.env.BACKEND_APP_URL}/auth/forgot-password`,{
+            email:email
+        })
+        console.log(response.data)
 
         return{
             status:200,

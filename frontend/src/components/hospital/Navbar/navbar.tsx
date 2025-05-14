@@ -50,6 +50,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ThemeToggle } from "@/components/CommanComponents/theme-toggle";
+import { useAuthStore } from "@/lib/stores/useAuthStore";
+import logout_Action from "@/actions/auth/logout_Action";
+import { toast } from "sonner";
 
 export function HospitalNavbar() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -75,10 +78,28 @@ export function HospitalNavbar() {
     // { href: "/hospital/activities", label: "Activities", icon: Activity },
     { href: "/hospital/history", label: "History", icon: Clock },
   ];
+  const {clearSession} = useAuthStore.getState();
 
-  const handleLogout = () => {
-    signOut();
-    setIsLogoutDialogOpen(false);
+  //! when user logout clear the session and the other data
+  const clearData=()=>{
+    clearSession();
+  }
+
+  const handleLogout = async() => {
+    if(!session?.token){  
+      return;
+    }
+    const response  = await logout_Action({token:session?.token})
+    if(response?.status === 200){
+      toast.success(response?.message)
+      clearData();
+      signOut({redirect:true,callbackUrl:"/signin"})
+
+      setIsLogoutDialogOpen(false);
+    }
+    else{
+      toast.error(response?.message)
+    }
   };
 
   useEffect(() => {

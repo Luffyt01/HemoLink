@@ -67,6 +67,7 @@ export const authOptions: NextAuthOptions = {
           if (!credentials?.email || !credentials?.password) {
             throw new Error("Email and password are required");
           }
+          console.log(credentials)
 
           const response = await axios.post(
             `${process.env.BACKEND_APP_URL}/auth/login`,
@@ -79,12 +80,14 @@ export const authOptions: NextAuthOptions = {
               timeout: AUTH_TIMEOUT,
             }
           );
+          // console.log("111111111",response)
 
           if (response.status !== 200) {
             throw new Error("Authentication failed");
           }
 
           const data = response.data;
+          // console.log(data)
           return {
             id: data.id,
             email: data.email,
@@ -96,10 +99,12 @@ export const authOptions: NextAuthOptions = {
         } catch (error) {
           // console.error("Credentials auth error:", error.response.data);
           if (axios.isAxiosError(error)) {
-            console.log(error.response?.data?.message)
-            throw new Error(
-              error.response?.data?.error.split(':')[0] || "Authentication failed"
-            );
+            const errorMessage = error.response?.data?.error;
+            if (errorMessage) {
+              throw new Error(errorMessage.split(':')[0] || "Authentication failed");
+            } else {
+              throw new Error("Authentication failed");
+            }
           }
           throw error;
         }

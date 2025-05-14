@@ -1,5 +1,6 @@
 
 "use server"
+import axios from "axios"
 import { z } from "zod"
 
 // Enhanced password schema with combined error message
@@ -49,13 +50,21 @@ export async function resetPasswordAction(prevState: any, formData: FormData) {
       }
       
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      const response  = await axios.post(`${process.env.BACKEND_APP_URL}/auth/reset-password`,{
+        password:password,
+        confirmPassword:confirmPassword,
+        token:token,
+        email:email
+      })
+      console.log(response.data)
+   
       
       return {
         success: true,
         message: "Password reset successfully!"
       }
     } catch (error) {
+      console.log(error)
       return {
         success: false,
         message: "Failed to reset password. Please try again."

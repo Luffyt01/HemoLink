@@ -34,14 +34,19 @@ import {
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
+import logout_Action from "@/actions/auth/logout_Action"
+import { toast } from "sonner"
 
 export function Navbar() {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const pathname = usePathname()
-  const { data: session } = useSession()
+
   const dropdownTriggerRef = useRef<HTMLButtonElement>(null)
+  const {session} = useAuthStore.getState();
+  const {clearSession} = useAuthStore.getState();
 
   const newRequestsCount = 3
 
@@ -50,10 +55,26 @@ export function Navbar() {
     { href: "/donor/history", label: "History", icon: Clock },
     { href: "/donor/requests", label: "Requests", icon: Hospital },
   ]
+  //! when user logout clear the session and the other data
+  const clearData=()=>{
+    clearSession();
+  }
 
-  const handleLogout = () => {
-    signOut()
-    setIsLogoutDialogOpen(false)
+  const handleLogout = async() => {
+    if(!session?.token){
+      return;
+    }
+
+    const response  = await logout_Action({token:session?.token})
+    if(response?.status === 200){
+      toast.success(response?.message)
+      clearData();
+      signOut({redirect:true,callbackUrl:"/signin"})
+      setIsLogoutDialogOpen(false)
+    }
+    else{
+      toast.error(response?.message)
+    }
   }
 
   useEffect(() => {

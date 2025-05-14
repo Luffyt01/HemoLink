@@ -32,6 +32,7 @@
   import { useRouter } from "next/navigation";
   import { useAuthStore } from "@/lib/stores/useAuthStore";
   import { Card } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 
   const LocationPicker = dynamic(
     () => import("@/components/CommanComponents/location-picker"),
@@ -63,7 +64,7 @@
       lng: 77.209,
       address: "",
     });
-    
+    const {updateSession} = useAuthStore();
 
     const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
@@ -100,6 +101,7 @@
           toast.success("Profile saved successfully!", {
             icon: <CheckCircle2 className="text-green-500" />,
           });
+          updateSession();
           router.push("/donor/dashboard");
         }
         if (!state.success && state.error) {
