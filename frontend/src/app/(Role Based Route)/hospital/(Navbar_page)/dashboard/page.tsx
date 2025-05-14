@@ -20,12 +20,12 @@ export default function dashboard() {
             </div>
             <div className="flex flex-wrap justify-center gap-4">
               <Button asChild className="bg-teal-600 hover:bg-teal-700">
-                <Link href="/donors">
+                <Link href="/hospital/donors">
                   Find Donors <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button asChild variant="outline">
-                <Link href="/requests">
+                <Link href="/hospital/requests">
                   Make Request <PlusCircle className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -51,7 +51,7 @@ export default function dashboard() {
               </CardContent>
               <CardFooter>
                 <Button asChild variant="ghost" className="w-full">
-                  <Link href="/donors">View Donors</Link>
+                  <Link href="/hospital/donors">View Donors</Link>
                 </Button>
               </CardFooter>
             </Card>
@@ -69,7 +69,7 @@ export default function dashboard() {
               </CardContent>
               <CardFooter>
                 <Button asChild variant="ghost" className="w-full">
-                  <Link href="/requests">Manage Requests</Link>
+                  <Link href="/hospital/requests">Manage Requests</Link>
                 </Button>
               </CardFooter>
             </Card>
@@ -87,7 +87,7 @@ export default function dashboard() {
               </CardContent>
               <CardFooter>
                 <Button asChild variant="ghost" className="w-full">
-                  <Link href="/history">View History</Link>
+                  <Link href="/hospital/history">View History</Link>
                 </Button>
               </CardFooter>
             </Card>

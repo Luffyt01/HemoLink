@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { usePathname } from "next/navigation"
-import { Bell, Home, Clock, Hospital, Menu, Droplet, User, LogOut, Settings, Edit } from "lucide-react"
+import { Bell, Home, Clock, Hospital, Menu, Droplet, User, LogOut, Settings, Edit, Trash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "../../CommanComponents/theme-toggle"
 import { ProfileModal } from "./profile/profile-modal"
@@ -288,6 +288,14 @@ export function Navbar() {
                         </DropdownMenuItem>
                       </DropdownMenuGroup>
                       <DropdownMenuSeparator className="my-1" />
+                      <DropdownMenuItem>
+                        <div className="flex items-center">
+                          <Trash className="mr-2 h-4 w-4" />
+                          <span>Delete Account</span>
+                        </div>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="my-1" />
+                      
                       <DropdownMenuItem 
                         onClick={() => {
                           setIsLogoutDialogOpen(true)
