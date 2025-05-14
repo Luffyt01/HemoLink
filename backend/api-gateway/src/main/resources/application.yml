@@ -4,6 +4,10 @@ spring:
       api-gateway
   cloud:
     gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
       routes:
         - id: default-route
           uri: no://op
@@ -14,14 +18,14 @@ spring:
             - SetResponseHeader=Content-Type,text/plain
             - SetResponseBody=API Gateway is running
         - id: user-service
-          uri: lb://USER-SERVICE
+          uri: lb://user-service
           predicates:
             - Path=/api/v1/users/**
           filters:
             - StripPrefix=2
             - name: AuthenticationFilter
         - id: matching-service
-          uri: lb://MATCHING-SERVICE
+          uri: lb://user-service
           predicates:
             - Path=/api/v1/matching/**
           filters:
