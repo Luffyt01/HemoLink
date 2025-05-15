@@ -67,7 +67,7 @@ export const authOptions: NextAuthOptions = {
           if (!credentials?.email || !credentials?.password) {
             throw new Error("Email and password are required");
           }
-          console.log(credentials)
+          // console.log(credentials)
 
           const response = await axios.post(
             `${process.env.BACKEND_APP_URL}/auth/login`,

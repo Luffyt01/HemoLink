@@ -10,7 +10,7 @@ export default function LoginPage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="h-screen w-screen bg-gradient-to-br from-rose-50 via-red-50 to-amber-50 flex items-center justify-center p-0"
+      className="h-screen w-screen  bg-gradient-to-br from-rose-50 via-red-50 to-amber-50 flex items-center justify-center p-0"
     >
       {/* Main container with responsive layout */}
       <motion.div
