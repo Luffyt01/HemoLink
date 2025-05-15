@@ -30,7 +30,7 @@ export async function completeDonorProfile(prevState: any, formData: FormData) {
     // console.log('Parsed Data Before Validation:', parsedData)
     interface location1 {
       coordinates: [number, number]; // Tuple of two numbers
-      type: string; // Typically "Point" for GeoJSON
+     
     }
    
     const inputData  = {
@@ -41,14 +41,14 @@ export async function completeDonorProfile(prevState: any, formData: FormData) {
       bloodType: parsedData.bloodType,
       location: {
         coordinates: [
+          parsedData.location.lat,
           parsedData.location.lng,
-         parsedData.location.lat
         ],
-        type: "Point"
+      
       } as location1,
       isAvailable: parsedData.isAvailable,
     }
-    console.log(inputData)
+    console.log(inputData.location.coordinates)
     const response  = await axios.post(`${process.env.BACKEND_APP_URL}/donors/completeProfile`,inputData,{
       headers: {
         'Authorization': `Bearer ${parsedData.token}`,
@@ -57,8 +57,8 @@ export async function completeDonorProfile(prevState: any, formData: FormData) {
     }
   )
 
-    console.log('Response:', response)
-    console.log('Response:222222222222222222222222222222222222',response.data)
+    // console.log('Response:', response)
+    // console.log('Response:222222222222222222222222222222222222',response.data)
     
 
 
@@ -69,7 +69,7 @@ export async function completeDonorProfile(prevState: any, formData: FormData) {
       sataus:200
      }
   } catch (error) {
-    console.error('Validation Error:', error.response)
+    // console.error('Validation Error:', error.response)
     
   
     if(error instanceof axios.AxiosError) {

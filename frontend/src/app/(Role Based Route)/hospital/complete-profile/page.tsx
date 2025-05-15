@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { toast } from "sonner";
 
 import HospitalProfileForm from "@/components/hospital/CompleteProfile/HospitalFormSteps";
 import { completeHospitalProfile } from "@/actions/Hospital/Hospital-Complete-Profile";
+import { useAuthStore } from "@/lib/stores/useAuthStore";
+import { useRouter } from "next/router";
 
 export default function CompleteHospitalProfilePage() {
  
@@ -27,6 +29,14 @@ export default function CompleteHospitalProfilePage() {
   //   }
   //   return state;
   // };
+  const {session} = useAuthStore();
+  const router = useRouter();
+  useEffect(()=>{
+    if(session?.user.profileComplete === true){
+      router.push("/hospital/dashboard")
+    }
+  },[router])
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">

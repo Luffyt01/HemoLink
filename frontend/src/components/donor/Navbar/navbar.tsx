@@ -52,6 +52,8 @@ import logout_Action from "@/actions/auth/logout_Action";
 import { toast } from "sonner";
 import { donorInformationStore } from "@/lib/stores/donor/getInformation";
 import { DeleteAccountMenuItem } from "./profile/DeleteAccountMenuItem";
+import { hospitalInformationStore } from "@/lib/stores/hostpital/getInfromationHospital";
+import removeGlobalData from "@/components/CommanComponents/RemoveGlobalData";
 
 export function Navbar() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -62,10 +64,10 @@ export function Navbar() {
 
   const dropdownTriggerRef = useRef<HTMLButtonElement>(null);
   const { session } = useAuthStore.getState();
-  const { clearSession } = useAuthStore.getState();
   const { userProfile } = donorInformationStore.getState();
 
   const newRequestsCount = 3;
+  
 
   const routes = [
     { href: "/donor/dashboard", label: "Dashboard", icon: Home },
@@ -73,9 +75,7 @@ export function Navbar() {
     { href: "/donor/requests", label: "Requests", icon: Hospital },
   ];
   //! when user logout clear the session and the other data
-  const clearData = () => {
-    clearSession();
-  };
+  
 
   const handleLogout = async () => {
     if (!session?.token) {
@@ -85,8 +85,8 @@ export function Navbar() {
     const response = await logout_Action({ token: session?.token });
     if (response?.status === 200) {
       toast.success(response?.message);
-      clearData();
-      signOut({ redirect: true, callbackUrl: "/signin" });
+      removeGlobalData();
+     await signOut({ redirect: true, callbackUrl: "/signin" });
       setIsLogoutDialogOpen(false);
     } else {
       toast.error(response?.message);

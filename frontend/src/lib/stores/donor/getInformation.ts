@@ -13,7 +13,7 @@ type Role = "USER" | "DONOR" | "HOSPITAL" | "ADMIN";
 
 interface Location {
   coordinates: number[];
-  type: string;
+
 }
 
 interface UserProfile {

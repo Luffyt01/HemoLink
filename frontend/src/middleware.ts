@@ -1,94 +1,87 @@
-
-
-
-
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const publicPaths = [
- "/",
+  "/",
   "/signin",
-  "/signup", 
-  "/api/auth/signin", 
-  "/api/auth/signup",
-  "/api/auth/callback",
-  "/_next/static",
-  "/_next/image",
-  "/favicon.ico"
+  "/signup",
+  "/api/auth/",
+  "/_next/",
+  "/favicon.ico",
+  "/error"
 ];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  console.log(`Middleware processing: ${pathname}`);
+  console.log(`[Middleware] Processing: ${pathname}`);
 
-  // Check if the path is public
-  const isPublicPath = publicPaths.some(path => 
-    pathname === path || pathname.startsWith(path)
-  );
-  
-  
-  if (isPublicPath) {
-    console.log(`Public path accessed: ${pathname}`);
-     return NextResponse.next();
-  }
+  // Skip middleware for public paths and static files
+  // if (publicPaths.some(path => pathname.startsWith(path))) {
+  //   console.log(`[Middleware] Allowing public path: ${pathname}`);
+  //   return NextResponse.next();
+  // }
+
   try {
-    console.log("Attempting to get token...");
+    console.log("[Middleware] Attempting to get token...");
     const token = await getToken({ 
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
       secureCookie: process.env.NODE_ENV === "production"
     });
 
-    console.log("Token:", token ? "Exists" : "Missing");
+    console.log(`[Middleware] Token status: ${token ? "Exists" : "Missing"}`);
 
-    // Handle unauthenticated users for non-public paths
-    if (!token) {
-      console.log("No token found, redirecting to signin");
-      const loginUrl = new URL("/signin", request.url);
-      loginUrl.searchParams.set("callbackUrl", encodeURI(request.url));
+    // Handle unauthenticated users trying to access protected routes
+    if (!token && (pathname.startsWith('/donor') || pathname.startsWith('/hospital'))) {
+      console.log(`[Middleware] Unauthenticated access to protected path: ${pathname}`);
+      const loginUrl = new URL('/signin', request.url);
+      loginUrl.searchParams.set('callbackUrl', pathname);
       return NextResponse.redirect(loginUrl);
     }
 
-    // Get role from token with default fallback
-    const role = token.role || 'DONOR';
-    console.log(`User role: ${role}`);
+    // If no token but not accessing protected route, allow
+    if (!token) {
+      console.log(`[Middleware] Allowing non-protected path without auth: ${pathname}`);
+      return NextResponse.next();
+    }
 
-    // Prevent authenticated users from accessing auth pages
-    if (pathname.startsWith("/signin") || pathname.startsWith("/signup")) {
-      console.log("Authenticated user trying to access auth page, redirecting to dashboard");
-      return NextResponse.redirect(
-        new URL(role === 'HOSPITAL' ? "/hospital/dashboard" : "/donor/dashboard", request.url)
-      );
+    const role = token.role || 'DONOR';
+    console.log(`[Middleware] User role: ${role}`);
+
+    // Redirect authenticated users away from auth pages
+    if (pathname.startsWith('/signin') || pathname.startsWith('/signup')) {
+      console.log(`[Middleware] Authenticated user accessing auth page, redirecting to dashboard`);
+      const dashboardUrl = role === 'HOSPITAL' ? '/hospital/dashboard' : '/donor/dashboard';
+      return NextResponse.redirect(new URL(dashboardUrl, request.url));
     }
 
     // Role-based route protection
-    if (role === 'DONOR' && pathname.startsWith("/hospital")) {
-      console.log("Donor trying to access hospital route, redirecting");
-      return NextResponse.redirect(new URL("/donor/dashboard", request.url));
+    if (role === 'DONOR' && pathname.startsWith('/hospital')) {
+      console.log(`[Middleware] Donor trying to access hospital route, redirecting`);
+      return NextResponse.redirect(new URL('/donor/dashboard', request.url));
     }
 
-    if (role === 'HOSPITAL' && pathname.startsWith("/donor")) {
-      console.log("Hospital trying to access donor route, redirecting");
-      return NextResponse.redirect(new URL("/hospital/dashboard", request.url));
+    if (role === 'HOSPITAL' && pathname.startsWith('/donor')) {
+      console.log(`[Middleware] Hospital trying to access donor route, redirecting`);
+      return NextResponse.redirect(new URL('/hospital/dashboard', request.url));
     }
 
-    console.log("Access granted");
+    console.log(`[Middleware] Access granted to ${pathname}`);
     return NextResponse.next();
   } catch (error) {
-    console.error("Authentication error:", error);
-    const loginUrl = new URL("/signin", request.url);
-    loginUrl.searchParams.set("error", "AuthenticationFailed");
-    return NextResponse.redirect(loginUrl);
+    console.error('[Middleware] Authentication error:', error);
+    const errorUrl = new URL('/error', request.url);
+    errorUrl.searchParams.set('error', 'authentication_failed');
+    return NextResponse.redirect(errorUrl);
   }
 }
 
 export const config = {
   matcher: [
-    "/signin",
-    "/signup",
     "/donor/:path*",
     "/hospital/:path*",
-    
+    "/signin",
+    "/signup"
   ]
-};
+};  

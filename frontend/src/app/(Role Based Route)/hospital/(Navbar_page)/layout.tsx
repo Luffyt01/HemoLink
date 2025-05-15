@@ -6,6 +6,7 @@ export default async function HostpialLayout({
 }: {
   children: React.ReactNode;
 }) {
+  
   return (
     <><div className="h-20">
 

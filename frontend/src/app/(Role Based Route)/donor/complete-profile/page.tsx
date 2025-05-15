@@ -1,14 +1,22 @@
 'use client'
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { toast } from "sonner"
 import { completeDonorProfile } from '@/actions/donor/donor-complete-profile'
 import DonorProfileForm from "@/components/donor/CompleteProfile/DonorProfileFormSteps"
-
+import { useAuthStore } from "@/lib/stores/useAuthStore"
+import { useRouter } from "next/navigation";
 export default function CompleteProfilePage() {
 
   const [isGeolocating, setIsGeolocating] = useState(false)
+  const {session} = useAuthStore();
+  const router = useRouter();
+  useEffect(()=>{
+    if(session?.user.profileComplete === true){
+      router.push("/donor/dashboard")
+    }
+  },[router])
 
 
   // Handle form submission success/error
