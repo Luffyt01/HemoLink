@@ -54,13 +54,19 @@ import { useAuthStore } from "@/lib/stores/useAuthStore";
 import logout_Action from "@/actions/auth/logout_Action";
 import { toast } from "sonner";
 
+import removeGlobalData from "@/components/CommanComponents/RemoveGlobalData";
+import { hospitalInformationStore } from "@/lib/stores/hostpital/getInfromationHospital";
+import { Hospital_Profile_Modal } from "./profile/Hospital_Profile_Modal";
+
 export function HospitalNavbar() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const pathname = usePathname();
-  const { data: session } = useSession();
+ 
   const dropdownTriggerRef = useRef<HTMLButtonElement>(null);
+  const {hospitalProfile} = hospitalInformationStore.getState();
+  const {session} = useAuthStore.getState();
 
   // Mock data for notifications
   const urgentRequestsCount = 2;
@@ -78,12 +84,7 @@ export function HospitalNavbar() {
     // { href: "/hospital/activities", label: "Activities", icon: Activity },
     { href: "/hospital/history", label: "History", icon: Clock },
   ];
-  const {clearSession} = useAuthStore.getState();
-
-  //! when user logout clear the session and the other data
-  const clearData=()=>{
-    clearSession();
-  }
+  
 
   const handleLogout = async() => {
     if(!session?.token){  
@@ -92,8 +93,8 @@ export function HospitalNavbar() {
     const response  = await logout_Action({token:session?.token})
     if(response?.status === 200){
       toast.success(response?.message)
-      clearData();
-      signOut({redirect:true,callbackUrl:"/signin"})
+      await signOut({redirect:true,callbackUrl:"/signin"})
+      removeGlobalData();
 
       setIsLogoutDialogOpen(false);
     }
@@ -215,13 +216,7 @@ export function HospitalNavbar() {
               >
                 <Hospital className="h-6 w-6 text-blue-600" />
               </motion.div>
-              {/* <motion.span
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="font-bold text-lg hidden md:inline-block"
-              >
-                MediCare Hospital
-              </motion.span> */}
+             
               <motion.span
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -334,7 +329,7 @@ export function HospitalNavbar() {
                     <Avatar className="h-8 w-8 cursor-pointer">
                       <AvatarImage src={session?.user?.image} />
                       <AvatarFallback className="bg-accent">
-                        {session?.name?.charAt(0) || (
+                        {hospitalProfile?.hospitalName?.charAt(0) || (
                           <User className="h-4 w-4" />
                         )}
                       </AvatarFallback>
@@ -361,10 +356,10 @@ export function HospitalNavbar() {
                       <DropdownMenuLabel className="px-2 py-1.5 text-sm font-normal">
                         <div className="flex flex-col space-y-1">
                           <p className="text-sm font-medium leading-none">
-                            {session?.user?.name || "Hospital Staff"}
+                            {hospitalProfile?.hospitalName || "Hospital Staff"}
                           </p>
                           <p className="text-xs leading-none text-muted-foreground">
-                            {session?.user?.email || "hospital@medicare.com"}
+                            {hospitalProfile?.user?.email || "hospital@medicare.com"}
                           </p>
                         </div>
                       </DropdownMenuLabel>
@@ -426,7 +421,7 @@ export function HospitalNavbar() {
       </header>
 
       {/* Profile Modal */}
-      {/* <ProfileModal 
+      <Hospital_Profile_Modal 
         open={isProfileOpen} 
         onOpenChange={(open) => {
           setIsProfileOpen(open)
@@ -434,7 +429,7 @@ export function HospitalNavbar() {
             setTimeout(() => dropdownTriggerRef.current?.focus(), 100)
           }
         }} 
-      /> */}
+      />
 
       {/* Logout Confirmation Dialog */}
       <AlertDialog
@@ -463,6 +458,7 @@ export function HospitalNavbar() {
                 <motion.div
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
+                  className="cursor-pointer"
                 >
                   <Button variant="outline">Cancel</Button>
                 </motion.div>
@@ -472,6 +468,7 @@ export function HospitalNavbar() {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={handleLogout}
+                  className="cursor-pointer"
                 >
                   <Button variant="destructive">Logout</Button>
                 </motion.div>

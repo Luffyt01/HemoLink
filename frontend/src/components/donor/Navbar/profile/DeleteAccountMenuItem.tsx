@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2, Trash2 } from "lucide-react";
 import {
@@ -16,6 +16,9 @@ import { Button } from "@/components/ui/button";
 import { deleteAccountAction } from "@/actions/auth/deleteAccountAction";
 import { donorInformationStore } from "@/lib/stores/donor/getInformation";
 import { useAuthStore } from "@/lib/stores/useAuthStore";
+import removeGlobalData from "@/components/CommanComponents/RemoveGlobalData";
+import { toast } from "sonner";
+import { signOut } from "next-auth/react";
 
 export function DeleteAccountMenuItem({
   open,
@@ -28,8 +31,21 @@ export function DeleteAccountMenuItem({
     deleteAccountAction,
     null
   );
-  const {session} = useAuthStore();
-  const accessToken=session?.token;
+  const { session } = useAuthStore();
+  const accessToken = session?.token;
+
+  useEffect(() => {
+    const handleDeleteAccount = async () => {
+      if (state?.success) {
+        toast.success(state?.message);
+        removeGlobalData();
+        await signOut({ redirect: true, callbackUrl: "/signin" });
+      } else {
+        toast.error(state?.message);
+      }
+    };
+    handleDeleteAccount();
+  }, [state]);
 
   const handleDeleteAccount = async () => {};
   const handleClose = () => {
@@ -77,34 +93,33 @@ export function DeleteAccountMenuItem({
         <form action={formDelete}>
           <input type="hidden" name="accessToken" value={accessToken} />
 
-
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isPending}
-            className="cursor-pointer"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="destructive"
-            onClick={handleDeleteAccount}
-            disabled={isPending}
-            className="cursor-pointer"
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isPending}
+              className="cursor-pointer"
             >
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Deleting...
-              </>
-            ) : (
-              "Delete Account"
-            )}
-          </Button>
-        </DialogFooter>
-            </form>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="destructive"
+              onClick={handleDeleteAccount}
+              disabled={isPending}
+              className="cursor-pointer"
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete Account"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

@@ -17,6 +17,7 @@ export const editProfileAction =async (prevState:any,formData:FormData) => {
               },
         }
 console.log(data)
+console.log(data.location.lat,data.location.lng)
         // const res = await axios.post(`${process.env.}/donors/EditProfile`,data,{
         //     headers:{
         //         "Content-Type":"application/json",

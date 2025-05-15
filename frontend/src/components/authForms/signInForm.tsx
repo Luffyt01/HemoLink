@@ -13,6 +13,9 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/useAuthStore";
 import { CustomSession } from "@/app/api/auth/[...nextauth]/options";
 import { ArrowRight } from "lucide-react";
+import { hospitalInformationStore } from "@/lib/stores/hostpital/getInfromationHospital";
+import { donorInformationStore } from "@/lib/stores/donor/getInformation";
+import removeGlobalData from "../CommanComponents/RemoveGlobalData";
 
 
 
@@ -24,10 +27,10 @@ export default function LoginForm() {
   const [googlePending, setGooglePending] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const {clearSession} = useAuthStore.getState();
   useEffect(()=>{
-    clearSession();
+    removeGlobalData();
   },[])
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
