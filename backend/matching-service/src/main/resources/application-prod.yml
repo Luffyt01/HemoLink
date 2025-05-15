@@ -7,6 +7,6 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: https://hemo-discovery-app.azurewebsites.net/eureka
+      defaultZone: ${EUREKA_URL}
 
 
