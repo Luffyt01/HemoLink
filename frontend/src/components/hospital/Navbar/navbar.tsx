@@ -331,10 +331,10 @@ export function HospitalNavbar() {
                     }}
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   >
-                    <Avatar className="h-8 w-8">
+                    <Avatar className="h-8 w-8 cursor-pointer">
                       <AvatarImage src={session?.user?.image} />
                       <AvatarFallback className="bg-accent">
-                        {session?.user?.name?.charAt(0) || (
+                        {session?.name?.charAt(0) || (
                           <User className="h-4 w-4" />
                         )}
                       </AvatarFallback>

@@ -1,9 +1,9 @@
-"use client"
-import { useActionState, useEffect, useState } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Button } from "@/components/ui/button"
+"use client";
+import { useActionState, useEffect, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -11,66 +11,78 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
-import { Lock, ArrowLeft, HeartPulse, Eye, EyeOff } from "lucide-react"
-import Link from "next/link"
-import { toast } from "sonner"
-import { useSearchParams } from "next/navigation"
-import { resetPasswordAction } from "@/actions/auth/resetPasswordAction"
-
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
+import { Lock, ArrowLeft, HeartPulse, Eye, EyeOff } from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
+import { resetPasswordAction } from "@/actions/auth/resetPasswordAction";
+import { useRouter } from "next/navigation";
 
 // Enhanced password schema with combined error message
 const passwordSchema = z.string().superRefine((val, ctx) => {
-  const errors = []
-  if (val.length < 8) errors.push("at least 8 characters")
-  if (!/[A-Z]/.test(val)) errors.push("one uppercase letter")
-  if (!/[a-z]/.test(val)) errors.push("one lowercase letter")
-  if (!/[0-9]/.test(val)) errors.push("one number")
-  if (!/[^A-Za-z0-9]/.test(val)) errors.push("one special character")
-  
+  const errors = [];
+  if (val.length < 8) errors.push("at least 8 characters");
+  if (!/[A-Z]/.test(val)) errors.push("one uppercase letter");
+  if (!/[a-z]/.test(val)) errors.push("one lowercase letter");
+  if (!/[0-9]/.test(val)) errors.push("one number");
+  if (!/[^A-Za-z0-9]/.test(val)) errors.push("one special character");
+
   if (errors.length > 0) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: `Password must contain: ${errors.join(", ")}`
-    })
-    return false
+      message: `Password must contain: ${errors.join(", ")}`,
+    });
+    return false;
   }
-  return true
-})
+  return true;
+});
 
-const FormSchema = z.object({
-  password: passwordSchema,
-  confirmPassword: z.string()
-}).refine(data => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"]
-})
+const FormSchema = z
+  .object({
+    password: passwordSchema,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 export default function ResetPasswordPage() {
-  const searchParams = useSearchParams()
-  const token = searchParams.get("token")
-  const email = searchParams.get("email") || "test@test.com"
-  const [state, formAction] = useActionState(resetPasswordAction, null)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+  const email = searchParams.get("email");
+  const [state, formAction, isPending] = useActionState(
+    resetPasswordAction,
+    null
+  );
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const router = useRouter();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       password: "",
-      confirmPassword: ""
-    }
-  })
+      confirmPassword: "",
+    },
+  });
 
   useEffect(() => {
-    if (state?.success) {
-      toast.success(state.message)
-    } else if (state?.message && !state?.success) {
-      toast.error(state.message)
+    if (state?.status === 200) {
+      toast.success(state.message);
+      router.push("/signin");
+    } else if (state?.status === 500) {
+      toast.error(state.error);
     }
-  }, [state])
+  }, [state, router]);
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-rose-50 to-white p-4">
@@ -88,22 +100,23 @@ export default function ResetPasswordPage() {
             </div>
           </div>
         </CardHeader>
-        
+
         <CardContent className="p-6">
           {token && email ? (
             <>
               <div className="mb-6 text-center">
-                <h2 className="text-xl font-semibold text-rose-700">Reset Your Password</h2>
+                <h2 className="text-xl font-semibold text-rose-700">
+                  Reset Your Password
+                </h2>
                 <p className="text-sm text-muted-foreground mt-1">
                   For: <span className="font-medium">{email}</span>
                 </p>
               </div>
-              
+
               <Form {...form}>
                 <form action={formAction} className="space-y-4">
                   <input type="hidden" name="token" value={token || ""} />
-                  <input type="hidden" name="email" value={email || ""} />
-                  
+
                   <FormField
                     control={form.control}
                     name="password"
@@ -134,16 +147,16 @@ export default function ResetPasswordPage() {
                         </div>
                         <FormMessage />
                         <p className="text-xs text-muted-foreground mt-1">
-                          Requirements: 8+ characters, uppercase, lowercase, number, special character
+                          Requirements: 8+ characters, uppercase, lowercase,
+                          number, special character
                         </p>
                         <p className="text-xs text-red-500 mt-1">
-
                           {state?.errors?.password?.[0]}
                         </p>
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="confirmPassword"
@@ -163,7 +176,9 @@ export default function ResetPasswordPage() {
                           <button
                             type="button"
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-rose-600"
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            onClick={() =>
+                              setShowConfirmPassword(!showConfirmPassword)
+                            }
                           >
                             {showConfirmPassword ? (
                               <EyeOff className="h-4 w-4" />
@@ -174,25 +189,24 @@ export default function ResetPasswordPage() {
                         </div>
                         <FormMessage />
                         <p className="text-xs text-red-500 mt-1">
-
                           {state?.errors?.confirmPassword?.[0]}
                         </p>
                       </FormItem>
                     )}
                   />
-                  
+
                   <Button
                     type="submit"
                     className="w-full bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white"
-                    disabled={form.formState.isSubmitting}
+                    disabled={isPending}
                   >
-                    {form.formState.isSubmitting ? (
+                    {isPending ? (
                       <span className="flex items-center gap-2">
                         <HeartPulse className="h-4 w-4 animate-pulse" />
                         Resetting...
                       </span>
                     ) : (
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center cursor-pointer gap-2">
                         <Lock className="h-4 w-4" />
                         Reset Password
                       </span>
@@ -200,10 +214,17 @@ export default function ResetPasswordPage() {
                   </Button>
                 </form>
               </Form>
-              
+
               <div className="mt-4 text-center text-sm">
-                <Button variant="link" asChild className="text-rose-600 hover:text-rose-800">
-                  <Link href="/signin" className="flex items-center justify-center gap-1">
+                <Button
+                  variant="link"
+                  asChild
+                  className="text-rose-600 hover:text-rose-800"
+                >
+                  <Link
+                    href="/signin"
+                    className="flex items-center justify-center gap-1"
+                  >
                     <ArrowLeft className="h-4 w-4" />
                     Back to login
                   </Link>
@@ -215,7 +236,8 @@ export default function ResetPasswordPage() {
               <Lock className="h-12 w-12 mx-auto text-red-500" />
               <h3 className="text-lg font-medium">Invalid Reset Link</h3>
               <p className="text-sm text-muted-foreground">
-                The password reset link is invalid or has expired. Please request a new one.
+                The password reset link is invalid or has expired. Please
+                request a new one.
               </p>
               <Button asChild variant="outline" className="mt-4">
                 <Link href="/forgot-password" className="text-rose-600">
@@ -227,8 +249,5 @@ export default function ResetPasswordPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-
-
-

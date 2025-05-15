@@ -7,18 +7,26 @@ import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { MapPin, Loader2 } from "lucide-react"
 import dynamic from "next/dynamic"
-import { useEffect, useState } from "react"
+import { startTransition, useActionState, useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Textarea } from "@/components/ui/textarea"
+import { editProfileAction } from "@/actions/donor/editProfileAction"
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   phone: z.string().min(10, "Enter a valid phone number"),
+  age: z.coerce.number() // Use coerce to convert string to number
+    .min(18, "You must be at least 18 years old")
+    .max(65, "You must be less than 65 years old"),
   address: z.string().min(5, "Address is too short"),
-  isAvailable: z.boolean()
+  isAvailable: z.boolean(),
+  location: z.object({
+    lat: z.number(),
+    lng: z.number()
+  })
 })
 
 const LocationPicker = dynamic(
@@ -34,30 +42,36 @@ interface EditProfileProps {
     name: string
     email: string
     phone: string
+    age: number
     bloodType: string
     address: string
     isAvailable: boolean
     location: { lat: number; lng: number }
   }
   onCancel: () => void
-  onSubmit: (data: any) => Promise<void>
-  isSubmitting: boolean
 }
 
-export function EditProfile({ donor, onCancel, onSubmit, isSubmitting }: EditProfileProps) {
+export function EditProfile({ donor, onCancel }: EditProfileProps) {
   const [locationState, setLocationState] = useState({
     lat: donor.location.lat,
     lng: donor.location.lng,
     address: donor.address
   })
+  const [state, formAction,isPending] = useActionState(editProfileAction, null)
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: donor.name,
+      age: donor.age,
       phone: donor.phone,
       address: donor.address,
-      isAvailable: donor.isAvailable
+      isAvailable: donor.isAvailable,
+      location: {
+        lat: donor.location.lat,
+        lng: donor.location.lng
+      }
     }
   })
 
@@ -93,20 +107,24 @@ export function EditProfile({ donor, onCancel, onSubmit, isSubmitting }: EditPro
     }, { shouldValidate: true })
   }, [locationState, form])
 
-  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
-    try {
-      await onSubmit({
-        ...data,
-        email: donor.email,
-        bloodType: donor.bloodType,
-        location: {
-          lat: locationState.lat,
-          lng: locationState.lng
-        }
-      })
-    } catch (error) {
-      toast.error("Failed to update profile")
-    }
+  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+
+    const formData = new FormData()
+
+    Object.entries(values).forEach(([key, value]) => {
+      if (key === "location") {
+        formData.append("location[lat]", value.lat.toString())
+        formData.append("location[lng]", value.lng.toString())
+      } else {
+        formData.append(key, value?.toString() ?? "")
+      }
+    })
+
+    startTransition(() => {
+      formAction(formData)
+    })
+    return
+    
   }
 
   return (
@@ -115,57 +133,83 @@ export function EditProfile({ donor, onCancel, onSubmit, isSubmitting }: EditPro
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {/* Name */}
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Full Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} className="min-w-0" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 gap-4 sm:gap-6">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} className="min-w-0" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              {/* Age - Fixed number handling */}
+              <FormField
+                control={form.control}
+                name="age"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Age</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="number"
+                        min={18}
+                        max={65}
+                        className="min-w-0"
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 gap-4 sm:gap-6">
+              {/* Phone */}
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="tel" className="min-w-0" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* Phone */}
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="tel" className="min-w-0" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Availability */}
-            <FormField
-              control={form.control}
-              name="isAvailable"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel>Available to donate</FormLabel>
-                    <p className="text-sm text-muted-foreground">
-                      {field.value ? "Visible to seekers" : "Hidden from searches"}
-                    </p>
-                  </div>
-                  <FormControl>
-                    <Switch 
-                      checked={field.value} 
-                      onCheckedChange={field.onChange}
-                      className="data-[state=checked]:bg-red-500"
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+              {/* Availability */}
+              <FormField
+                control={form.control}
+                name="isAvailable"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel>Available to donate</FormLabel>
+                      <p className="text-sm text-muted-foreground">
+                        {field.value ? "Visible to seekers" : "Hidden from searches"}
+                      </p>
+                    </div>
+                    <FormControl>
+                      <Switch 
+                        checked={field.value} 
+                        onCheckedChange={field.onChange}
+                        className="data-[state=checked]:bg-red-500"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Address */}
             <FormField
@@ -210,7 +254,7 @@ export function EditProfile({ donor, onCancel, onSubmit, isSubmitting }: EditPro
                     setLocationState({
                       lat: location.lat,
                       lng: location.lng,
-                      address: location.address || field.value.address
+                      address: location.address || locationState.address
                     })
                   }}
                   initialLocation={{
@@ -231,17 +275,17 @@ export function EditProfile({ donor, onCancel, onSubmit, isSubmitting }: EditPro
               type="button" 
               variant="outline" 
               onClick={onCancel}
-              disabled={isSubmitting}
-              className="w-full sm:w-auto"
+              disabled={isPending}
+              className="w-full cursor-pointer sm:w-auto"
             >
               Cancel
             </Button>
             <Button 
               type="submit" 
-              disabled={isSubmitting}
-              className="w-full sm:w-auto bg-red-500 hover:bg-red-600"
+              disabled={isPending}
+              className="w-full sm:w-auto cursor-pointer bg-red-500 hover:bg-red-600"
             >
-              {isSubmitting ? (
+              {isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   Saving...

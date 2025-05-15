@@ -31,6 +31,7 @@ export function ThemeToggle() {
       variant="outline"
       size="icon"
       onClick={toggleTheme}
+      className="cursor-pointer"
       aria-label="Toggle theme"
     >
       {resolvedTheme === "light" ? (

@@ -8,6 +8,7 @@ import { EditProfile } from "./EditProfile"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import type { Donor } from "@/lib/types"
+import { donorInformationStore } from "@/lib/stores/donor/getInformation"
 
 interface ProfileModalProps {
   open: boolean
@@ -16,56 +17,51 @@ interface ProfileModalProps {
 
 export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
   const [isEditing, setIsEditing] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  // const [isSubmitting, setIsSubmitting] = useState(false)
   const [donor, setDonor] = useState<Donor | null>(null)
-  const { data: session, update } = useSession()
-
+  const {userProfile}=donorInformationStore()
+  
   // Initialize donor data
   useEffect(() => {
     if (open) {
       // Simulate loading from API
       const timer = setTimeout(() => {
+        console.log(userProfile)
         setDonor({
-          name: session?.user?.name || "John Doe",
-          email: session?.user?.email || "john@example.com",
-          phone: session?.user?.phone || "+1 (555) 123-4567",
-          bloodType: "O+",
-          address: "123 Main St, Anytown, USA",
-          isAvailable: true,
-          location: { lat: 28.6139, lng: 77.209 }
+          name: userProfile?.name,
+          age: userProfile?.age,
+
+          email: userProfile?.user?.email,
+          phone: userProfile?.user?.phone,
+          bloodType: userProfile?.bloodType,
+          address: userProfile?.address,
+          isAvailable: userProfile?.available,
+          location: { lat: userProfile?.location?.coordinates[0], lng: userProfile?.location?.coordinates[1] }
         })
-      }, 500)
+      }, 400)
 
       return () => clearTimeout(timer)
     }
-  }, [open, session])
+      }, [open, userProfile])
 
-  const handleSubmit = async (data: Donor) => {
-    setIsSubmitting(true)
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+  // const handleSubmit = async (data: Donor) => {
+  //   setIsSubmitting(true)
+  //   try {
+  //     // Simulate API call
+  //     await new Promise(resolve => setTimeout(resolve, 1000))
       
-      // Update session
-      await update({
-        ...session,
-        user: {
-          ...session?.user,
-          name: data.name,
-          phone: data.phone
-        }
-      })
+      
 
-      setDonor(data)
-      setIsEditing(false)
-      toast.success("Profile updated successfully")
-    } catch (error) {
-      toast.error("Failed to update profile")
-      console.error("Update error:", error)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+  //     setDonor(data)
+  //     setIsEditing(false)
+  //     toast.success("Profile updated successfully")
+  //   } catch (error) {
+  //     toast.error("Failed to update profile")
+  //     console.error("Update error:", error)
+  //   } finally {
+  //     setIsSubmitting(false)
+  //   }
+  // }
 
   const handleClose = () => {
     onOpenChange(false)
@@ -77,13 +73,13 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="w-full sm:max-w-5xl h-[90vh] flex flex-col p-0">
         <DialogHeader className="px-6 pt-6 pb-0">
-          <DialogTitle className="text-2xl flex items-center gap-2">
-            {isSubmitting && <Loader2 className="h-5 w-5 animate-spin" />}
+          <DialogTitle className="text-2xl  flex items-center gap-2">
+            {/* {isSubmitting && <Loader2 className="h-5 w-5 animate-spin" />} */}
             {isEditing ? "Edit Profile" : "Your Profile"}
           </DialogTitle>
         </DialogHeader>
         
-        <div className="flex-1 overflow-y-auto px-6 pb-6">
+        <div className="flex-1   overflow-y-auto px-6 pb-6">
           {!donor ? (
             <div className="flex items-center justify-center h-full">
               <Loader2 className="h-8 w-8 animate-spin" />
@@ -92,8 +88,8 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
             <EditProfile 
               donor={donor} 
               onCancel={() => setIsEditing(false)}
-              onSubmit={handleSubmit}
-              isSubmitting={isSubmitting}
+              // onSubmit={handleSubmit}
+              // isSubmitting={isSubmitting}
             />
           ) : (
             <ProfileView 

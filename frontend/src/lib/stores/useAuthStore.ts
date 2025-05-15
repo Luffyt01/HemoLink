@@ -35,8 +35,7 @@ export const useAuthStore = create<AuthStore>()(
     persist(
       (set, get) => ({
         session: null,
-        loading: false,
-        error: null,
+        
         
         setSession: (session) => {
           set(
@@ -51,9 +50,7 @@ export const useAuthStore = create<AuthStore>()(
         clearSession: () => {
           set(
             { 
-              session: null,
-              error: null,
-              loading: false 
+              session: null,            
             },
             false,
             'auth/clearSession'

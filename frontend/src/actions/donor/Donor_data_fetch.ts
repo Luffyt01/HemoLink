@@ -2,33 +2,33 @@
 
 import axios from "axios"
 
-export const Donor_data_fetch = async ({donorId,accessToken}:{donorId: string,accessToken: string}) => {
- try {
-    // const response  = await axios.get(`${process.env.BACKEND_APP_URL}/donors/${{donorId}}`,
-    //     {
-    //         params: {
-    //             donorId
-    //         },
-    //         headers: {
-    //             "Content-Type": "application/json",
-    //             "Authorization": `Bearer ${accessToken}`
-    //         }
-    //     }
-    // )
+export const Donor_data_fetch = async ({ accessToken }: { accessToken: string }) => {
+    try {
+        
+        const response = await axios.get(`${process.env.BACKEND_APP_URL}/profile/me`, 
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${accessToken}`
+                }
+            }
+        )
 
-    // console.log(response.data);
+        console.log(response.data);
 
-    return {
-        // data: response.data,
-        status:200,
-        message: "Donor data fetched successfully"
+        return {
+                
+            status: 200,
+            data: response.data,
+            message: "Donor data fetched successfully"
+        }
+    } catch (error: any) {
+        console.log(error.response.data);
+        return {
+            data: null,
+            status: 500,
+            error: error?.response?.data.error,
+            message: "Failed to fetch donor data"
+        }
     }
- } catch (error) {
-    console.log(error);
-    return {
-        data: null,
-        status: 500,
-        message: "Failed to fetch donor data"
-    }
- }
 }
