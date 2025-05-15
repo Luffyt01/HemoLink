@@ -130,7 +130,7 @@ public class DonorService {
         return modelMapper.map(savedDonor, DonorDto.class);
     }
 
-    @Cacheable(value = "donors", key = "#donorId")
+//    @Cacheable(value = "donors", key = "#donorId")
     public DonorDto findDonorById(String donorId) {
         log.info("Fetching Donor by donorId: {}", donorId);
         Donor donor = donorRepository.findById(UUID.fromString(donorId))
