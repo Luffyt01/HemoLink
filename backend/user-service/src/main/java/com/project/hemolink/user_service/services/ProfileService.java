@@ -13,6 +13,7 @@ import com.project.hemolink.user_service.exception.ResourceNotFoundException;
 import com.project.hemolink.user_service.repositories.DonorRepository;
 import com.project.hemolink.user_service.repositories.HospitalRepository;
 import com.project.hemolink.user_service.repositories.UserRepository;
+import com.project.hemolink.user_service.utils.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -31,13 +32,14 @@ public class ProfileService {
     private final DonorRepository donorRepository;
     private final HospitalRepository hospitalRepository;
     private final ModelMapper modelMapper;
+    private final SecurityUtil securityUtil;
 
 
-    @Cacheable(value = "userProfiles", key = "#root.methodName + ':'+ T(com.project.hemolink.user_service.auth.UserContextHolder).getCurrentUserId()")
+//    @Cacheable(value = "userProfiles", key = "#root.methodName + ':'+ T(com.project.hemolink.user_service.auth.UserContextHolder).getCurrentUserId()")
     public Object getCompleteProfile() {
         try {
-            String userId = UserContextHolder.getCurrentUserId();
-            User user = userRepository.findById(UUID.fromString(userId))
+            UUID userId = securityUtil.getCurrentUserId();
+            User user = userRepository.findById(userId)
                     .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
             log.info("Fetching profile for {}: {}", user.getRole(), user.getEmail());
@@ -57,14 +59,14 @@ public class ProfileService {
         }
     }
 
-    @Cacheable(value = "userProfiles", key = "#root.methodName + ':'+ T(com.project.hemolink.user_service.auth.UserContextHolder).getCurrentUserId()")
+//    @Cacheable(value = "userProfiles", key = "#root.methodName + ':'+ T(com.project.hemolink.user_service.auth.UserContextHolder).getCurrentUserId()")
     public DonorDto getDonorProfile(User user){
         Donor donor = donorRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Donor not found with email: "+user.getEmail()));
         return modelMapper.map(donor, DonorDto.class);
     }
 
-    @Cacheable(value = "userProfiles", key = "#root.methodName + ':'+ T(com.project.hemolink.user_service.auth.UserContextHolder).getCurrentUserId()")
+//    @Cacheable(value = "userProfiles", key = "#root.methodName + ':'+ T(com.project.hemolink.user_service.auth.UserContextHolder).getCurrentUserId()")
     public HospitalDto getHospitalProfile(User user){
         Hospital hospital = hospitalRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Hospital not found with email: "+user.getEmail()));

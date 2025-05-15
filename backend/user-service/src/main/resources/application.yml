@@ -2,10 +2,10 @@ spring:
   application:
     name: user-service
   profiles:
-    active: dev  # Default profile
+    active: prod  # Default profile
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -46,6 +46,10 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+    enabled: true
+
+
+
 
 jwt:
   secretKey: ${JWT_SECRET_KEY}

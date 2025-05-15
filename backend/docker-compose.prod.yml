@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  # API Gateway (only publicly exposed service)
+  api-gateway:
+    image: ${ACR_NAME}.azurecr.io/api-gateway:${TAG:-latest}
+    container_name: api-gateway
+    ports:
+      - "80:8080"  # Map to standard HTTP port
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - JWT_SECRET_KEY=${JWT_SECRET}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:5432/${DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - discovery-server
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1GB
+
+  # Service Discovery
+  discovery-server:
+    image: ${ACR_NAME}.azurecr.io/discovery-server:${TAG:-latest}
+    container_name: discovery-server
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
+      - EUREKA_CLIENT_FETCH_REGISTRY=false
+      - SERVER_PORT=8761
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # User Service
+  user-service:
+    image: ${ACR_NAME}.azurecr.io/user-service:${TAG:-latest}
+    container_name: user-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - JWT_SECRET_KEY=${JWT_SECRET}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:5432/userdb
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+    depends_on:
+      - discovery-server
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1GB
+
+  # Matching Service
+  matching-service:
+    image: ${ACR_NAME}.azurecr.io/matching-service:${TAG:-latest}
+    container_name: matching-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - JWT_SECRET_KEY=${JWT_SECRET}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:5432/matchingdb
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+    depends_on:
+      - discovery-server
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1GB
+
+  # PostgreSQL (using Azure Database recommended instead)
+  postgres:
+    image: postgres:13-alpine
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_MULTIPLE_DATABASES=userdb,matchingdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2GB
+
+volumes:
+  pgdata:

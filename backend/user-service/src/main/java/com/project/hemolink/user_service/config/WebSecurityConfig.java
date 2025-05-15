@@ -27,6 +27,7 @@ public class WebSecurityConfig {
             "/auth/**",
             "/users/swagger-ui/**",
             "/users/v3/api-docs/**",
+            "/users/swagger-ui.html",
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/actuator/health"

@@ -137,7 +137,7 @@ public class AuthService {
         message.setTo(email);
         message.setSubject("Password Reset Request");
         message.setText("To reset your password, click link below: \n\n" +
-                "https://www.myalsdf.com?token="+token);
+                "https://hemo-link-iota.vercel.app/reset-password?email="+email+"&"+"token="+token);
         javaMailSender.send(message);
     }
 
