@@ -140,7 +140,7 @@ export default function SignupForm({
             name="email"
             type="email"
             required
-            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+            className="w-full px-4 py-3 text-black rounded-xl border border-gray-300 focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
             placeholder="your@email.com"
           />
           <AnimatePresence>
@@ -159,7 +159,7 @@ export default function SignupForm({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.0 }}
+          
         >
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Phone Number
@@ -168,7 +168,7 @@ export default function SignupForm({
             name="phone"
             type="tel"
             required
-            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all"
+            className="w-full px-4 py-3 text-black rounded-xl border border-gray-300 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all"
             placeholder="+912345678900"
           />
           <AnimatePresence>
@@ -195,7 +195,7 @@ export default function SignupForm({
               name="password"
               type={showPassword ? "text" : "password"}
               required
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 pr-12"
+              className="w-full px-4 py-3 text-black  rounded-xl border border-gray-300 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 pr-12"
               placeholder="••••••••"
             />
             <motion.button
@@ -230,7 +230,7 @@ export default function SignupForm({
               name="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
               required
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 pr-12"
+              className="w-full px-4 py-3 text-black rounded-xl border border-gray-300 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 pr-12"
               placeholder="••••••••"
             />
             <motion.button
@@ -275,23 +275,28 @@ export default function SignupForm({
       </div>
 
       {/* Google Sign In */}
-      <Button
-        variant="outline"
-        onClick={onGoogleSignIn}
-        className="w-full h-12 cursor-pointer  rounded-xl  border-gray-300 hover:bg-rose-50"
+      <motion.div
+    initial={{ y: 10, opacity: 0 }}
+    animate={{ y: 0, opacity: 1 }}
+    transition={{ delay: 1.7 }}
+    className=" w-full h-12 rounded-xl cursor-pointer bg-white text-gray-800 border border-gray-300 hover:bg-gray-50 hover:border-red-400 transition-colors duration-200 shadow-sm flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+  >
+    <Button
+      variant="outline"
+      onClick={onGoogleSignIn}
+      className="w-full h-12 rounded-xl bg-white cursor-pointer text-gray-800 border border-gray-300 hover:bg-gray-50 hover:border-red-400 transition-colors duration-200 shadow-sm flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={googlePending}
-      >
-        <GoogleSubmitBtn
-          pending={googlePending}
-          setPending={setGooglePending}
-        />
-      </Button>
+    >
+
+        <GoogleSubmitBtn pending={googlePending} setPending={setGooglePending} />
+    </Button>
+  </motion.div>
 
       {/* Footer Link */}
       <div className="mt-6 text-center text-sm text-gray-600">
         Already have an account?{" "}
         <Link
-          href="/signin"
+          href="/signIn"
           className="font-medium text-rose-600 hover:text-rose-500"
         >
           Sign in here

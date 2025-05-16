@@ -2,46 +2,25 @@
 
 "use client"
 
-import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import Image from "next/image"
-import { BiError, BiRefresh, BiHome } from "react-icons/bi"
-
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { FiHome, FiSearch, FiMail } from "react-icons/fi"
 import { Button } from "@/components/ui/button"
 
-interface ErrorComponentProps {
-  error?: Error & { digest?: string }
-  reset?: () => void
-}
-
-export default function Error({ error, reset }: ErrorComponentProps) {
+export default function NotFound() {
   const router = useRouter()
-
-  // Safely get error message
-  const errorMessage = error?.message || "An unknown error occurred"
-  const errorDigest = error?.digest
-
-  useEffect(() => {
-    if (error) {
-      console.error("Error boundary caught:", error)
-      // logErrorToService(error);
-    }
-  }, [error])
-
-  const handleRefresh = () => {
-    if (reset) {
-      reset()
-      router.refresh()
-    } else {
-      // Fallback refresh if no reset prop
-      window.location.reload()
-    }
-  }
 
   const handleGoHome = () => {
     router.push("/")
+  }
+
+  // const handleSearch = () => {
+  //   router.push("/search")
+  // }
+
+  const handleContact = () => {
+    window.location.href = "mailto:rockysheoran7@gmail.com?subject=404 Page Issue"
   }
 
   return (
@@ -49,75 +28,78 @@ export default function Error({ error, reset }: ErrorComponentProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="flex flex-col items-center justify-center min-h-screen p-4 bg-background text-foreground"
+      className="flex flex-col items-center justify-center min-h-screen p-6 bg-background text-foreground text-center"
     >
       <motion.div
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        className="max-w-md w-full space-y-6 text-center"
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 100 }}
+        className="max-w-2xl w-full space-y-8"
       >
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
+        <div className="relative h-64 w-full">
           <Image
-            src="/error.svg"
-            width={400}
-            height={400}
-            alt="Error illustration"
+            src="/404-illustration.svg"
+            alt="404 Not Found"
+            fill
             priority
-            className="mx-auto"
+            className="object-contain"
           />
-        </motion.div>
+        </div>
 
         <motion.div
-          initial={{ scale: 0.9 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 400 }}
-        >
-          <Alert variant="destructive" className="text-left shadow-lg">
-            <div className="flex items-start gap-3">
-              <BiError className="h-5 w-5 text-red-500 mt-0.5" />
-              <div>
-                <AlertTitle className="text-lg">Something went wrong!</AlertTitle>
-                <AlertDescription className="mt-1">
-                  {errorMessage}
-                </AlertDescription>
-                {errorDigest && (
-                  <p className="text-xs mt-2 text-muted-foreground">
-                    Error ID: {errorDigest}
-                  </p>
-                )}
-              </div>
-            </div>
-          </Alert>
-        </motion.div>
-
-        <motion.div 
-          className="flex gap-4 justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.3 }}
+          className="space-y-4"
+        >
+          <h1 className="text-4xl font-bold tracking-tight">Page Not Found</h1>
+          <p className="text-lg text-muted-foreground">
+            Oops! The page you're looking for doesn't exist or has been moved.
+          </p>
+        </motion.div>
+
+        <motion.div
+          className="flex flex-wrap justify-center gap-4 mt-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
         >
           <Button
-            onClick={handleRefresh}
-            variant="default"
+            onClick={() => window.location.reload()}
+            variant="outline"
             size="lg"
-            className="min-w-[120px] cursor-pointer gap-2"
+            className="gap-2 cursor-pointer"
           >
-            <BiRefresh className="h-5 w-5" />
-            Try Again
+              <FiSearch className="h-5 w-5" />
+            Refesh Page
           </Button>
           <Button
             onClick={handleGoHome}
-            variant="outline"
             size="lg"
-            className="min-w-[120px] cursor-pointer gap-2"
+            className="gap-2 cursor-pointer"
           >
-            <BiHome className="h-5 w-5" />
-            Dashboard
+            <FiHome className="h-5 w-5" />
+            Return Home
           </Button>
+          <Button
+            onClick={handleContact}
+            variant="ghost"
+            size="lg"
+            className="gap-2 cursor-pointer "
+          >
+            <FiMail className="h-5 w-5" />
+            Contact Support
+          </Button>
+        </motion.div>
+
+        <motion.div
+          className="mt-12 text-sm text-muted-foreground"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7 }}
+        >
+          <p>Error code: 404</p>
+          <p className="mt-1">If you believe this is a mistake, please let us know.</p>
         </motion.div>
       </motion.div>
     </motion.div>

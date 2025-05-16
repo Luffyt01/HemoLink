@@ -38,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased text-pretty break-all wrap-anywhere`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ClientSessionProvider>
           <HydrationWrapper>

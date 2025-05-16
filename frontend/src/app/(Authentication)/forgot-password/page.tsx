@@ -121,7 +121,7 @@ export default function ForgotPasswordPage() {
                 className="text-rose-600 hover:text-rose-800"
               >
                 <Link
-                  href="/signin"
+                  href="/signIn"
                   className="flex items-center gap-0.5 sm:gap-1"
                 >
                   <ArrowLeft className="h-4 w-4" />

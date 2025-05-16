@@ -15,14 +15,7 @@ interface ErrorResponse {
 
 const logout_Action = async ({ token }: { token: string }): Promise<LogoutResponse | ErrorResponse> => {
   // Validate token exists
-  if (!token || typeof token !== "string") {
-    console.error("Invalid token provided");
-    return {
-      message: "Invalid token",
-      status: 400,
-    };
-  }
-
+  console.log("token",token)
   try {
     const response = await axios.post(
       `${process.env.BACKEND_APP_URL}/auth/logout`,
@@ -32,12 +25,11 @@ const logout_Action = async ({ token }: { token: string }): Promise<LogoutRespon
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        timeout: 5000,
-        withCredentials: true,
+        
        
       }
     );
-    console.log(    "sdqd",response.data)
+    // console.log(    "sdqd",response.data)
 
     // Handle different successful status codes
     if (response.status === 204 || response.status === 200) {
@@ -54,24 +46,21 @@ const logout_Action = async ({ token }: { token: string }): Promise<LogoutRespon
 
     };
 
-  } catch (error: unknown) {
-    console.log(error)  
+  } catch (error: any) {
+    console.log("errorqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq",error.response?.data)  
     // Type-safe error handling
     if (axios.isAxiosError(error)) {
-      console.error("Logout failed - API Error:", {
-        status: error.response?.status,
-        data: error.response?.data,
-      });
-
       return {
-        message: error.response?.data?.message || "Logout failed",
-        status: error.response?.status || 500,
-        error: error.response?.data,
+        error: error.response?.data?.error || "Logout failed",
+        status:  500,
+        message: error.response?.data?.error || "Logout failed",
+
+
       };
     }
 
     // Handle non-Axios errors
-    console.error("Logout failed - Unexpected Error:", error);
+    // console.error("Logout failed - Unexpected Error:", error);
     return {
       message: "Unexpected error during logout",
       status: 500,

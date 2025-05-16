@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["google.maps"],
+    "types": ["google.maps","@types/node","next-themes"],
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,

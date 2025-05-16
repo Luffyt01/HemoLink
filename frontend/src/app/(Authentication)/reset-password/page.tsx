@@ -78,7 +78,7 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     if (state?.status === 200) {
       toast.success(state.message);
-      router.push("/signin");
+      router.push("/signIn");
     } else if (state?.status === 500) {
       toast.error(state.error);
     }
@@ -222,7 +222,7 @@ export default function ResetPasswordPage() {
                   className="text-rose-600 hover:text-rose-800"
                 >
                   <Link
-                    href="/signin"
+                    href="/signIn"
                     className="flex items-center justify-center gap-1"
                   >
                     <ArrowLeft className="h-4 w-4" />
