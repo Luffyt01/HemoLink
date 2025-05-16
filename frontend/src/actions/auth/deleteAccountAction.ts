@@ -24,7 +24,7 @@ export const deleteAccountAction = async (state: any, formData: FormData) => {
         return { success: true, message: "Account deleted successfully" };
 
     } catch (error) {
-        console.log(error.response.data);
+        // console.log(error.response.data);
         return { success: false, message: "Failed to delete account" };
     }
 

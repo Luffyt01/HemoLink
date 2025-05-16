@@ -88,14 +88,16 @@ export function HospitalNavbar() {
 
   const handleLogout = async() => {
     if(!session?.token){  
+      toast.error("You are not logged in");
+      await signOut({ redirect: true, callbackUrl: "/signIn" });
+      setIsLogoutDialogOpen(false);
       return;
     }
     const response  = await logout_Action({token:session?.token})
     if(response?.status === 200){
       toast.success(response?.message)
-      await signOut({redirect:true,callbackUrl:"/signin"})
-      removeGlobalData();
-
+        await signOut({redirect:true,callbackUrl:"/signIn"})
+      removeGlobalData(); 
       setIsLogoutDialogOpen(false);
     }
     else{

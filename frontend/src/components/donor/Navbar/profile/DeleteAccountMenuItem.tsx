@@ -38,9 +38,10 @@ export function DeleteAccountMenuItem({
     const handleDeleteAccount = async () => {
       if (state?.success) {
         toast.success(state?.message);
+        await signOut({ redirect: true, callbackUrl: "/signIn" });
         removeGlobalData();
-        await signOut({ redirect: true, callbackUrl: "/signin" });
-      } else {
+      }
+      if (state?.success === false) {
         toast.error(state?.message);
       }
     };

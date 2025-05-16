@@ -28,7 +28,7 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   useEffect(()=>{
-    removeGlobalData();
+    // removeGlobalData();
   },[])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -150,8 +150,8 @@ export default function LoginForm() {
         <div className="mt-3 text-end">
           <Link
             href="/forgot-password"
-            className=" text-sm font-medium text-primary hover:text-primary/90 transition-colors duration-200
-      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2  rounded-sm inline-flex items-center group
+            className=" text-sm font-medium text-black hover:text-black/90 transition-colors duration-200
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50 focus-visible:ring-offset-2  rounded-sm inline-flex items-center group
     "
           >
             Forgot password?
@@ -257,7 +257,7 @@ const FormField = ({
       name={name}
       type={type}
       required
-      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all duration-200"
+      className="w-full px-4 py-3 text-black rounded-xl border border-gray-300 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all duration-200"
       placeholder={placeholder}
     />
   </motion.div>
@@ -283,7 +283,7 @@ const PasswordField = ({
         name="password"
         type={showPassword ? "text" : "password"}
         required
-        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all duration-200 pr-12"
+        className="w-full px-4 py-3 text-black rounded-xl border border-gray-300 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all duration-200 pr-12"
         placeholder="••••••••"
       />
       <motion.button
@@ -380,13 +380,15 @@ const GoogleSignInButton = ({
     initial={{ y: 10, opacity: 0 }}
     animate={{ y: 0, opacity: 1 }}
     transition={{ delay: 1.7 }}
+    className=" w-full h-12 rounded-xl bg-white text-gray-800 border border-gray-300 hover:bg-gray-50 hover:border-red-400 transition-colors duration-200 shadow-sm flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
   >
     <Button
       variant="outline"
       onClick={onClick}
-      className="w-full cursor-pointer h-12 rounded-xl border-gray-300 hover:bg-rose-50 transition-colors duration-200"
+      className="w-full h-12 rounded-xl bg-white text-gray-800 border border-gray-300 hover:bg-gray-50 hover:border-red-400 transition-colors duration-200 shadow-sm flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       disabled={pending}
     >
+
       <GoogleSubmitBtn pending={pending} setPending={setPending} />
     </Button>
   </motion.div>

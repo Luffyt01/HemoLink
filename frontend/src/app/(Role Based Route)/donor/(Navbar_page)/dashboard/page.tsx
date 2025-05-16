@@ -26,8 +26,8 @@ export default function DonorDashboard() {
     {
       revalidateOnFocus: false,
       shouldRetryOnError: true,
-      errorRetryCount: 2,
-      errorRetryInterval: 5000,
+      errorRetryCount: 1,
+      errorRetryInterval: 15000,
       onSuccess: (data) => {
         console.log("Donor data loaded:", data)
         setUserProfile(data)

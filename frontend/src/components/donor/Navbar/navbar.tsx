@@ -67,7 +67,6 @@ export function Navbar() {
   const { userProfile } = donorInformationStore.getState();
 
   const newRequestsCount = 3;
-  
 
   const routes = [
     { href: "/donor/dashboard", label: "Dashboard", icon: Home },
@@ -75,21 +74,28 @@ export function Navbar() {
     { href: "/donor/requests", label: "Requests", icon: Hospital },
   ];
   //! when user logout clear the session and the other data
-  
 
   const handleLogout = async () => {
     if (!session?.token) {
+      toast.error("You are not logged in");
+
+      await signOut({ redirect: true, callbackUrl: "/signIn" });
+      setIsLogoutDialogOpen(false);
       return;
     }
 
     const response = await logout_Action({ token: session?.token });
+    console.log(response);
+
     if (response?.status === 200) {
       toast.success(response?.message);
+      await signOut({ redirect: true, callbackUrl: "/signIn" });
       removeGlobalData();
-     await signOut({ redirect: true, callbackUrl: "/signin" });
       setIsLogoutDialogOpen(false);
-    } else {
+    }
+    if (response?.status === 500) {
       toast.error(response?.message);
+      setIsLogoutDialogOpen(false);
     }
   };
 
@@ -254,7 +260,7 @@ export function Navbar() {
               </Button>
             </motion.div>
 
-            <motion.div whileHover={{ scale: 1.05 }} >
+            <motion.div whileHover={{ scale: 1.05 }}>
               <ThemeToggle />
             </motion.div>
 
@@ -331,14 +337,12 @@ export function Navbar() {
                       <DropdownMenuSeparator className="my-1" />
 
                       <DropdownMenuItem
-                       
-                       onClick={() => {
-                        setIsDeleteAccountOpen(true);
-                        setDropdownOpen(false);
-                      }}
-                      className="px-2 py-1.5 cursor-pointer rounded-md hover:bg-accent"
-                    >
-                        
+                        onClick={() => {
+                          setIsDeleteAccountOpen(true);
+                          setDropdownOpen(false);
+                        }}
+                        className="px-2 py-1.5 cursor-pointer rounded-md hover:bg-accent"
+                      >
                         <motion.div
                           whileHover={{ x: 2 }}
                           className="flex items-center "
@@ -382,13 +386,13 @@ export function Navbar() {
         }}
       />
       <DeleteAccountMenuItem
-         open={isDeleteAccountOpen}
-         onOpenChange={(open) => {
-           setIsDeleteAccountOpen(open);
-           if (!open) {
-             setTimeout(() => dropdownTriggerRef.current?.focus(), 100);
-           }
-         }}
+        open={isDeleteAccountOpen}
+        onOpenChange={(open) => {
+          setIsDeleteAccountOpen(open);
+          if (!open) {
+            setTimeout(() => dropdownTriggerRef.current?.focus(), 100);
+          }
+        }}
       />
 
       <AlertDialog
@@ -418,7 +422,9 @@ export function Navbar() {
                   whileTap={{ scale: 0.97 }}
                   className="cursor-pointer"
                 >
-                  <Button variant="outline" className="cursor-pointer">Cancel</Button>
+                  <Button variant="outline" className="cursor-pointer">
+                    Cancel
+                  </Button>
                 </motion.div>
               </AlertDialogCancel>
               <AlertDialogAction asChild>
@@ -428,7 +434,9 @@ export function Navbar() {
                   onClick={handleLogout}
                   className="cursor-pointer"
                 >
-                  <Button variant="destructive" className="cursor-pointer ">Logout</Button>
+                  <Button variant="destructive" className="cursor-pointer ">
+                    Logout
+                  </Button>
                 </motion.div>
               </AlertDialogAction>
             </AlertDialogFooter>
