@@ -2,7 +2,7 @@ spring:
   application:
     name: user-service
   profiles:
-    active: prod  # Default profile
+    active: dev  # Default profile
   jpa:
     hibernate:
       ddl-auto: update

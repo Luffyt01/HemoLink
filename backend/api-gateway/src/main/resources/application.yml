@@ -2,52 +2,22 @@ spring:
   application:
     name:
       api-gateway
+
   cloud:
     gateway:
       discovery:
         locator:
           enabled: true
           lower-case-service-id: true
-      routes:
-        - id: user-service-api-docs
-          uri: lb://user-service
-          predicates:
-            - Path=/api/v1/users/v3/api-docs
-          filters:
-            - StripPrefix=2
-        - id: user-service-swagger
-          uri: lb://user-service
-          predicates:
-            - Path=/api/v1/users/swagger-ui/**
-          filters:
-            - StripPrefix=2
 
-        - id: user-service
-          uri: ${USER_SERVICE_URL}
-          predicates:
-            - Path=/api/v1/users/**
-          filters:
-            - StripPrefix=2
-            - name: AuthenticationFilter
-        - id: matching-service
-          uri: ${MATCHING_SERVICE_URL}
-          predicates:
-            - Path=/api/v1/matching/**
-          filters:
-            - StripPrefix=2
-            - name: AuthenticationFilter
+  profiles:
+    active: dev
+
 
 server:
   port: 8080
 
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_URL}
-    fetch-registry: true
-    register-with-eureka: true
-    healthcheck:
-      enabled: true
+
 
 
 jwt.secretKey: ${JWT_SECRET_KEY}
@@ -57,3 +27,7 @@ management:
     web:
       exposure:
         include: health,info
+
+
+user.endpoint: ${USER_SERVICE_URL}
+matching.endpoint: ${MATCHING_SERVICE_URL}
