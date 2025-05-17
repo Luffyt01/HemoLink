@@ -30,4 +30,6 @@ public interface BloodRequestRepository extends JpaRepository<BloodRequest, UUID
     List<BloodRequest> findByUrgency(UrgencyLevel urgency);
 
     long countByStatusNot(RequestStatus status);
+
+    Page<BloodRequest> findByHospitalIdAndStatus(String hospitalId, RequestStatus requestStatus, Pageable pageRequest);
 }
