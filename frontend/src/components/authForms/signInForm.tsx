@@ -380,12 +380,12 @@ const GoogleSignInButton = ({
     initial={{ y: 10, opacity: 0 }}
     animate={{ y: 0, opacity: 1 }}
     transition={{ delay: 1.7 }}
-    className=" w-full h-12 rounded-xl bg-white text-gray-800 border border-gray-300 hover:bg-gray-50 hover:border-red-400 transition-colors duration-200 shadow-sm flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+    className=" w-full h-12 rounded-xl cursor-pointer bg-white text-gray-800 border border-gray-300 hover:bg-gray-50 hover:border-red-400 transition-colors duration-200 shadow-sm flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
   >
     <Button
       variant="outline"
       onClick={onClick}
-      className="w-full h-12 rounded-xl bg-white text-gray-800 border border-gray-300 hover:bg-gray-50 hover:border-red-400 transition-colors duration-200 shadow-sm flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full h-12 rounded-xl cursor-pointer bg-white text-gray-800 border border-gray-300 hover:bg-gray-50 hover:border-red-400 transition-colors duration-200 shadow-sm flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       disabled={pending}
     >
 
