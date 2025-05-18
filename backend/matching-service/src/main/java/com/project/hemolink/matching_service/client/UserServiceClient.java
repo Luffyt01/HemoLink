@@ -44,4 +44,5 @@ public interface UserServiceClient {
             @RequestParam boolean available);
 
 
+    double calculateDistance(String requestId, String donorId);
 }

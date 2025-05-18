@@ -6,6 +6,7 @@ import com.project.hemolink.matching_service.services.MatchingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,5 +46,43 @@ public class DonorMatchingController {
             ){
         matchingService.rejectMatch(rejectMatchDto);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/volunteer")
+    @PreAuthorize("hasRole('DONOR')")
+    public ResponseEntity<VolunteerResponseDto> volunteerForRequest(
+            @RequestBody VolunteerRequestDto volunteerRequest) {
+        return new ResponseEntity<>(
+                matchingService.processVolunteer(volunteerRequest),
+                HttpStatus.CREATED
+        );
+    }
+
+    @GetMapping("/history/{donorId}")
+    @PreAuthorize("hasRole('DONOR') and #donorId == authentication.principal.id")
+    public ResponseEntity<List<DonorMatchHistoryDto>> getDonorMatchHistory(
+            @PathVariable String donorId,
+            @RequestParam(defaultValue = "false") boolean includeRejected) {
+        return ResponseEntity.ok(
+                matchingService.getDonorMatchHistory(donorId, includeRejected)
+        );
+    }
+
+    @GetMapping("/request/{requestId}/donors")
+    @PreAuthorize("hasRole('HOSPITAL')")
+    public ResponseEntity<List<RequestMatchSummaryDto>> getRequestDonorMatches(
+            @PathVariable String requestId) {
+        return ResponseEntity.ok(
+                matchingService.getRequestDonorMatches(requestId)
+        );
+    }
+
+    @GetMapping("/request/{requestId}/status")
+    @PreAuthorize("hasRole('HOSPITAL')")
+    public ResponseEntity<RequestMatchingStatusDto> getRequestMatchingStatus(
+            @PathVariable String requestId) {
+        return ResponseEntity.ok(
+                matchingService.getRequestMatchingStatus(requestId)
+        );
     }
 }
