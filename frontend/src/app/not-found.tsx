@@ -20,7 +20,7 @@ export default function NotFound() {
   // }
 
   const handleContact = () => {
-    window.location.href = "mailto:rockysheoran7@gmail.com?subject=404 Page Issue"
+    window.location.href = "mailto:rockysheoran72@gmail.com?subject=404 Page Issue"
   }
 
   return (
