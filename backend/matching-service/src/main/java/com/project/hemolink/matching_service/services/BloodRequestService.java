@@ -164,60 +164,8 @@ public class BloodRequestService {
                 .orElseThrow(() -> new ResourceNotFoundException("Blood request not found with id: " + requestId));
     }
 
-//    // TODO Create controller for following functions Add pagination
-//    public List<BloodRequestDto> getUrgentRequests(UrgencyLevel urgencyLevel) {
-//        log.info("Attempting to fetch all the request with {} urgency", urgencyLevel);
-//        List<BloodRequest> bloodRequests = bloodRequestRepository.findByUrgency(urgencyLevel);
-//        if (bloodRequests.isEmpty()) {
-//            throw new ResourceNotFoundException("No request found for " + urgencyLevel + " urgency");
-//        }
-//        return bloodRequests.stream()
-//                .map(bloodRequest -> modelMapper.map(bloodRequest, BloodRequestDto.class))
-//                .toList();
-//    }
 
-//    @Transactional
-//    public List<BloodRequestDto> expiredRequests() {
-//        List<BloodRequest> expired = bloodRequestRepository
-//                .findByStatusAndExpiryTimeBefore(
-//                        RequestStatus.PENDING,
-//                        LocalDateTime.now()
-//                );
-//
-//        expired.forEach(request -> request.setStatus(RequestStatus.EXPIRED));
-//        bloodRequestRepository.saveAll(expired);
-//    }
 
-    public long countActiveRequests() {
-        return bloodRequestRepository.countByStatusNot(RequestStatus.FULFILLED);
-    }
-
-    public Page<BloodRequestDto> getAllActiveRequests(PageRequest pageRequest) {
-        UUID userId = securityUtil.getCurrentUserId();
-
-        HospitalDto hospitalDto = userServiceClient.getHospitalByUserId(userId.toString()).getBody();
-        if (hospitalDto == null) {
-            throw new ResourceNotFoundException("Hospital not found with userId: " + userId);
-        }
-
-        String hospitalId = hospitalDto.getId();
-        log.info("Fetching all the active requests for hospital with id: {}", hospitalId);
-
-        boolean exists = bloodRequestRepository.existsByHospitalId(hospitalId);
-
-        if (!exists) {
-            throw new ResourceNotFoundException("No blood request found for the hospital with id: " + hospitalId);
-        }
-
-        Page<BloodRequest> activeRequests = bloodRequestRepository.
-                findByHospitalIdAndStatus(
-                        hospitalId,
-                        RequestStatus.PENDING,
-                        pageRequest);
-
-        return activeRequests.map(
-                bloodRequest -> modelMapper.map(bloodRequest, BloodRequestDto.class));
-    }
 
 
     public Page<BloodRequestDto> getFilteredRequests(
@@ -228,7 +176,7 @@ public class BloodRequestService {
             LocalDateTime expiryEnd,
             PageRequest pageRequest) {
 
-        // Build dynamic query using Specifications
+        // Using Specifications to build dynamic query system
         Specification<BloodRequest> spec = Specification.where(null);
 
         if (status != null) {
@@ -260,30 +208,4 @@ public class BloodRequestService {
         return requests.map(request -> modelMapper.map(request, BloodRequestDto.class));
     }
 
-//    public Page<BloodRequestDto> getFilteredRequests(
-//            RequestStatus status,
-//            BloodType bloodType,
-//            UrgencyLevel urgency,
-//            String hospitalId,
-//            Pageable pageable) {
-//
-//        log.info("Fetching requests with filters - Status: {}, BloodType: {}, Urgency: {}, Hospital: {}",
-//                status, bloodType, urgency, hospitalId);
-//
-//        Page<BloodRequest> requests = bloodRequestRepository.findFilteredRequests(
-//                status,
-//                bloodType,
-//                urgency,
-//                hospitalId,
-//                pageable
-//        );
-//
-//        if (requests.isEmpty()) {
-//            throw new ResourceNotFoundException("No requests found with the specified filters");
-//        }
-//
-//        return requests.map(request ->
-//                modelMapper.map(request, BloodRequestDto.class)
-//        );
-//    }
 }
