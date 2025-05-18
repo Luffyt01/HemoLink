@@ -1,16 +1,20 @@
 package com.project.hemolink.matching_service.controller;
 
 import com.project.hemolink.matching_service.dto.*;
+import com.project.hemolink.matching_service.entities.enums.BloodType;
 import com.project.hemolink.matching_service.entities.enums.RequestStatus;
 import com.project.hemolink.matching_service.entities.enums.UrgencyLevel;
 import com.project.hemolink.matching_service.services.BloodRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/requests")
@@ -61,13 +65,37 @@ public class BloodRequestController {
     }
 
 
-    @GetMapping("/active/getRequests")
-    public ResponseEntity<Page<BloodRequestDto>> getAllActiveRequests(@RequestParam (defaultValue = "0") Integer pageNumber,
-                                                                      @RequestParam (defaultValue = "10", required = false) Integer pageSize){
-        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
-        return ResponseEntity.ok(bloodRequestService.getAllActiveRequests(pageRequest));
+
+
+    @GetMapping("/filter")
+    public ResponseEntity<Page<BloodRequestDto>> getFilteredRequests(
+            @RequestParam(required = false) RequestStatus status,
+            @RequestParam(required = false) BloodType bloodType,
+            @RequestParam(required = false) UrgencyLevel urgency,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime expiryStart,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime expiryEnd,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "expiryTime,asc") String sort) {
+
+        // Parse sort parameter
+        String[] sortParams = sort.split(",");
+        Sort.Direction direction = sortParams.length > 1 ?
+                Sort.Direction.fromString(sortParams[1]) : Sort.Direction.ASC;
+
+        Sort sortConfig = Sort.by(new Sort.Order(direction, sortParams[0]));
+        PageRequest pageRequest = PageRequest.of(page, size, sortConfig);
+
+        return ResponseEntity.ok(
+                bloodRequestService.getFilteredRequests(
+                        status,
+                        bloodType,
+                        urgency,
+                        expiryStart,
+                        expiryEnd,
+                        pageRequest
+                )
+        );
     }
-
-
 
 }
