@@ -42,8 +42,8 @@ public class BloodRequestService {
         UUID userId = securityUtil.getCurrentUserId();
 
         HospitalDto hospitalDto = userServiceClient.getHospitalByUserId(userId.toString()).getBody();
-        if (hospitalDto == null){
-            throw new ResourceNotFoundException("Hospital not found with userId: "+userId);
+        if (hospitalDto == null) {
+            throw new ResourceNotFoundException("Hospital not found with userId: " + userId);
         }
 
         BloodRequest bloodRequest = new BloodRequest();
@@ -60,18 +60,18 @@ public class BloodRequestService {
         return modelMapper.map(savedRequest, BloodRequestDto.class);
     }
 
-    public BloodRequestDto getRequest(String requestId){
+    public BloodRequestDto getRequest(String requestId) {
         log.info("Fetching the blood request for request id: {}", requestId);
         BloodRequest bloodRequest = getBloodRequest(requestId);
 
         return modelMapper.map(bloodRequest, BloodRequestDto.class);
     }
 
-    public BloodRequestDto updateRequestUrgency(String requestId, UrgencyLevel urgencyLevel){
+    public BloodRequestDto updateRequestUrgency(String requestId, UrgencyLevel urgencyLevel) {
         log.info("Updating the urgency for the blood request with id: {} to {}", requestId, urgencyLevel);
         BloodRequest bloodRequest = getBloodRequest(requestId);
 
-        if (bloodRequest.getUrgency() == urgencyLevel){
+        if (bloodRequest.getUrgency() == urgencyLevel) {
             throw new BadRequestException("Urgency is already set to same value");
         }
         bloodRequest.setUrgency(urgencyLevel);
@@ -80,11 +80,11 @@ public class BloodRequestService {
         return modelMapper.map(bloodRequestRepository.save(bloodRequest), BloodRequestDto.class);
     }
 
-    public BloodRequestDto updateRequestStatus(String requestId, RequestStatus requestStatus){
+    public BloodRequestDto updateRequestStatus(String requestId, RequestStatus requestStatus) {
         log.info("Updating the status for the blood request with id: {} to {}", requestId, requestStatus);
         BloodRequest bloodRequest = getBloodRequest(requestId);
 
-        if (bloodRequest.getStatus() == requestStatus){
+        if (bloodRequest.getStatus() == requestStatus) {
             throw new BadRequestException("Request status is already set to the same value");
         }
 
@@ -93,15 +93,15 @@ public class BloodRequestService {
         return modelMapper.map(bloodRequestRepository.save(bloodRequest), BloodRequestDto.class);
     }
 
-    public BloodRequestDto updateRequestDetails(String requestId, UpdateRequestDto updateRequestDto){
+    public BloodRequestDto updateRequestDetails(String requestId, UpdateRequestDto updateRequestDto) {
         log.info("Updating the details for blood request with id: {}", requestId);
         BloodRequest bloodRequest = getBloodRequest(requestId);
 
         if (updateRequestDto.getUrgency().equals(bloodRequest.getUrgency())
-            && updateRequestDto.getBloodType().equals(bloodRequest.getBloodType())
-            && updateRequestDto.getStatus().equals(bloodRequest.getStatus())
-            && updateRequestDto.getUnitsRequired() == bloodRequest.getUnitsRequired()
-            && updateRequestDto.getLocation().equals(modelMapper.map(bloodRequest.getLocation(), PointDTO.class))){
+                && updateRequestDto.getBloodType().equals(bloodRequest.getBloodType())
+                && updateRequestDto.getStatus().equals(bloodRequest.getStatus())
+                && updateRequestDto.getUnitsRequired() == bloodRequest.getUnitsRequired()
+                && updateRequestDto.getLocation().equals(modelMapper.map(bloodRequest.getLocation(), PointDTO.class))) {
             throw new BadRequestException("No changes made, Please change a value to make change");
         }
 
@@ -114,41 +114,40 @@ public class BloodRequestService {
         return modelMapper.map(bloodRequestRepository.save(bloodRequest), BloodRequestDto.class);
     }
 
-    public Page<BloodRequestDto> getAllRequests(PageRequest pageRequest){
+    public Page<BloodRequestDto> getAllRequests(PageRequest pageRequest) {
         UUID userId = securityUtil.getCurrentUserId();
 
         HospitalDto hospitalDto = userServiceClient.getHospitalByUserId(userId.toString()).getBody();
-        if (hospitalDto == null){
-            throw new ResourceNotFoundException("Hospital not found with userId: "+userId);
+        if (hospitalDto == null) {
+            throw new ResourceNotFoundException("Hospital not found with userId: " + userId);
         }
 
         String hospitalId = hospitalDto.getId();
-        log.info("Fetching all the requests for hospital with id: {}",hospitalId);
+        log.info("Fetching all the requests for hospital with id: {}", hospitalId);
 
         boolean exists = bloodRequestRepository.existsByHospitalId(hospitalId);
 
-        if (!exists){
-            throw new ResourceNotFoundException("No blood request found for the hospital with id: "+hospitalId);
+        if (!exists) {
+            throw new ResourceNotFoundException("No blood request found for the hospital with id: " + hospitalId);
         }
 
         Page<BloodRequest> bloodRequests = bloodRequestRepository.findByHospitalId(hospitalId, pageRequest);
 
         return bloodRequests.map(
-                bloodRequest -> modelMapper.map(bloodRequest, BloodRequestDto.class)
-        );
+                bloodRequest -> modelMapper.map(bloodRequest, BloodRequestDto.class));
     }
 
-    public LocalDateTime setRequestExpiryTime(UrgencyLevel urgencyLevel){
-        if (urgencyLevel == UrgencyLevel.HIGH){
+    public LocalDateTime setRequestExpiryTime(UrgencyLevel urgencyLevel) {
+        if (urgencyLevel == UrgencyLevel.HIGH) {
             return LocalDateTime.now().plusHours(24);
-        } else if (urgencyLevel == UrgencyLevel.MEDIUM){
+        } else if (urgencyLevel == UrgencyLevel.MEDIUM) {
             return LocalDateTime.now().plusDays(5);
         } else {
             return LocalDateTime.now().plusDays(14);
         }
     }
 
-    public BloodRequestDto cancelRequest(String requestId){
+    public BloodRequestDto cancelRequest(String requestId) {
         log.info("Canceling the request with id: {}", requestId);
         BloodRequest bloodRequest = getBloodRequest(requestId);
 
@@ -157,16 +156,16 @@ public class BloodRequestService {
         return modelMapper.map(bloodRequestRepository.save(bloodRequest), BloodRequestDto.class);
     }
 
-    public BloodRequest getBloodRequest(String requestId){
+    public BloodRequest getBloodRequest(String requestId) {
         return bloodRequestRepository.findById(UUID.fromString(requestId))
-                .orElseThrow(() -> new ResourceNotFoundException("Blood request not found with id: "+requestId));
+                .orElseThrow(() -> new ResourceNotFoundException("Blood request not found with id: " + requestId));
     }
 
-    // TODO Create controller for following functions
-    public List<BloodRequestDto> getUrgentRequests(UrgencyLevel urgencyLevel){
+    // TODO Create controller for following functions Add pagination
+    public List<BloodRequestDto> getUrgentRequests(UrgencyLevel urgencyLevel) {
         log.info("Attempting to fetch all the request with {} urgency", urgencyLevel);
         List<BloodRequest> bloodRequests = bloodRequestRepository.findByUrgency(urgencyLevel);
-        if (bloodRequests.isEmpty()){
+        if (bloodRequests.isEmpty()) {
             throw new ResourceNotFoundException("No request found for " + urgencyLevel + " urgency");
         }
         return bloodRequests.stream()
@@ -186,7 +185,36 @@ public class BloodRequestService {
         bloodRequestRepository.saveAll(expired);
     }
 
-    public long countActiveRequests(){
+    public long countActiveRequests() {
         return bloodRequestRepository.countByStatusNot(RequestStatus.FULFILLED);
     }
+
+    public Page<BloodRequestDto> getAllActiveRequests(PageRequest pageRequest) {
+        UUID userId = securityUtil.getCurrentUserId();
+
+        HospitalDto hospitalDto = userServiceClient.getHospitalByUserId(userId.toString()).getBody();
+        if (hospitalDto == null) {
+            throw new ResourceNotFoundException("Hospital not found with userId: " + userId);
+        }
+
+        String hospitalId = hospitalDto.getId();
+        log.info("Fetching all the active requests for hospital with id: {}", hospitalId);
+
+        boolean exists = bloodRequestRepository.existsByHospitalId(hospitalId);
+
+        if (!exists) {
+            throw new ResourceNotFoundException("No blood request found for the hospital with id: " + hospitalId);
+        }
+
+        Page<BloodRequest> activeRequests = bloodRequestRepository.
+                findByHospitalIdAndStatus(
+                        hospitalId,
+                        RequestStatus.PENDING,
+                        pageRequest);
+
+        return activeRequests.map(
+                bloodRequest -> modelMapper.map(bloodRequest, BloodRequestDto.class));
+    }
+
+
 }

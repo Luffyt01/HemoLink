@@ -35,7 +35,6 @@ public class HospitalService {
     private final SecurityUtil securityUtil;
 
     @Transactional
-    @CachePut(cacheNames = "hospitals-by-id", key = "#result.id")
     public HospitalDto completeProfile(CompleteHospitalProfileDto completeHospitalProfileDto) {
         try {
             // Fetching the user id of current logged user
@@ -72,7 +71,6 @@ public class HospitalService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "hospitals-by-id", key = "#hospitalId")
     public HospitalDto findHospitalById(String hospitalId) {
         try {
             log.info("Fetching hospital with ID: {}", hospitalId);
@@ -91,7 +89,7 @@ public class HospitalService {
     }
 
 
-    @Cacheable(value = "hospitals-by-user-id", key = "#userId")
+
     public HospitalDto getHospitalByUserId(String userId) {
         log.info("Fetching the Hospital with userId: {}", userId);
         User user = userRepository.findById(UUID.fromString(userId))
