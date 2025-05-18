@@ -145,14 +145,15 @@ button, input, label {
   padding: 0 10px;
 }
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 7px;
+  height: 7px ;
 }
 
 ::-webkit-scrollbar-track {
   border-radius: 8px;
   background-color: #e7e7e7;
   border: 1px solid #cacaca;
-}
+} 
 
 ::-webkit-scrollbar-thumb {
   border-radius: 8px;
