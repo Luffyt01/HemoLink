@@ -30,7 +30,8 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                     || requestPath.contains("swagger-ui.html")
                     || requestPath.contains("/v3/api-docs")
                     || requestPath.contains("index.html")
-                    || requestPath.contains("/users/swagger-ui")){
+                    || requestPath.contains("/users/swagger-ui")
+                    || requestPath.contains("/matching/swagger-ui")){
                 return chain.filter(exchange);
             }
 

@@ -1,0 +1,48 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: user-service-api-docs
+          uri: lb://user-service
+          predicates:
+            - Path=/users/v3/**
+
+        - id: user-service-swagger
+          uri: lb://user-service
+          predicates:
+            - Path=/users/swagger-ui/**
+
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/users/**
+          filters:
+            - StripPrefix=2
+            - name: AuthenticationFilter
+
+        - id: matching-service-api-docs
+          uri: lb://matching-service
+          predicates:
+            - Path=/matching/v3/**
+
+        - id: matching-service-swagger
+          uri: lb://matching-service
+          predicates:
+            - Path=/matching/swagger-ui/**
+
+        - id: matching-service
+          uri: lb://matching-service
+          predicates:
+            - Path=/api/v1/matching/**
+          filters:
+            - StripPrefix=2
+            - name: AuthenticationFilter
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    fetch-registry: true
+    register-with-eureka: true
+    healthcheck:
+      enabled: true

@@ -25,6 +25,7 @@ public interface UserServiceClient {
     @GetMapping("/hospitals/{hospitalId}")
     HospitalDto getHospital(@PathVariable String hospitalId);
 
+
     @GetMapping("/hospitals/by-user/{userId}")
     ResponseEntity<HospitalDto> getHospitalByUserId(@PathVariable String userId);
 

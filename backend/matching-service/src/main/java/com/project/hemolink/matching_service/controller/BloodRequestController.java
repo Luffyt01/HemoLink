@@ -61,4 +61,13 @@ public class BloodRequestController {
     }
 
 
+    @GetMapping("/active/getRequests")
+    public ResponseEntity<Page<BloodRequestDto>> getAllActiveRequests(@RequestParam (defaultValue = "0") Integer pageNumber,
+                                                                      @RequestParam (defaultValue = "10", required = false) Integer pageSize){
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+        return ResponseEntity.ok(bloodRequestService.getAllActiveRequests(pageRequest));
+    }
+
+
+
 }
