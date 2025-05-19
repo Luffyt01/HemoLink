@@ -106,7 +106,7 @@ export function RequestTables({
       {activeTab === 'active' && (
         <div className="border rounded-lg overflow-hidden">
           <Table>
-            <TableHeader className="bg-gray-50">
+            <TableHeader className="">
               <TableRow>
                 <TableHead>Blood Type</TableHead>
                 <TableHead>Units</TableHead>
@@ -172,7 +172,7 @@ export function RequestTables({
                 <TableHead>Created</TableHead>
                 <TableHead>Completed</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
+                {/* <TableHead>Actions</TableHead> */}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -202,12 +202,12 @@ export function RequestTables({
                         {request.status}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    {/* <TableCell>
                       <RequestActions 
                         request={request}
                      
                       />
-                    </TableCell>
+                    </TableCell> */}
                   </TableRow>
                 ))
               ) : (
