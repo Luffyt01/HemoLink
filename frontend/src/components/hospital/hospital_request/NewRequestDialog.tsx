@@ -75,7 +75,10 @@ export function NewRequestDialog({ onSubmit }: NewRequestDialogProps) {
   })
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
+
+    console.log(values)
     onSubmit(values)
+    
     setOpen(false)
   }
 
