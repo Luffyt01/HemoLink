@@ -131,6 +131,8 @@ export function RequestActions({ request }: RequestActionsProps) {
                 variant="outline" 
                 onClick={() => setShowCancelDialog(false)}
                 disabled={isLoading}
+                className='text-black hover:text-black/75'
+
               >
                 Cancel
               </Button>
@@ -166,6 +168,8 @@ export function RequestActions({ request }: RequestActionsProps) {
                 variant="outline" 
                 onClick={() => setShowUrgencySelect(false)}
                 disabled={isLoading}
+                className='text-black hover:text-black/75'
+
               >
                 Cancel
               </Button>
@@ -200,6 +204,7 @@ export function RequestActions({ request }: RequestActionsProps) {
                 variant="outline" 
                 onClick={() => setShowStatusSelect(false)}
                 disabled={isLoading}
+                className='text-black hover:text-black/75'
               >
                 Cancel
               </Button>

@@ -254,15 +254,15 @@ export default function HospitalProfileForm({
       icon: <Building2 className="w-4 h-4" />,
       render: ({ field }: any) => (
         <Select onValueChange={field.onChange} defaultValue={field.value}>
-          <SelectTrigger className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500">
+          <SelectTrigger className=" border-gray-200 focus:ring-2 focus:ring-blue-500">
             <SelectValue placeholder="Select hospital type" />
           </SelectTrigger>
-          <SelectContent className="bg-white">
+          <SelectContent className="">
             {Object.values(HospitalType).map((type) => (
               <SelectItem
                 key={type}
                 value={type}
-                className="hover:bg-blue-50 focus:bg-blue-50"
+                className=" "
               >
                 {type}
               </SelectItem>
@@ -283,7 +283,7 @@ export default function HospitalProfileForm({
           max={new Date().getFullYear()}
           {...field}
           onChange={(e) => field.onChange(parseInt(e.target.value))}
-          className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500"
+          className=" border-gray-200 focus:ring-2 focus:ring-blue-500"
         />
       ),
     },
@@ -309,7 +309,7 @@ export default function HospitalProfileForm({
         <div className="space-y-2">
           <div className="flex justify-between items-center">
             <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
-              <MapPin className="w-4 h-4" />
+              {/* <MapPin className="w-4 h-4" /> */}
               {field.label}
             </FormLabel>
             <Button
@@ -503,7 +503,7 @@ export default function HospitalProfileForm({
           {/* Step 1: Basic Information */}
           {currentStep === 1 && (
             <Card className="p-3 md:p-6 space-y-1">
-              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <h2 className="text-xl font-bold  flex items-center gap-2">
                 <Building2 className="w-5 h-5" />
                 Basic Hospital Information
               </h2>
@@ -514,7 +514,7 @@ export default function HospitalProfileForm({
                   name={field.name as keyof z.infer<typeof formSchema>}
                   render={({ field: formField }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
+                      <FormLabel className=" font-medium flex items-center gap-2">
                         {field.icon}
                         {field.label}
                       </FormLabel>
@@ -526,7 +526,7 @@ export default function HospitalProfileForm({
                             type={field.type}
                             placeholder={field.placeholder}
                             {...formField}
-                            className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500"
+                            className=" border-gray-200 focus:ring-2 focus:ring-blue-500"
                           />
                         )}
                       </FormControl>
@@ -546,7 +546,7 @@ export default function HospitalProfileForm({
           {/* Step 2: Contact & Location */}
           {currentStep === 2 && (
             <Card className="p-3 md:p-6 space-y-1">
-              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <h2 className="text-xl font-bold  flex items-center gap-2">
                 <MapPin className="w-5 h-5" />
                 Contact & Location Information
               </h2>
@@ -558,7 +558,7 @@ export default function HospitalProfileForm({
                   render={({ field: formField }) => (
                     <FormItem>
                       {field.icon && (
-                        <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
+                        <FormLabel className=" font-medium flex items-center gap-2">
                           {field.icon}
                           {field.label}
                         </FormLabel>
@@ -570,7 +570,7 @@ export default function HospitalProfileForm({
                           <Textarea
                             placeholder={field.placeholder}
                             {...formField}
-                            className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500"
+                            className=" border-gray-200 focus:ring-2 focus:ring-blue-500"
                             rows={field.props?.rows || 3}
                           />
                         ) : (
@@ -598,13 +598,13 @@ export default function HospitalProfileForm({
           {/* Step 3: Review & Additional Info */}
           {currentStep === 3 && (
             <Card className="p-6 space-y-6">
-              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <h2 className="text-xl font-bold  flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5" />
                 Review & Additional Information
               </h2>
 
               {/* Status Section */}
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+              <div className=" p-4 rounded-lg border border-blue-100">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-medium text-blue-800 flex items-center gap-2">
@@ -623,10 +623,10 @@ export default function HospitalProfileForm({
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
-                        <SelectTrigger className="w-[200px] bg-white">
+                        <SelectTrigger className="w-[200px] ">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-white">
+                        <SelectContent className="">
                           {statusOptions.map((status) => (
                             <SelectItem
                               key={status.value}
@@ -656,7 +656,7 @@ export default function HospitalProfileForm({
                     name={field.name as keyof z.infer<typeof formSchema>}
                     render={({ field: formField }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
+                        <FormLabel className=" font-medium flex items-center gap-2">
                           {field.icon}
                           {field.label}
                         </FormLabel>
@@ -667,7 +667,7 @@ export default function HospitalProfileForm({
                             <Textarea
                               placeholder={field.placeholder}
                               {...formField}
-                              className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                              className=" border-gray-200 focus:ring-2 focus:ring-blue-500 min-h-[120px]"
                               rows={field.props?.rows || 5}
                             />
                           )}
@@ -749,7 +749,7 @@ export default function HospitalProfileForm({
                 type="button"
                 variant="outline"
                 onClick={() => setCurrentStep(currentStep - 1)}
-                className="border-gray-300 cursor-pointer text-gray-700 hover:bg-gray-50 flex-1 sm:flex-none"
+                className="border-gray-300 cursor-pointer  hover:bg-gray-50 flex-1 sm:flex-none"
               >
                 Back
               </Button>

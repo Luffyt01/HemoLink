@@ -216,6 +216,16 @@ import { Textarea } from "@/components/ui/textarea";
         type: "tel",
         placeholder: "+91xxxxxxxxxx",
         description: "We'll use this to contact you",
+         render: ({ field }: any) => (
+                <Input
+                  type="tel"
+                  placeholder={field.placeholder}
+                  {...field}
+                  className="bg-gray-100 border-gray-200 focus:ring-0 cursor-not-allowed"
+                  readOnly
+                  disabled
+                />
+              ),
       },
       {
         name: "emergencyContact",
@@ -237,7 +247,7 @@ import { Textarea } from "@/components/ui/textarea";
             <SelectTrigger className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-pink-500">
               <SelectValue placeholder="Select your blood type" />
             </SelectTrigger>
-            <SelectContent className="bg-white">
+            <SelectContent className="">
               {Object.values(BloodType).map((type) => (
                 <SelectItem
                   key={type}
@@ -274,7 +284,7 @@ import { Textarea } from "@/components/ui/textarea";
         render: ({ field }: any) => (
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
+              <FormLabel className=" font-medium flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
                 {field.label}
               </FormLabel>
@@ -330,8 +340,8 @@ import { Textarea } from "@/components/ui/textarea";
                   key={step}
                   className={`flex items-center justify-center w-8 h-8 rounded-full ${
                     currentStep >= step
-                      ? "bg-pink-500 text-white"
-                      : "bg-gray-100 text-gray-500"
+                      ? "bg-pink-500 twxt-white "
+                      : "bg-gray-100 text-gray-500 "
                   }`}
                   onClick={() => currentStep > step && setCurrentStep(step)}
                 >
@@ -343,7 +353,7 @@ import { Textarea } from "@/components/ui/textarea";
             {/* Step 1: Personal Information */}
             {currentStep === 1 && (
               <Card className="p-3 md:p-6 space-y-1">
-                <h2 className="text-xl font-bold text-gray-800">
+                <h2 className="text-xl font-bold ">
                   Personal Information
                 </h2>
                 {step1Fields.map((field) => (
@@ -353,7 +363,7 @@ import { Textarea } from "@/components/ui/textarea";
                     name={field.name as keyof z.infer<typeof formSchema>}
                     render={({ field: formField }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium">
+                        <FormLabel className=" font-medium">
                           {field.label}
                         </FormLabel>
                         <FormControl>
@@ -369,7 +379,7 @@ import { Textarea } from "@/components/ui/textarea";
                           )}
                         </FormControl>
                         {field.description && (
-                          <FormDescription className="text-gray-500 text-sm">
+                          <FormDescription className=" text-sm">
                             {field.description}
                           </FormDescription>
                         )}
@@ -384,7 +394,7 @@ import { Textarea } from "@/components/ui/textarea";
             {/* Step 2: Medical Information */}
             {currentStep === 2 && (
               <Card className="p-3 md:p-6 space-y-1">
-                <h2 className="text-xl font-bold text-gray-800">
+                <h2 className="text-xl font-bold ">
                   Medical Information
                 </h2>
                 {step2Fields.map((field) => (
@@ -394,7 +404,7 @@ import { Textarea } from "@/components/ui/textarea";
                     name={field.name as keyof z.infer<typeof formSchema>}
                     render={({ field: formField }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium">
+                        <FormLabel className=" font-medium">
                           {field.label}
                         </FormLabel>
                         <FormControl>
@@ -417,7 +427,7 @@ import { Textarea } from "@/components/ui/textarea";
                           )}
                         </FormControl>
                         {field.description && (
-                          <FormDescription className="text-gray-500 text-sm">
+                          <FormDescription className=" text-sm">
                             {field.description}
                           </FormDescription>
                         )}
@@ -432,7 +442,7 @@ import { Textarea } from "@/components/ui/textarea";
             {/* Step 3: Review and Availability */}
             {currentStep === 3 && (
               <Card className="p-6 space-y-6">
-                <h2 className="text-xl font-bold text-gray-800">
+                <h2 className="text-xl font-bold ">
                   Review & Availability
                 </h2>
 
@@ -457,7 +467,7 @@ import { Textarea } from "@/components/ui/textarea";
                         />
                       </FormControl>
                       <div className="space-y-1 leading-none">
-                        <FormLabel className="text-gray-700 font-medium">
+                        <FormLabel className="text-black font-medium">
                           I'm currently available to donate
                         </FormLabel>
                         <FormDescription className="text-gray-500 text-sm">
@@ -479,7 +489,7 @@ import { Textarea } from "@/components/ui/textarea";
 
                 {/* Summary of entered data */}
                 <div className="space-y-4">
-                  <h3 className="font-medium text-gray-700">Your Details:</h3>
+                  <h3 className="font-medium ">Your Details:</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {Object.entries(form.getValues()).map(([key, value]) => {
                       if (key === "location" || key === "isAvailable")
@@ -489,7 +499,7 @@ import { Textarea } from "@/components/ui/textarea";
                           <p className="text-sm font-medium text-gray-500 capitalize">
                             {key.replace(/([A-Z])/g, " $1")}
                           </p>
-                          <p className="text-gray-800">
+                          <p className="text-black">
                             {value?.toString() || (
                               <span className="text-gray-400">Not provided</span>
                             )}
@@ -498,10 +508,10 @@ import { Textarea } from "@/components/ui/textarea";
                       );
                     })}
                     <div className="bg-gray-50 p-3 rounded">
-                      <p className="text-sm font-medium text-gray-500">
+                      <p className="text-sm font-medium text-gray-500 ">
                         Location
                       </p>
-                      <p className="text-gray-800">
+                      <p className="text-black">
                         {locationState.lat.toFixed(4)},{" "}
                         {locationState.lng.toFixed(4)}
                       </p>
@@ -518,7 +528,7 @@ import { Textarea } from "@/components/ui/textarea";
                   type="button"
                   variant="outline"
                   onClick={() => setCurrentStep(currentStep - 1)}
-                  className="border-gray-300 cursor-pointer text-gray-700 hover:bg-gray-50 flex-1 sm:flex-none"
+                  className="border-gray-300 cursor-pointer  hover:bg-gray-50 flex-1 sm:flex-none"
                 >
                   Back
                 </Button>
