@@ -93,15 +93,24 @@ public class AuthService {
         }
     }
 
+    /*
+     * Function to logout the user
+     */
     @Transactional
     public void logout(HttpServletRequest request) {
         try {
+            // Fetching the authorization token from the request header
             final String requestTokenHeader = request.getHeader("Authorization");
+
+            // Throws exception if the header is empty or incorrect
             if (requestTokenHeader == null || !requestTokenHeader.startsWith("Bearer")) {
                 throw new InvalidTokenException("Authorization header is missing or invalid");
             }
 
+            // Got correct JWT token
             String token = requestTokenHeader.split("Bearer ")[1];
+
+            // Blacklisting the token
             blacklistService.blacklistToken(token, jwtService.getRemainingValidity(token));
             log.info("User logged out successfully");
 
@@ -118,20 +127,30 @@ public class AuthService {
         return null;
     }
 
+    /*
+     * Function to start the process for user password reset
+     */
     public void initiatePasswordReset(String email) {
         log.info("Resetting password for user with email: {}", email);
 
+        // Throws exception if the user is not present with the entered email
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: "+email));
 
+        // Generating a random token
         String token = UUID.randomUUID().toString();
 
+        // Creating a password token for user identification
         passwordResetTokenService.createPasswordResetToken(user,token);
 
+        // Sending email to the user with the password reset link and the token
         sendPasswordResetEmail(user.getEmail(), token);
 
     }
 
+    /*
+     * Function to send email to user containing the password reset link and the token
+     */
     private void sendPasswordResetEmail(String email, String token) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
@@ -142,12 +161,20 @@ public class AuthService {
     }
 
 
+    /*
+     * Function to reset the password
+     */
     @Transactional
     public void completePasswordReset(ResetPasswordRequest resetPasswordRequest) {
+        // Verify if the token is valid or invalid
         PasswordResetToken token = passwordResetTokenService.validatePasswordToken(resetPasswordRequest.getToken());
+        // Getting user from token
         User user = token.getUser();
+        // Setting new password
         user.setPassword(passwordEncoder.encode(resetPasswordRequest.getPassword()));
+        // Saving the new password for the user
         userRepository.save(user);
+        // Delete the token after the password has been successfully changed
         passwordResetTokenService.deleteToken(token);
     }
 }
