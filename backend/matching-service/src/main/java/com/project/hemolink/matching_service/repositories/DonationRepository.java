@@ -23,4 +23,8 @@ public interface DonationRepository extends JpaRepository<Donation, UUID> {
     List<Donation> findByDonorId(String donorId);
 
     boolean existsByDonorIdAndRequestId(String donorId, UUID requestId);
+
+    long countByRequestId(UUID uuid);
+
+    int sumCompletedUnitsByRequest(String requestId);
 }

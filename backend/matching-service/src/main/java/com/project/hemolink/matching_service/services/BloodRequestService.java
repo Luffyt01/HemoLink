@@ -4,6 +4,7 @@ import com.project.hemolink.matching_service.auth.UserContextHolder;
 import com.project.hemolink.matching_service.client.UserServiceClient;
 import com.project.hemolink.matching_service.dto.*;
 import com.project.hemolink.matching_service.entities.BloodRequest;
+import com.project.hemolink.matching_service.entities.enums.BloodType;
 import com.project.hemolink.matching_service.entities.enums.RequestStatus;
 import com.project.hemolink.matching_service.entities.enums.UrgencyLevel;
 import com.project.hemolink.matching_service.exception.BadRequestException;
@@ -16,6 +17,8 @@ import org.locationtech.jts.geom.Point;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -161,60 +164,48 @@ public class BloodRequestService {
                 .orElseThrow(() -> new ResourceNotFoundException("Blood request not found with id: " + requestId));
     }
 
-    // TODO Create controller for following functions Add pagination
-    public List<BloodRequestDto> getUrgentRequests(UrgencyLevel urgencyLevel) {
-        log.info("Attempting to fetch all the request with {} urgency", urgencyLevel);
-        List<BloodRequest> bloodRequests = bloodRequestRepository.findByUrgency(urgencyLevel);
-        if (bloodRequests.isEmpty()) {
-            throw new ResourceNotFoundException("No request found for " + urgencyLevel + " urgency");
-        }
-        return bloodRequests.stream()
-                .map(bloodRequest -> modelMapper.map(bloodRequest, BloodRequestDto.class))
-                .toList();
-    }
 
-    @Transactional
-    public void expiredRequests() {
-        List<BloodRequest> expired = bloodRequestRepository
-                .findByStatusAndExpiryTimeBefore(
-                        RequestStatus.PENDING,
-                        LocalDateTime.now()
-                );
 
-        expired.forEach(request -> request.setStatus(RequestStatus.EXPIRED));
-        bloodRequestRepository.saveAll(expired);
-    }
 
-    public long countActiveRequests() {
-        return bloodRequestRepository.countByStatusNot(RequestStatus.FULFILLED);
-    }
 
-    public Page<BloodRequestDto> getAllActiveRequests(PageRequest pageRequest) {
-        UUID userId = securityUtil.getCurrentUserId();
+    public Page<BloodRequestDto> getFilteredRequests(
+            RequestStatus status,
+            BloodType bloodType,
+            UrgencyLevel urgency,
+            LocalDateTime expiryStart,
+            LocalDateTime expiryEnd,
+            PageRequest pageRequest) {
 
-        HospitalDto hospitalDto = userServiceClient.getHospitalByUserId(userId.toString()).getBody();
-        if (hospitalDto == null) {
-            throw new ResourceNotFoundException("Hospital not found with userId: " + userId);
+        // Using Specifications to build dynamic query system
+        Specification<BloodRequest> spec = Specification.where(null);
+
+        if (status != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
         }
 
-        String hospitalId = hospitalDto.getId();
-        log.info("Fetching all the active requests for hospital with id: {}", hospitalId);
-
-        boolean exists = bloodRequestRepository.existsByHospitalId(hospitalId);
-
-        if (!exists) {
-            throw new ResourceNotFoundException("No blood request found for the hospital with id: " + hospitalId);
+        if (bloodType != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("bloodType"), bloodType));
         }
 
-        Page<BloodRequest> activeRequests = bloodRequestRepository.
-                findByHospitalIdAndStatus(
-                        hospitalId,
-                        RequestStatus.PENDING,
-                        pageRequest);
+        if (urgency != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("urgency"), urgency));
+        }
 
-        return activeRequests.map(
-                bloodRequest -> modelMapper.map(bloodRequest, BloodRequestDto.class));
+        if (expiryStart != null && expiryEnd != null) {
+            spec = spec.and((root, query, cb) -> cb.between(root.get("expiryTime"), expiryStart, expiryEnd));
+        } else if (expiryStart != null) {
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("expiryTime"), expiryStart));
+        } else if (expiryEnd != null) {
+            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("expiryTime"), expiryEnd));
+        }
+
+        Page<BloodRequest> requests = bloodRequestRepository.findAll(spec, pageRequest);
+
+        if (requests.isEmpty()) {
+            throw new ResourceNotFoundException("No requests found matching the criteria");
+        }
+
+        return requests.map(request -> modelMapper.map(request, BloodRequestDto.class));
     }
-
 
 }

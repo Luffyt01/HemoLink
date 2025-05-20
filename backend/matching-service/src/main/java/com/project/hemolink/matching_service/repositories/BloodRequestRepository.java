@@ -6,6 +6,7 @@ import com.project.hemolink.matching_service.entities.enums.UrgencyLevel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -32,4 +33,7 @@ public interface BloodRequestRepository extends JpaRepository<BloodRequest, UUID
     long countByStatusNot(RequestStatus status);
 
     Page<BloodRequest> findByHospitalIdAndStatus(String hospitalId, RequestStatus requestStatus, Pageable pageRequest);
+
+    Page<BloodRequest> findAll(Specification<BloodRequest> spec, Pageable pageable);
+
 }
