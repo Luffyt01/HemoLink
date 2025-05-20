@@ -39,7 +39,7 @@ export default function CompleteHospitalProfilePage() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen  py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         {/* Page Header */}
         <div className="text-center mb-8  ">
@@ -52,7 +52,7 @@ export default function CompleteHospitalProfilePage() {
         </div>
 
         {/* Form Container */}
-        <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
+        <div className=" rounded-xl shadow-xl overflow-hidden border border-gray-100">
           <HospitalProfileForm
           
             isGeolocating={isGeolocating}
