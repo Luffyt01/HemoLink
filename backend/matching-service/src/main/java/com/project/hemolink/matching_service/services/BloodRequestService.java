@@ -40,6 +40,7 @@ public class BloodRequestService {
 
     /*
      * Function to create a request
+     * and returns blood dto
      */
     public BloodRequestDto createBloodRequest(CreateRequestDto createRequestDto) {
         UUID userId = securityUtil.getCurrentUserId();
