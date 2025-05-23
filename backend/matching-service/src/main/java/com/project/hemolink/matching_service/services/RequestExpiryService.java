@@ -12,30 +12,28 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Service for handling request expiry
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class RequestExpiryService {
-
     private final BloodRequestRepository bloodRequestRepository;
 
+    /**
+     * Scheduled task to expire old requests (runs every 5 minutes)
+     */
     @Scheduled(cron = "0 */5 * * * *")
     @Transactional
-    public void expireOldRequests(){
+    public void expireOldRequests() {
         LocalDateTime now = LocalDateTime.now();
-
         List<BloodRequest> expiredRequests = bloodRequestRepository
-                .findByStatusAndExpiryTimeBefore(
-                        RequestStatus.PENDING,
-                        now
-                );
+                .findByStatusAndExpiryTimeBefore(RequestStatus.PENDING, now);
 
-        if (!expiredRequests.isEmpty()){
+        if (!expiredRequests.isEmpty()) {
             log.info("Expiring {} requests", expiredRequests.size());
-
-            expiredRequests.forEach(request -> {
-                request.setStatus(RequestStatus.EXPIRED);
-            });
+            expiredRequests.forEach(request -> request.setStatus(RequestStatus.EXPIRED));
             bloodRequestRepository.saveAll(expiredRequests);
         }
     }

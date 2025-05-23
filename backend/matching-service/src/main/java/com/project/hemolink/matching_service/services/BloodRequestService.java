@@ -26,8 +26,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-/*
- * Service class to handle the blood request logic
+/**
+ * Service for handling blood request operations including creation, updates, and queries
  */
 @Service
 @Slf4j
@@ -38,18 +38,22 @@ public class BloodRequestService {
     private final UserServiceClient userServiceClient;
     private final SecurityUtil securityUtil;
 
-    /*
-     * Function to create a request
-     * and returns blood dto
+    /**
+     * Creates a new blood request from DTO
+     * @param createRequestDto Request details
+     * @return Created request DTO
      */
+    @Transactional
     public BloodRequestDto createBloodRequest(CreateRequestDto createRequestDto) {
         UUID userId = securityUtil.getCurrentUserId();
 
+        // Verify hospital exists
         HospitalDto hospitalDto = userServiceClient.getHospitalByUserId(userId.toString()).getBody();
         if (hospitalDto == null) {
             throw new ResourceNotFoundException("Hospital not found with userId: " + userId);
         }
 
+        // Map DTO to entity
         BloodRequest bloodRequest = new BloodRequest();
         bloodRequest.setBloodType(createRequestDto.getBloodType());
         bloodRequest.setUnitsRequired(createRequestDto.getUnitsRequired());
@@ -64,15 +68,25 @@ public class BloodRequestService {
         return modelMapper.map(savedRequest, BloodRequestDto.class);
     }
 
+    /**
+     * Gets request by ID
+     * @param requestId Request ID
+     * @return Request DTO
+     */
     public BloodRequestDto getRequest(String requestId) {
         log.info("Fetching the blood request for request id: {}", requestId);
         BloodRequest bloodRequest = getBloodRequest(requestId);
-
         return modelMapper.map(bloodRequest, BloodRequestDto.class);
     }
 
+    /**
+     * Updates urgency level of a request
+     * @param requestId Request ID
+     * @param urgencyLevel New urgency level
+     * @return Updated request DTO
+     */
     public BloodRequestDto updateRequestUrgency(String requestId, UrgencyLevel urgencyLevel) {
-        log.info("Updating the urgency for the blood request with id: {} to {}", requestId, urgencyLevel);
+        log.info("Updating urgency for request {} to {}", requestId, urgencyLevel);
         BloodRequest bloodRequest = getBloodRequest(requestId);
 
         if (bloodRequest.getUrgency() == urgencyLevel) {
@@ -84,8 +98,14 @@ public class BloodRequestService {
         return modelMapper.map(bloodRequestRepository.save(bloodRequest), BloodRequestDto.class);
     }
 
+    /**
+     * Updates request status
+     * @param requestId Request ID
+     * @param requestStatus New status
+     * @return Updated request DTO
+     */
     public BloodRequestDto updateRequestStatus(String requestId, RequestStatus requestStatus) {
-        log.info("Updating the status for the blood request with id: {} to {}", requestId, requestStatus);
+        log.info("Updating status for request {} to {}", requestId, requestStatus);
         BloodRequest bloodRequest = getBloodRequest(requestId);
 
         if (bloodRequest.getStatus() == requestStatus) {
@@ -93,22 +113,29 @@ public class BloodRequestService {
         }
 
         bloodRequest.setStatus(requestStatus);
-
         return modelMapper.map(bloodRequestRepository.save(bloodRequest), BloodRequestDto.class);
     }
 
+    /**
+     * Updates multiple request details
+     * @param requestId Request ID
+     * @param updateRequestDto Update data
+     * @return Updated request DTO
+     */
     public BloodRequestDto updateRequestDetails(String requestId, UpdateRequestDto updateRequestDto) {
-        log.info("Updating the details for blood request with id: {}", requestId);
+        log.info("Updating details for request {}", requestId);
         BloodRequest bloodRequest = getBloodRequest(requestId);
 
+        // Check if any changes were made
         if (updateRequestDto.getUrgency().equals(bloodRequest.getUrgency())
                 && updateRequestDto.getBloodType().equals(bloodRequest.getBloodType())
                 && updateRequestDto.getStatus().equals(bloodRequest.getStatus())
                 && updateRequestDto.getUnitsRequired() == bloodRequest.getUnitsRequired()
                 && updateRequestDto.getLocation().equals(modelMapper.map(bloodRequest.getLocation(), PointDTO.class))) {
-            throw new BadRequestException("No changes made, Please change a value to make change");
+            throw new BadRequestException("No changes made");
         }
 
+        // Apply updates
         bloodRequest.setBloodType(updateRequestDto.getBloodType());
         bloodRequest.setLocation(modelMapper.map(updateRequestDto.getLocation(), Point.class));
         bloodRequest.setUrgency(updateRequestDto.getUrgency());
@@ -118,57 +145,74 @@ public class BloodRequestService {
         return modelMapper.map(bloodRequestRepository.save(bloodRequest), BloodRequestDto.class);
     }
 
+    /**
+     * Gets paginated list of all requests for current hospital
+     * @param pageRequest Pagination parameters
+     * @return Page of request DTOs
+     */
     public Page<BloodRequestDto> getAllRequests(PageRequest pageRequest) {
         UUID userId = securityUtil.getCurrentUserId();
-
         HospitalDto hospitalDto = userServiceClient.getHospitalByUserId(userId.toString()).getBody();
         if (hospitalDto == null) {
             throw new ResourceNotFoundException("Hospital not found with userId: " + userId);
         }
 
         String hospitalId = hospitalDto.getId();
-        log.info("Fetching all the requests for hospital with id: {}", hospitalId);
+        log.info("Fetching requests for hospital {}", hospitalId);
 
-        boolean exists = bloodRequestRepository.existsByHospitalId(hospitalId);
-
-        if (!exists) {
-            throw new ResourceNotFoundException("No blood request found for the hospital with id: " + hospitalId);
+        if (!bloodRequestRepository.existsByHospitalId(hospitalId)) {
+            throw new ResourceNotFoundException("No requests found for hospital: " + hospitalId);
         }
 
-        Page<BloodRequest> bloodRequests = bloodRequestRepository.findByHospitalId(hospitalId, pageRequest);
-
-        return bloodRequests.map(
-                bloodRequest -> modelMapper.map(bloodRequest, BloodRequestDto.class));
+        return bloodRequestRepository.findByHospitalId(hospitalId, pageRequest)
+                .map(bloodRequest -> modelMapper.map(bloodRequest, BloodRequestDto.class));
     }
 
+    /**
+     * Sets expiry time based on urgency level
+     * @param urgencyLevel Urgency level
+     * @return Calculated expiry time
+     */
     public LocalDateTime setRequestExpiryTime(UrgencyLevel urgencyLevel) {
-        if (urgencyLevel == UrgencyLevel.HIGH) {
-            return LocalDateTime.now().plusHours(24);
-        } else if (urgencyLevel == UrgencyLevel.MEDIUM) {
-            return LocalDateTime.now().plusDays(5);
-        } else {
-            return LocalDateTime.now().plusDays(14);
-        }
+        return switch (urgencyLevel) {
+            case HIGH -> LocalDateTime.now().plusHours(24);
+            case MEDIUM -> LocalDateTime.now().plusDays(5);
+            case LOW -> LocalDateTime.now().plusDays(14);
+        };
     }
 
+    /**
+     * Cancels a request
+     * @param requestId Request ID
+     * @return Cancelled request DTO
+     */
     public BloodRequestDto cancelRequest(String requestId) {
-        log.info("Canceling the request with id: {}", requestId);
+        log.info("Canceling request {}", requestId);
         BloodRequest bloodRequest = getBloodRequest(requestId);
-
         bloodRequest.setStatus(RequestStatus.CANCELLED);
-
         return modelMapper.map(bloodRequestRepository.save(bloodRequest), BloodRequestDto.class);
     }
 
+    /**
+     * Gets blood request entity by ID
+     * @param requestId Request ID
+     * @return BloodRequest entity
+     */
     public BloodRequest getBloodRequest(String requestId) {
         return bloodRequestRepository.findById(UUID.fromString(requestId))
-                .orElseThrow(() -> new ResourceNotFoundException("Blood request not found with id: " + requestId));
+                .orElseThrow(() -> new ResourceNotFoundException("Blood request not found: " + requestId));
     }
 
-
-
-
-
+    /**
+     * Gets filtered requests with dynamic query
+     * @param status Filter by status
+     * @param bloodType Filter by blood type
+     * @param urgency Filter by urgency
+     * @param expiryStart Filter by expiry start date
+     * @param expiryEnd Filter by expiry end date
+     * @param pageRequest Pagination parameters
+     * @return Page of filtered request DTOs
+     */
     public Page<BloodRequestDto> getFilteredRequests(
             RequestStatus status,
             BloodType bloodType,
@@ -177,21 +221,17 @@ public class BloodRequestService {
             LocalDateTime expiryEnd,
             PageRequest pageRequest) {
 
-        // Using Specifications to build dynamic query system
         Specification<BloodRequest> spec = Specification.where(null);
 
         if (status != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
         }
-
         if (bloodType != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("bloodType"), bloodType));
         }
-
         if (urgency != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("urgency"), urgency));
         }
-
         if (expiryStart != null && expiryEnd != null) {
             spec = spec.and((root, query, cb) -> cb.between(root.get("expiryTime"), expiryStart, expiryEnd));
         } else if (expiryStart != null) {
@@ -203,10 +243,9 @@ public class BloodRequestService {
         Page<BloodRequest> requests = bloodRequestRepository.findAll(spec, pageRequest);
 
         if (requests.isEmpty()) {
-            throw new ResourceNotFoundException("No requests found matching the criteria");
+            throw new ResourceNotFoundException("No requests matching criteria");
         }
 
         return requests.map(request -> modelMapper.map(request, BloodRequestDto.class));
     }
-
 }
