@@ -27,17 +27,15 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { HeartPulse } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useActionState, startTransition } from 'react'
 import { format, addDays } from 'date-fns'
+import { HospitalNewRequestAction } from '@/actions/Hospital/new_request_all_action/HospitalNewRequestAction'
 
 const formSchema = z.object({
   bloodType: z.enum(["A_POSITIVE", "A_NEGATIVE", "B_POSITIVE", "B_NEGATIVE", "AB_POSITIVE", "AB_NEGATIVE", "O_POSITIVE", "O_NEGATIVE"]),
   unitsRequired: z.number().min(1).max(100),
   urgency: z.enum(["LOW", "MEDIUM", "HIGH"]),
-  location: z.object({
-    coordinates: z.array(z.number()).length(2),
-    type: z.string().default("Point")
-  }),
+  token: z.string().optional(),
   expiryTime: z.string().refine(val => {
     const date = new Date(val)
     const now = new Date()
@@ -52,6 +50,8 @@ interface NewRequestDialogProps {
 export function NewRequestDialog({ onSubmit }: NewRequestDialogProps) {
   const [open, setOpen] = useState(false)
   const [minExpiryDate, setMinExpiryDate] = useState('')
+  const [state,formAction,isPending] = useActionState(HospitalNewRequestAction,null)
+  
   
   useEffect(() => {
     // Set minimum expiry date to current time + 1 hour
@@ -66,20 +66,21 @@ export function NewRequestDialog({ onSubmit }: NewRequestDialogProps) {
       bloodType: "A_POSITIVE",
       unitsRequired: 1,
       urgency: "MEDIUM",
-      location: {
-        coordinates: [-73.935242, 40.730610],
-        type: "Point"
-      },
+      token:"dfsd",
       expiryTime: format(addDays(new Date(), 5), "yyyy-MM-dd'T'HH:mm")
     },
   })
 
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
+  const handleSubmit =async (values: z.infer<typeof formSchema>) => {
 
     console.log(values)
+    startTransition(async() => {
+     await formAction(values)
+    });
     onSubmit(values)
     
     setOpen(false)
+    return;
   }
 
   return (
@@ -211,14 +212,16 @@ export function NewRequestDialog({ onSubmit }: NewRequestDialogProps) {
                 variant="outline"
                 className="border-border text-foreground hover:bg-muted"
                 onClick={() => setOpen(false)}
+                disabled={isPending}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 className="bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white"
+                disabled={isPending}
               >
-                Submit Request
+                {isPending ? "Submitting..." : "Submit Request"}
               </Button>
             </div>
           </form>
