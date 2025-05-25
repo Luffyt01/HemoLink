@@ -10,6 +10,7 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DonorController {
     private final DonorService donorService;
+    private final ModelMapper modelMapper;
 
 
     @PostMapping("/completeProfile")
@@ -49,5 +51,19 @@ public class DonorController {
     @GetMapping("/by-user/{userId}")
     public ResponseEntity<DonorDto> getDonorByUserId(@PathVariable String userId){
         return ResponseEntity.ok(donorService.getDonorByUserId(userId));
+    }
+
+    @GetMapping("/eligible")
+    List<DonorMatchDto> findNearByEligibleDonors(
+            @RequestParam String location,
+            @RequestParam BloodType bloodType,
+            @RequestParam int radiusKm,
+            @RequestParam int limit
+    ){
+        PointDTO pointDTO = new PointDTO();
+        double[] cor = {13.397634, 52.529407};
+        pointDTO.setCoordinates(cor);
+        Point loc = modelMapper.map(pointDTO, Point.class);
+        return donorService.findNearByEligibleDonors(loc, bloodType, radiusKm, limit);
     }
 }

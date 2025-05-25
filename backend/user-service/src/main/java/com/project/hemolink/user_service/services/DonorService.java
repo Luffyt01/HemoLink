@@ -47,7 +47,6 @@ public class DonorService {
      * Function to complete the donor profile
      */
     @Transactional
-    @CachePut(value = "donors", key = "#result.id")
     public DonorDto completeProfile(CompleteDonorProfileDto completeDonorProfileDto) {
         try {
             // Fetching the userId of current logged user
@@ -85,7 +84,6 @@ public class DonorService {
      * Function to update the user availability (TRUE, FALSE)
      */
     @Transactional
-    @CachePut(value = "donors", key = "#result.id")
     public DonorDto updateAvailability(AvailabilityDto availabilityDto) {
         try {
 
@@ -112,7 +110,6 @@ public class DonorService {
 
 
 
-    @CachePut(value = "donors", key = "#result.id")
     @Transactional
     public DonorDto updateLocation(PointDTO updatedLocation){
         String userId = UserContextHolder.getCurrentUserId();
@@ -130,7 +127,6 @@ public class DonorService {
         return modelMapper.map(savedDonor, DonorDto.class);
     }
 
-//    @Cacheable(value = "donors", key = "#donorId")
     public DonorDto findDonorById(String donorId) {
         log.info("Fetching Donor by donorId: {}", donorId);
         Donor donor = donorRepository.findById(UUID.fromString(donorId))
@@ -139,15 +135,27 @@ public class DonorService {
         return modelMapper.map(donor, DonorDto.class);
     }
 
-    @Cacheable(value = "donors", key = "#result.id")
     public DonorDto getDonorByUserId(String userId) {
         log.info("Fetching Donor by userId: {}", userId);
-        User user = (User) userRepository.findById(UUID.fromString(userId))
+        User user =  userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
 
         Donor donor = donorRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Donor not found with userId: "+userId));
 
         return modelMapper.map(donor, DonorDto.class);
+    }
+
+    public List<DonorMatchDto> findNearByEligibleDonors(Point location, BloodType bloodType, int radiusKm, int limit) {
+        UUID userId = securityUtil.getCurrentUserId();
+        User user =  userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
+        Donor donor = donorRepository.findByUser(user)
+                .orElseThrow(() -> new ResourceNotFoundException("Donor not found with userId: "+userId));
+
+        List<Donor> donors = donorRepository.findNearbyEligibleDonors(user, location, bloodType, radiusKm);
+        return donors.stream()
+                .map(donor1 -> modelMapper.map(donor1, DonorMatchDto.class))
+                .toList();
     }
 }

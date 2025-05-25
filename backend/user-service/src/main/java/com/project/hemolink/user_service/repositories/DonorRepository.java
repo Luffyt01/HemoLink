@@ -21,18 +21,20 @@ public interface DonorRepository extends JpaRepository<Donor, UUID> {
 
     @Query(value = """
         SELECT d FROM Donor d 
-        WHERE d.bloodType = :bloodType 
+        WHERE d.user = :user
+        AND d.bloodType = :bloodType 
         AND d.isAvailable = true
         AND FUNCTION('ST_DWithin', d.location, :point, :radius) = true
-        AND (d.lastDonation IS NULL OR d.lastDonation < :minLastDonation)
+        
         ORDER BY FUNCTION('ST_Distance', d.location, :point)
         """)
     List<Donor> findNearbyEligibleDonors(
+            @Param("user") User user,
             @Param("point") Point point,
             @Param("bloodType") BloodType bloodType,
-            @Param("radius") double radius,
-            @Param("minLastDonation") LocalDate minLastDonation,
-            Pageable pageable);
+            @Param("radius") double radius
+//            @Param("minLastDonation") LocalDate minLastDonation, AND (d.lastDonation IS NULL OR d.lastDonation < :minLastDonation)
+            );
 
 
 

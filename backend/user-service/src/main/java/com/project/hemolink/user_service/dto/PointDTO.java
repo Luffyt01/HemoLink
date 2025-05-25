@@ -1,10 +1,12 @@
 package com.project.hemolink.user_service.dto;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class PointDTO {
 
     private double[] coordinates;

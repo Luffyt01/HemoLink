@@ -5,6 +5,7 @@ import com.project.hemolink.matching_service.dto.DonorDto;
 import com.project.hemolink.matching_service.dto.DonorMatchDto;
 import com.project.hemolink.matching_service.dto.HospitalDto;
 import com.project.hemolink.matching_service.entities.enums.BloodType;
+import org.locationtech.jts.geom.Point;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +33,7 @@ public interface UserServiceClient {
 
     @GetMapping("/donors/eligible")
     List<DonorMatchDto> findNearByEligibleDonors(
-            @RequestParam("point") String pointWkt,
+            @RequestParam Point location,
             @RequestParam BloodType bloodType,
             @RequestParam int radiusKm,
             @RequestParam int limit

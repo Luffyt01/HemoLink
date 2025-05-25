@@ -55,16 +55,16 @@ public class MatchingService {
 
         // Verify hospital
         HospitalDto hospitalDto = userServiceClient.getHospital(request.getHospitalId());
-        if (hospitalDto.getVerificationStatus() != VerificationStatus.VERIFIED) {
-            throw new BadRequestException("Hospital not verified: "+request.getHospitalId());
-        }
+//        if (hospitalDto.getVerificationStatus() != VerificationStatus.VERIFIED) {
+//            throw new BadRequestException("Hospital not verified: "+request.getHospitalId());
+//        }
 
         // Convert location to WKT format
-        String pointWkt = convertToWKT(request.getLocation());
+
 
         // Find eligible donors
         List<DonorMatchDto> donors = userServiceClient.findNearByEligibleDonors(
-                pointWkt,
+                request.getLocation(),
                 request.getBloodType(),
                 50, // 50km radius
                 limit
