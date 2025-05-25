@@ -1,24 +1,19 @@
 package com.project.hemolink.user_service.services;
 
-import com.project.hemolink.user_service.auth.UserContextHolder;
-import com.project.hemolink.user_service.client.MatchingServiceClient;
-import com.project.hemolink.user_service.dto.*;
+import com.project.hemolink.user_service.dto.CompleteHospitalProfileDto;
+import com.project.hemolink.user_service.dto.HospitalDto;
 import com.project.hemolink.user_service.entities.Hospital;
 import com.project.hemolink.user_service.entities.User;
-import com.project.hemolink.user_service.entities.enums.UserRole;
 import com.project.hemolink.user_service.entities.enums.VerificationStatus;
-import com.project.hemolink.user_service.exception.*;
+import com.project.hemolink.user_service.exception.ProfileCompletionException;
+import com.project.hemolink.user_service.exception.ProfileOperationException;
+import com.project.hemolink.user_service.exception.ResourceNotFoundException;
 import com.project.hemolink.user_service.repositories.HospitalRepository;
 import com.project.hemolink.user_service.repositories.UserRepository;
 import com.project.hemolink.user_service.utils.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.boot.json.JsonParseException;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

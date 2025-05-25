@@ -15,18 +15,24 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Service for managing match logs and notifications
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class MatchLogService {
-
     private final MatchLogRepository matchLogRepository;
     private final ModelMapper modelMapper;
 
-    public void logMatch(String requestId, String donorId){
-        log.info("Attempting to create log for request: {} and donor: {}", requestId, donorId);
+    /**
+     * Logs a new donor-request match
+     * @param requestId Request ID
+     * @param donorId Donor ID
+     */
+    public void logMatch(String requestId, String donorId) {
+        log.info("Logging match for request {} and donor {}", requestId, donorId);
         MatchLog log = new MatchLog();
-
         log.setRequestId(requestId);
         log.setDonorId(donorId);
         log.setMatchedAt(LocalDateTime.now());
@@ -34,26 +40,37 @@ public class MatchLogService {
         matchLogRepository.save(log);
     }
 
-    public List<MatchLogDto> getPendingNotifications(){
+    /**
+     * Gets pending notifications
+     * @return List of pending notification DTOs
+     */
+    public List<MatchLogDto> getPendingNotifications() {
         List<MatchLog> matchLogs = matchLogRepository.findByStatus(NotificationStatus.PENDING);
-        if (matchLogs.isEmpty()){
-            throw new ResourceNotFoundException("No pending notification found");
+        if (matchLogs.isEmpty()) {
+            throw new ResourceNotFoundException("No pending notifications");
         }
-
         return matchLogs.stream()
                 .map(matchLog -> modelMapper.map(matchLog, MatchLogDto.class))
                 .toList();
     }
 
+    /**
+     * Marks notification as sent
+     * @param matchId Match log ID
+     */
     @Transactional
-    public void markNotificationSent(String matchId){
+    public void markNotificationSent(String matchId) {
         MatchLog log = matchLogRepository.findById(UUID.fromString(matchId))
-                .orElseThrow(() -> new ResourceNotFoundException("Match log not found for id: "+matchId));
-
+                .orElseThrow(() -> new ResourceNotFoundException("Match log not found: "+matchId));
         log.setStatus(NotificationStatus.SENT);
         matchLogRepository.save(log);
     }
 
+    /**
+     * Gets logs for a specific request
+     * @param requestIdStr Request ID
+     * @return List of match logs
+     */
     public List<MatchLog> getLogsForRequest(String requestIdStr) {
         return matchLogRepository.findByRequestIdAndStatus(requestIdStr, NotificationStatus.PENDING);
     }
