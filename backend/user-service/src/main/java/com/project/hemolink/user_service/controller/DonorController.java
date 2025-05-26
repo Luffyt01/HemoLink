@@ -3,6 +3,7 @@ package com.project.hemolink.user_service.controller;
 import com.project.hemolink.user_service.dto.*;
 import com.project.hemolink.user_service.entities.Donor;
 import com.project.hemolink.user_service.entities.enums.BloodType;
+import com.project.hemolink.user_service.exception.BadRequestException;
 import com.project.hemolink.user_service.services.DonorService;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -54,16 +55,25 @@ public class DonorController {
     }
 
     @GetMapping("/eligible")
-    List<DonorMatchDto> findNearByEligibleDonors(
-            @RequestParam String location,
+    public ResponseEntity<List<DonorMatchDto>> findNearByEligibleDonors(
+            @RequestParam String location,  // format: "lon,lat"
             @RequestParam BloodType bloodType,
-            @RequestParam int radiusKm,
-            @RequestParam int limit
-    ){
-        PointDTO pointDTO = new PointDTO();
-        double[] cor = {13.397634, 52.529407};
-        pointDTO.setCoordinates(cor);
-        Point loc = modelMapper.map(pointDTO, Point.class);
-        return donorService.findNearByEligibleDonors(loc, bloodType, radiusKm, limit);
+            @RequestParam(defaultValue = "50") int radiusKm,
+            @RequestParam(defaultValue = "10") int limit) {
+
+        try {
+            String[] coords = location.split(",");
+            double lon = Double.parseDouble(coords[0]);
+            double lat = Double.parseDouble(coords[1]);
+
+            PointDTO pointDTO = new PointDTO(new double[]{lon, lat});
+            Point point = modelMapper.map(pointDTO, Point.class);
+
+            return ResponseEntity.ok(
+                    donorService.findNearByEligibleDonors(point, bloodType, radiusKm, limit)
+            );
+        } catch (Exception e) {
+            throw new BadRequestException("Invalid location format. Use 'longitude,latitude'");
+        }
     }
 }

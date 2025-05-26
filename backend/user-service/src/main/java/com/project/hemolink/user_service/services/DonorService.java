@@ -42,6 +42,7 @@ public class DonorService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final SecurityUtil securityUtil;
+    private final BloodTypeCompatibilityService compatibilityService;
 
     /*
      * Function to complete the donor profile
@@ -87,14 +88,12 @@ public class DonorService {
     public DonorDto updateAvailability(AvailabilityDto availabilityDto) {
         try {
 
-            String userId = UserContextHolder.getCurrentUserId();
-            User user = userRepository.findById(UUID.fromString(userId))
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+            UUID userId = securityUtil.getCurrentUserId();
 
-            Donor donor = donorRepository.findByUser(user)
-                    .orElseThrow(() -> new ResourceNotFoundException("Donor not found for user: " + user.getEmail()));
+            Donor donor = donorRepository.findByUserId(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Donor not found with userId: "+userId));
 
-            log.info("Updating availability for donor: {}", user.getEmail());
+            log.info("Updating availability for donor: {}", donor.getUser().getEmail());
             donor.setIsAvailable(availabilityDto.isAvailable());
 
             return modelMapper.map(donorRepository.save(donor), DonorDto.class);
@@ -112,13 +111,12 @@ public class DonorService {
 
     @Transactional
     public DonorDto updateLocation(PointDTO updatedLocation){
-        String userId = UserContextHolder.getCurrentUserId();
-        User user = (User) userRepository.findById(UUID.fromString(userId))
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
+        UUID userId = securityUtil.getCurrentUserId();
 
-        log.info("Updating the location for the donor with email: {}", user.getEmail());
-        Donor donor = donorRepository.findByUser(user)
-                .orElseThrow(() -> new ResourceNotFoundException("Donor not found with email id: {}"+user.getEmail()));
+        Donor donor = donorRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Donor not found with userId: "+userId));
+
+        log.info("Updating the location for the donor with email: {}", donor.getUser().getEmail());
 
         donor.setLocation(modelMapper.map(updatedLocation, Point.class));
 
@@ -137,25 +135,47 @@ public class DonorService {
 
     public DonorDto getDonorByUserId(String userId) {
         log.info("Fetching Donor by userId: {}", userId);
-        User user =  userRepository.findById(UUID.fromString(userId))
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
 
-        Donor donor = donorRepository.findByUser(user)
+
+        Donor donor = donorRepository.findByUserId(UUID.fromString(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("Donor not found with userId: "+userId));
 
         return modelMapper.map(donor, DonorDto.class);
     }
 
     public List<DonorMatchDto> findNearByEligibleDonors(Point location, BloodType bloodType, int radiusKm, int limit) {
-        UUID userId = securityUtil.getCurrentUserId();
-        User user =  userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
-        Donor donor = donorRepository.findByUser(user)
-                .orElseThrow(() -> new ResourceNotFoundException("Donor not found with userId: "+userId));
+        // Get all compatible blood types
+        List<BloodType> compatibleTypes = compatibilityService.getCompatibleBloodTypes(bloodType);
 
-        List<Donor> donors = donorRepository.findNearbyEligibleDonors(user, location, bloodType, radiusKm);
+        // Calculate minimum date (90 days ago)
+        LocalDate minDate = LocalDate.now().minusDays(90);
+
+        // Convert km to meters (PostGIS uses meters)
+        double radiusMeters = radiusKm * 1000;
+
+        PageRequest pageRequest = PageRequest.of(0, limit);
+
+        List<Donor> donors = donorRepository.findNearbyEligibleDonors(
+                location,
+                compatibleTypes,
+                radiusMeters,
+                minDate,
+                pageRequest
+        );
+
         return donors.stream()
-                .map(donor1 -> modelMapper.map(donor1, DonorMatchDto.class))
+                .map(donor -> {
+                    DonorMatchDto dto = modelMapper.map(donor, DonorMatchDto.class);
+                    // Calculate distance in km
+                    dto.setDistanceKm(calculateDistance(location, donor.getLocation()));
+                    return dto;
+                })
                 .toList();
+    }
+
+    private double calculateDistance(Point p1, Point p2) {
+        // Simple distance calculation for example
+        return Math.sqrt(Math.pow(p2.getX() - p1.getX(), 2) +
+                Math.pow(p2.getY() - p1.getY(), 2)) * 111; // approx km
     }
 }
