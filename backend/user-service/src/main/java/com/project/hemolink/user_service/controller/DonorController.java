@@ -61,19 +61,15 @@ public class DonorController {
             @RequestParam(defaultValue = "50") int radiusKm,
             @RequestParam(defaultValue = "10") int limit) {
 
-        try {
-            String[] coords = location.split(",");
-            double lon = Double.parseDouble(coords[0]);
-            double lat = Double.parseDouble(coords[1]);
+        String[] coords = location.split(",");
+        double lon = Double.parseDouble(coords[0]);
+        double lat = Double.parseDouble(coords[1]);
 
-            PointDTO pointDTO = new PointDTO(new double[]{lon, lat});
-            Point point = modelMapper.map(pointDTO, Point.class);
+        PointDTO pointDTO = new PointDTO(new double[]{lon, lat});
+        Point point = modelMapper.map(pointDTO, Point.class);
 
-            return ResponseEntity.ok(
-                    donorService.findNearByEligibleDonors(point, bloodType, radiusKm, limit)
-            );
-        } catch (Exception e) {
-            throw new BadRequestException("Invalid location format. Use 'longitude,latitude'");
-        }
+        return ResponseEntity.ok(
+                donorService.findNearByEligibleDonors(point, bloodType, radiusKm, limit)
+        );
     }
 }

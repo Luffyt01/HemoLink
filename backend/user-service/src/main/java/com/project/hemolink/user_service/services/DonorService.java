@@ -43,6 +43,7 @@ public class DonorService {
     private final ModelMapper modelMapper;
     private final SecurityUtil securityUtil;
     private final BloodTypeCompatibilityService compatibilityService;
+    private final DistanceService distanceService;
 
     /*
      * Function to complete the donor profile
@@ -175,7 +176,6 @@ public class DonorService {
 
     private double calculateDistance(Point p1, Point p2) {
         // Simple distance calculation for example
-        return Math.sqrt(Math.pow(p2.getX() - p1.getX(), 2) +
-                Math.pow(p2.getY() - p1.getY(), 2)) * 111; // approx km
+        return distanceService.calculateDistance(p1, p2);
     }
 }
