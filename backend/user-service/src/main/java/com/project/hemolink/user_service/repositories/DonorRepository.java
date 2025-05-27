@@ -19,13 +19,13 @@ import java.util.UUID;
 public interface DonorRepository extends JpaRepository<Donor, UUID> {
 
     @Query(value = """
-        SELECT d FROM Donor d 
-        WHERE d.bloodType IN :compatibleTypes 
-        AND d.isAvailable = true
-        AND FUNCTION('ST_DWithin', d.location, :point, :radius) = true
-        AND (d.lastDonation IS NULL OR d.lastDonation <= :minDate)
-        ORDER BY FUNCTION('ST_Distance', d.location, :point)
-        """)
+    SELECT d FROM Donor d 
+    WHERE d.bloodType IN :compatibleTypes 
+    AND d.isAvailable = true
+    AND (d.lastDonation IS NULL OR d.lastDonation <= :minDate)
+    AND FUNCTION('ST_DistanceSphere', d.location, :point) <= :radius
+    ORDER BY FUNCTION('ST_DistanceSphere', d.location, :point)
+    """)
     List<Donor> findNearbyEligibleDonors(
             @Param("point") Point point,
             @Param("compatibleTypes") List<BloodType> compatibleTypes,
