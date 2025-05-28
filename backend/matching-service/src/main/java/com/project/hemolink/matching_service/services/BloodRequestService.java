@@ -11,6 +11,7 @@ import com.project.hemolink.matching_service.exception.BadRequestException;
 import com.project.hemolink.matching_service.exception.ResourceNotFoundException;
 import com.project.hemolink.matching_service.repositories.BloodRequestRepository;
 import com.project.hemolink.matching_service.security.SecurityUtil;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Point;
@@ -20,7 +21,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -61,7 +61,15 @@ public class BloodRequestService {
         bloodRequest.setHospitalId(hospitalDto.getId());
         bloodRequest.setHospitalName(hospitalDto.getHospitalName());
         bloodRequest.setLocation(modelMapper.map(hospitalDto.getServiceArea(), Point.class));
-        bloodRequest.setExpiryTime(setRequestExpiryTime(createRequestDto.getUrgency()));
+
+
+        if (createRequestDto.getExpiryTime() != null){
+            bloodRequest.setExpiryTime(createRequestDto.getExpiryTime());
+        }else{
+            bloodRequest.setExpiryTime(setRequestExpiryTime(createRequestDto.getUrgency()));
+        }
+
+
         bloodRequest.setStatus(RequestStatus.PENDING);
 
         BloodRequest savedRequest = bloodRequestRepository.save(bloodRequest);
@@ -129,17 +137,15 @@ public class BloodRequestService {
         // Check if any changes were made
         if (updateRequestDto.getUrgency().equals(bloodRequest.getUrgency())
                 && updateRequestDto.getBloodType().equals(bloodRequest.getBloodType())
-                && updateRequestDto.getStatus().equals(bloodRequest.getStatus())
                 && updateRequestDto.getUnitsRequired() == bloodRequest.getUnitsRequired()
-                && updateRequestDto.getLocation().equals(modelMapper.map(bloodRequest.getLocation(), PointDTO.class))) {
+                && updateRequestDto.getExpiryTime() == bloodRequest.getExpiryTime()) {
             throw new BadRequestException("No changes made");
         }
 
         // Apply updates
+        bloodRequest.setExpiryTime(updateRequestDto.getExpiryTime());
         bloodRequest.setBloodType(updateRequestDto.getBloodType());
-        bloodRequest.setLocation(modelMapper.map(updateRequestDto.getLocation(), Point.class));
         bloodRequest.setUrgency(updateRequestDto.getUrgency());
-        bloodRequest.setStatus(updateRequestDto.getStatus());
         bloodRequest.setUnitsRequired(updateRequestDto.getUnitsRequired());
 
         return modelMapper.map(bloodRequestRepository.save(bloodRequest), BloodRequestDto.class);

@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.locationtech.jts.geom.Point;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -18,5 +20,5 @@ public class CreateRequestDto {
     private BloodType bloodType;
     private int unitsRequired;
     private UrgencyLevel urgency;
-
+    private LocalDateTime expiryTime;
 }

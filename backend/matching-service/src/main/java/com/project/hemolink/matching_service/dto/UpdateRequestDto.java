@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -17,6 +19,5 @@ public class UpdateRequestDto {
     private BloodType bloodType;
     private int unitsRequired;
     private UrgencyLevel urgency;
-    private PointDTO location;
-    private RequestStatus status;
+    private LocalDateTime expiryTime;
 }
