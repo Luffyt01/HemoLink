@@ -8,6 +8,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal } from "lucide-react"
+import { toast } from 'sonner'
+import { cancel_Blood_Request_Hospital } from '@/actions/Hospital/new_request_all_action/cancle_request'
+import { useAuthStore } from '@/lib/stores/useAuthStore'
+import { urgencyChangeRequest } from '@/actions/Hospital/new_request_all_action/urgency_change_request'
+import { statusChangeRequest } from '@/actions/Hospital/new_request_all_action/status_change_request'
 
 interface RequestActionsProps {
   request: {
@@ -15,7 +20,7 @@ interface RequestActionsProps {
     status: "PENDING" | "FULFILLED" | "EXPIRED"
     urgency: "LOW" | "MEDIUM" | "HIGH"
   }
-
+ f
 }
 
 export function RequestActions({ request }: RequestActionsProps) {
@@ -25,19 +30,24 @@ export function RequestActions({ request }: RequestActionsProps) {
   const [selectedStatus, setSelectedStatus] = useState(request.status)
   const [selectedUrgency, setSelectedUrgency] = useState(request.urgency)
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingCancel, setIsLoadingCancel] = useState(false)
+  const {session } = useAuthStore()
+
 
   const updateStatus = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch(`/api/requests/${request.id}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: selectedStatus }),
-      })
-      
-      if (!response.ok) throw new Error('Failed to update status')
+      const response:any = await  statusChangeRequest(request.id,selectedStatus,session?.token||"")
+
+      if(response.status === 200){
+        toast.success(response.message)
+      }
+      if(response.status === 400){
+        toast.error(response.message)
+      }
+      if(response.status === 500){
+        toast.error(response.message)
+      }
       
      // Trigger parent to refresh data
       setShowStatusSelect(false)
@@ -51,15 +61,17 @@ export function RequestActions({ request }: RequestActionsProps) {
   const updateUrgency = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch(`/api/requests/${request.id}/urgency`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ urgency: selectedUrgency }),
-      })
+      const response:any = await urgencyChangeRequest(request.id,selectedUrgency,session?.token||"");
+      if(response.status === 200){
+        toast.success(response.message)
+      }
+      if(response.status === 400){
+        toast.error(response.message)
+      }
+      if(response.status === 500){
+        toast.error(response.message)
+      }
       
-      if (!response.ok) throw new Error('Failed to update urgency')
       
      // Trigger parent to refresh data
       setShowUrgencySelect(false)
@@ -71,20 +83,25 @@ export function RequestActions({ request }: RequestActionsProps) {
   }
 
   const cancelRequest = async () => {
-    setIsLoading(true)
+    setIsLoadingCancel(true)
     try {
-      const response = await fetch(`/api/requests/${request.id}`, {
-        method: 'DELETE',
-      })
-      
-      if (!response.ok) throw new Error('Failed to cancel request')
-      
-     // Trigger parent to refresh data
+      console.log(request)
+      const response:any = await cancel_Blood_Request_Hospital(request.id,session?.token||"")
+      if(response.status === 200){
+        toast.success(response.message)
+      }
+      if(response.status === 400){
+        toast.error(response.message)
+      }
+      if(response.status === 500){
+        toast.error(response.message)
+      }
       setShowCancelDialog(false)
     } catch (error) {
       console.error('Error canceling request:', error)
+     
     } finally {
-      setIsLoading(false)
+      setIsLoadingCancel(false)
     }
   }
 
@@ -130,18 +147,19 @@ export function RequestActions({ request }: RequestActionsProps) {
               <Button 
                 variant="outline" 
                 onClick={() => setShowCancelDialog(false)}
-                disabled={isLoading}
-                className='text-black hover:text-black/75'
+                
+                className='text-black hover:text-black/75 cursor-pointer'
 
               >
                 Cancel
               </Button>
               <Button 
-                variant="destructive"
+                
                 onClick={cancelRequest}
-                disabled={isLoading}
+                className='text-white bg-red-600 hover:bg-red-700 cursor-pointer'
+                
               >
-                {isLoading ? "Processing..." : "Confirm Cancel"}
+                {isLoadingCancel   ? "Processing..." : "Confirm Cancel"}
               </Button>
             </div>
           </div>
