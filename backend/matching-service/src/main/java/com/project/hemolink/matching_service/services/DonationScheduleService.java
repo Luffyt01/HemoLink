@@ -20,43 +20,56 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+/**
+ * Service for scheduling and managing donations
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class DonationScheduleService {
-
     private final DonationRepository donationRepository;
     private final BloodRequestRepository bloodRequestRepository;
     private final UserServiceClient userServiceClient;
     private final ModelMapper modelMapper;
 
+    /**
+     * Confirms a donation match and schedules it
+     * @param confirmMatchDto Match confirmation details
+     * @return Scheduled donation DTO
+     * @throws MatchConflictException if donation already exists
+     * @throws DonorNotAvailableException if donor is unavailable
+     */
     @Transactional
     public DonationDto confirmDonation(ConfirmMatchDto confirmMatchDto) {
-        log.info("Confirming donation for donor with id: {}", confirmMatchDto.getDonorId());
+        log.info("Confirming donation for donor {}", confirmMatchDto.getDonorId());
 
+        // Check for existing donation
         if (donationRepository.existsByDonorIdAndRequestId(
                 confirmMatchDto.getDonorId(),
                 UUID.fromString(confirmMatchDto.getRequestId())))
         {
             throw new MatchConflictException("Donation match already exists");
         }
-        // Verify donor exists and is eligible
+
+        // Verify donor eligibility
         DonorDto donor = userServiceClient.getDonor(confirmMatchDto.getDonorId());
-        if (!donor.isAvailable()){
-            throw new DonorNotAvailableException("Donor not found with id: "+donor.getId());
+        if (!donor.isAvailable()) {
+            throw new DonorNotAvailableException("Donor unavailable: "+donor.getId());
         }
 
-        BloodRequest bloodRequest = bloodRequestRepository.findById(UUID.fromString(confirmMatchDto.getRequestId()))
-                .orElseThrow(() -> new ResourceNotFoundException("Blood request not found with id: "+confirmMatchDto.getRequestId()));
+        BloodRequest request = bloodRequestRepository.findById(UUID.fromString(confirmMatchDto.getRequestId()))
+                .orElseThrow(() -> new ResourceNotFoundException("Request not found: "+confirmMatchDto.getRequestId()));
 
+        // Create donation record
         Donation donation = new Donation();
         donation.setDonorId(confirmMatchDto.getDonorId());
-        donation.setRequest(bloodRequest);
+        donation.setRequest(request);
         donation.setScheduledAt(confirmMatchDto.getScheduledTime());
         donation.setStatus(DonationStatus.SCHEDULED);
 
         Donation savedDonation = donationRepository.save(donation);
 
+        // Update donor availability
         userServiceClient.updateDonorAvailability(confirmMatchDto.getDonorId(), false);
 
         return modelMapper.map(savedDonation, DonationDto.class);
