@@ -30,6 +30,8 @@ import { HeartPulse } from 'lucide-react'
 import { useState, useEffect, useActionState, startTransition } from 'react'
 import { format, addDays } from 'date-fns'
 import { HospitalNewRequestAction } from '@/actions/Hospital/new_request_all_action/HospitalNewRequestAction'
+import { useAuthStore } from '@/lib/stores/useAuthStore'
+import { toast } from 'sonner'
 
 const formSchema = z.object({
   bloodType: z.enum(["A_POSITIVE", "A_NEGATIVE", "B_POSITIVE", "B_NEGATIVE", "AB_POSITIVE", "AB_NEGATIVE", "O_POSITIVE", "O_NEGATIVE"]),
@@ -51,6 +53,22 @@ export function NewRequestDialog({ onSubmit }: NewRequestDialogProps) {
   const [open, setOpen] = useState(false)
   const [minExpiryDate, setMinExpiryDate] = useState('')
   const [state,formAction,isPending] = useActionState(HospitalNewRequestAction,null)
+  const session  = useAuthStore();
+
+  useEffect(()=>{
+    if(state?.status === 200){
+      toast.success(state.message)
+      setOpen(false)
+    }
+    if(state?.status === 400){
+      toast.error(state.message)
+      setOpen(false)
+    }
+    if(state?.status === 500){
+      toast.error(state.message)
+      setOpen(false)
+    }
+  },[state])
   
   
   useEffect(() => {
@@ -66,7 +84,7 @@ export function NewRequestDialog({ onSubmit }: NewRequestDialogProps) {
       bloodType: "A_POSITIVE",
       unitsRequired: 1,
       urgency: "MEDIUM",
-      token:"dfsd",
+      token:session.session?.token,
       expiryTime: format(addDays(new Date(), 5), "yyyy-MM-dd'T'HH:mm")
     },
   })
@@ -77,11 +95,14 @@ export function NewRequestDialog({ onSubmit }: NewRequestDialogProps) {
     startTransition(async() => {
      await formAction(values)
     });
-    onSubmit(values)
     
-    setOpen(false)
+    onSubmit(values)
+    form.reset()
+    
+    
     return;
   }
+  
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
