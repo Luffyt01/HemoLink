@@ -4,7 +4,7 @@
 
 import axios, { AxiosError } from "axios"
 
-export const HospitalNewRequestAction = async (pre: any, formData: any) => {
+export const Edit_Hospital_Request = async (pre: any, formData: any) => {
 
 
 
@@ -16,11 +16,12 @@ export const HospitalNewRequestAction = async (pre: any, formData: any) => {
             expiryTime: formData.expiryTime
         }
         const token = formData.token || null;
+        const requestId = formData.requestId || null;
         console.log(token)
         console.log(Data)
 
 
-        const response = await axios.post(`${process.env.BACKEND_APP_URL1}/requests/create`,
+        const response = await axios.post(`${process.env.BACKEND_APP_URL1}/requests/updateDetails/${requestId}`,
             Data
             , {
                 headers: {

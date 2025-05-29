@@ -1,109 +1,96 @@
-"use client"
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
+"use client";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { MoreHorizontal } from "lucide-react"
-import { toast } from 'sonner'
-import { cancel_Blood_Request_Hospital } from '@/actions/Hospital/new_request_all_action/cancle_request'
-import { useAuthStore } from '@/lib/stores/useAuthStore'
-import { urgencyChangeRequest } from '@/actions/Hospital/new_request_all_action/urgency_change_request'
-import { statusChangeRequest } from '@/actions/Hospital/new_request_all_action/status_change_request'
+} from "@/components/ui/dropdown-menu";
+import { Edit, Edit2, MoreHorizontal } from "lucide-react";
+import { toast } from "sonner";
+import { cancel_Blood_Request_Hospital } from "@/actions/Hospital/new_request_all_action/cancle_request";
+import { useAuthStore } from "@/lib/stores/useAuthStore";
+
+import { statusChangeRequest } from "@/actions/Hospital/new_request_all_action/status_change_request";
+import { IoStatsChartOutline } from "react-icons/io5";
+import { GiCancel } from "react-icons/gi";
+import { Edit_RequestDialog } from "./Edit_Request";
 
 interface RequestActionsProps {
   request: {
-    id: string
-    status: "PENDING" | "FULFILLED" | "EXPIRED"
-    urgency: "LOW" | "MEDIUM" | "HIGH"
-  }
- f
+    id: string;
+    status: "PENDING" | "FULFILLED" | "EXPIRED";
+    urgency: "LOW" | "MEDIUM" | "HIGH";
+  };
 }
 
 export function RequestActions({ request }: RequestActionsProps) {
-  const [showCancelDialog, setShowCancelDialog] = useState(false)
-  const [showStatusSelect, setShowStatusSelect] = useState(false)
-  const [showUrgencySelect, setShowUrgencySelect] = useState(false)
-  const [selectedStatus, setSelectedStatus] = useState(request.status)
-  const [selectedUrgency, setSelectedUrgency] = useState(request.urgency)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isLoadingCancel, setIsLoadingCancel] = useState(false)
-  const {session } = useAuthStore()
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [showStatusSelect, setShowStatusSelect] = useState(false);
+  const [showUrgencySelect, setShowUrgencySelect] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState(request.status);
+  const [selectedUrgency, setSelectedUrgency] = useState(request.urgency);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingCancel, setIsLoadingCancel] = useState(false);
+  const { session } = useAuthStore();
 
+  //! updateStatus function to handle status change
 
   const updateStatus = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const response:any = await  statusChangeRequest(request.id,selectedStatus,session?.token||"")
+      const response: any = await statusChangeRequest(
+        request.id,
+        selectedStatus,
+        session?.token || ""
+      );
 
-      if(response.status === 200){
-        toast.success(response.message)
+      if (response.status === 200) {
+        toast.success(response.message);
       }
-      if(response.status === 400){
-        toast.error(response.message)
+      if (response.status === 400) {
+        toast.error(response.message);
       }
-      if(response.status === 500){
-        toast.error(response.message)
+      if (response.status === 500) {
+        toast.error(response.message);
       }
-      
-     // Trigger parent to refresh data
-      setShowStatusSelect(false)
-    } catch (error) {
-      console.error('Error updating status:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
-  const updateUrgency = async () => {
-    setIsLoading(true)
-    try {
-      const response:any = await urgencyChangeRequest(request.id,selectedUrgency,session?.token||"");
-      if(response.status === 200){
-        toast.success(response.message)
-      }
-      if(response.status === 400){
-        toast.error(response.message)
-      }
-      if(response.status === 500){
-        toast.error(response.message)
-      }
-      
-      
-     // Trigger parent to refresh data
-      setShowUrgencySelect(false)
+      // Trigger parent to refresh data
+      setShowStatusSelect(false);
     } catch (error) {
-      console.error('Error updating urgency:', error)
+      console.error("Error updating status:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
+
+  //! cancelRequest function to handle request cancellation
 
   const cancelRequest = async () => {
-    setIsLoadingCancel(true)
+    setIsLoadingCancel(true);
     try {
-      console.log(request)
-      const response:any = await cancel_Blood_Request_Hospital(request.id,session?.token||"")
-      if(response.status === 200){
-        toast.success(response.message)
+      console.log(request);
+      const response: any = await cancel_Blood_Request_Hospital(
+        request.id,
+        session?.token || ""
+      );
+      if (response.status === 200) {
+        toast.success(response.message);
       }
-      if(response.status === 400){
-        toast.error(response.message)
+      if (response.status === 400) {
+        toast.error(response.message);
       }
-      if(response.status === 500){
-        toast.error(response.message)
+      if (response.status === 500) {
+        toast.error(response.message);
       }
-      setShowCancelDialog(false)
+      setShowCancelDialog(false);
     } catch (error) {
-      console.error('Error canceling request:', error)
-     
+      console.error("Error canceling request:", error);
     } finally {
-      setIsLoadingCancel(false)
+      setIsLoadingCancel(false);
     }
-  }
+  };
 
   return (
     <>
@@ -114,22 +101,32 @@ export function RequestActions({ request }: RequestActionsProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => {
-            setSelectedUrgency(request.urgency)
-            setShowUrgencySelect(true)
-          }}>
-            Change Urgency
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => {
-            setSelectedStatus(request.status)
-            setShowStatusSelect(true)
-          }}>
+          {/* <DropdownMenuItem
+            onClick={() => {
+              setSelectedUrgency(request.urgency);
+              setShowUrgencySelect(true);
+            }}
+            className="cursor-pointer"
+          > */}
+
+          <Edit_RequestDialog request={request} />
+
+          {/* </DropdownMenuItem> */}
+          <DropdownMenuItem
+            onClick={() => {
+              setSelectedStatus(request.status);
+              setShowStatusSelect(true);
+            }}
+            className="cursor-pointer"
+          >
+            <IoStatsChartOutline className="mr-2 h-4 w-4" />
             Change Status
           </DropdownMenuItem>
-          <DropdownMenuItem 
-            className="text-red-600"
+          <DropdownMenuItem
+            className="text-red-600 cursor-pointer"
             onClick={() => setShowCancelDialog(true)}
           >
+            <GiCancel color="red" className="mr-2 mt-1 h-4 w-4" />
             Cancel Request
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -141,25 +138,22 @@ export function RequestActions({ request }: RequestActionsProps) {
           <div className="bg-white p-6 rounded-lg w-96 mx-2 ">
             <h3 className="text-lg font-semibold mb-2">Are you sure?</h3>
             <p className="text-gray-600 mb-4 text-wrap">
-              This action cannot be undone. This will permanently cancel the blood request.
+              This action cannot be undone. This will permanently cancel the
+              blood request.
             </p>
             <div className="flex justify-end gap-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setShowCancelDialog(false)}
-                
-                className='text-black hover:text-black/75 cursor-pointer'
-
+                className="text-black hover:text-black/75 cursor-pointer"
               >
                 Cancel
               </Button>
-              <Button 
-                
+              <Button
                 onClick={cancelRequest}
-                className='text-white bg-red-600 hover:bg-red-700 cursor-pointer'
-                
+                className="text-white bg-red-600 hover:bg-red-700 cursor-pointer"
               >
-                {isLoadingCancel   ? "Processing..." : "Confirm Cancel"}
+                {isLoadingCancel ? "Processing..." : "Confirm Cancel"}
               </Button>
             </div>
           </div>
@@ -167,13 +161,15 @@ export function RequestActions({ request }: RequestActionsProps) {
       )}
 
       {/* Urgency Dialog */}
-      {showUrgencySelect && (
+      {/* {showUrgencySelect && (
         <div className="fixed inset-0 bg-black/80  text-black flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-80 mx-2 ">
             <h3 className="text-lg font-medium mb-4">Change Urgency Level</h3>
             <select
               value={selectedUrgency}
-              onChange={(e) => setSelectedUrgency(e.target.value as "LOW" | "MEDIUM" | "HIGH")}
+              onChange={(e) =>
+                setSelectedUrgency(e.target.value as "LOW" | "MEDIUM" | "HIGH")
+              }
               className="w-full p-2 border rounded mb-4"
               disabled={isLoading}
             >
@@ -182,16 +178,15 @@ export function RequestActions({ request }: RequestActionsProps) {
               <option value="HIGH">High</option>
             </select>
             <div className="flex justify-end gap-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setShowUrgencySelect(false)}
                 disabled={isLoading}
-                className='text-black hover:text-black/75'
-
+                className="text-black hover:text-black/75"
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={updateUrgency}
                 disabled={isLoading || selectedUrgency === request.urgency}
               >
@@ -200,7 +195,8 @@ export function RequestActions({ request }: RequestActionsProps) {
             </div>
           </div>
         </div>
-      )}
+       
+      )} */}
 
       {/* Status Dialog */}
       {showStatusSelect && (
@@ -209,7 +205,11 @@ export function RequestActions({ request }: RequestActionsProps) {
             <h3 className="text-lg font-medium mb-4">Change Request Status</h3>
             <select
               value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value as "PENDING" | "FULFILLED" | "EXPIRED")}
+              onChange={(e) =>
+                setSelectedStatus(
+                  e.target.value as "PENDING" | "FULFILLED" | "EXPIRED"
+                )
+              }
               className="w-full p-2 border rounded mb-4"
               disabled={isLoading}
             >
@@ -218,15 +218,15 @@ export function RequestActions({ request }: RequestActionsProps) {
               <option value="EXPIRED">Expired</option>
             </select>
             <div className="flex justify-end gap-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setShowStatusSelect(false)}
                 disabled={isLoading}
-                className='text-black hover:text-black/75'
+                className="text-black hover:text-black/75"
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={updateStatus}
                 disabled={isLoading || selectedStatus === request.status}
               >
@@ -237,5 +237,5 @@ export function RequestActions({ request }: RequestActionsProps) {
         </div>
       )}
     </>
-  )
+  );
 }
