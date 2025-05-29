@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.locationtech.jts.geom.Point;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -34,6 +35,6 @@ public class Donor{
 
     @Column(columnDefinition = "Geometry(Point, 4326)")
     private Point location;
-    private LocalDateTime lastDonation;
+    private LocalDate lastDonation;
     private Boolean isAvailable;
 }
