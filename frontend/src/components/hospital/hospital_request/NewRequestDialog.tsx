@@ -52,30 +52,40 @@ interface NewRequestDialogProps {
 export function NewRequestDialog({ onSubmit }: NewRequestDialogProps) {
   const [open, setOpen] = useState(false)
   const [minExpiryDate, setMinExpiryDate] = useState('')
-  const [state,formAction,isPending] = useActionState(HospitalNewRequestAction,null)
-  const session  = useAuthStore();
+  const [state, formAction, isPending] = useActionState(HospitalNewRequestAction, null)
+  const session = useAuthStore()
 
-  useEffect(()=>{
-    if(state?.status === 200){
+  // Format datetime-local input value from ISO string
+  const formatForInput = (date: Date | string) => {
+    const d = new Date(date)
+    return format(d, "yyyy-MM-dd'T'HH:mm")
+  }
+
+  // Format ISO string from datetime-local input value
+  const formatForSubmission = (dateString: string) => {
+    return new Date(dateString).toISOString()
+  }
+
+  useEffect(() => {
+    if (state?.status === 200) {
       toast.success(state.message)
       setOpen(false)
     }
-    if(state?.status === 400){
+    if (state?.status === 400) {
       toast.error(state.message)
       setOpen(false)
     }
-    if(state?.status === 500){
+    if (state?.status === 500) {
       toast.error(state.message)
       setOpen(false)
     }
-  },[state])
-  
+  }, [state])
   
   useEffect(() => {
     // Set minimum expiry date to current time + 1 hour
     const now = new Date()
     now.setHours(now.getHours() + 1)
-    setMinExpiryDate(format(now, "yyyy-MM-dd'T'HH:mm"))
+    setMinExpiryDate(formatForInput(now))
   }, [])
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -84,25 +94,33 @@ export function NewRequestDialog({ onSubmit }: NewRequestDialogProps) {
       bloodType: "A_POSITIVE",
       unitsRequired: 1,
       urgency: "MEDIUM",
-      token:session.session?.token,
-      expiryTime: format(addDays(new Date(), 5), "yyyy-MM-dd'T'HH:mm")
+      token: session.session?.token,
+      expiryTime: formatForInput(addDays(new Date(), 5)) // Default to 5 days from now
     },
   })
 
-  const handleSubmit =async (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      // Convert datetime-local to ISO string before submission
+      const submissionValues = {
+        ...values,
+        expiryTime: formatForSubmission(values.expiryTime),
+        token: session.session?.token
+      }
 
-    console.log(values)
-    startTransition(async() => {
-     await formAction(values)
-    });
-    
-    onSubmit(values)
-    form.reset()
-    
-    
-    return;
+      console.log("Submitting:", submissionValues)
+      
+      startTransition(async () => {
+        await formAction(submissionValues)
+      })
+
+      onSubmit(submissionValues)
+      form.reset()
+    } catch (error) {
+      console.error("Submission error:", error)
+      toast.error("Failed to prepare submission data")
+    }
   }
-  
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -122,7 +140,6 @@ export function NewRequestDialog({ onSubmit }: NewRequestDialogProps) {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Other form fields remain the same */}
               <FormField
                 control={form.control}
                 name="bloodType"
@@ -203,7 +220,7 @@ export function NewRequestDialog({ onSubmit }: NewRequestDialogProps) {
                       <Input
                         type="datetime-local"
                         className="bg-muted border-border"
-                        min={minExpiryDate}
+                        min={format(new Date(), "yyyy-MM-dd'T'HH:mm")} // Ensure current time is the minimum
                         {...field}
                         onChange={e => {
                           const selectedDate = new Date(e.target.value)

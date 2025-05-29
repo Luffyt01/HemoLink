@@ -48,11 +48,19 @@ const formSchema = z.object({
   urgency: z.enum(["LOW", "MEDIUM", "HIGH"]),
   token: z.string().optional(),
   requestId: z.string().optional(),
-  expiryTime: z.string().refine((val) => {
-    const date = new Date(val);
-    const now = new Date();
-    return date > now;
-  }, "Expiry time must be in the future"),
+  expiryTime: z.string().refine(
+    (val) => {
+      try {
+        const date = new Date(val);
+        return !isNaN(date.getTime()) && date > new Date();
+      } catch {
+        return false;
+      }
+    },
+    {
+      message: "Expiry time must be a valid future date",
+    }
+  ),
 });
 
 interface NewRequestDialogProps {
@@ -99,21 +107,29 @@ export function Edit_RequestDialog({ request }: NewRequestDialogProps) {
   }, [state]);
 
   const formatExpiryForInput = (isoString: string | undefined) => {
-    if (!isoString) return "";
-    const date = new Date(isoString);
-    // Convert to local time and format as YYYY-MM-DDTHH:MM
-    const localDate = new Date(
-      date.getTime() - date.getTimezoneOffset() * 60000
-    );
-    return localDate.toISOString().slice(0, 16);
+    if (!isoString) {
+      // Default to 1 hour from now if no expiry time provided
+      const defaultDate = new Date();
+      defaultDate.setHours(defaultDate.getHours() + 1);
+      return format(defaultDate, "yyyy-MM-dd'T'HH:mm");
+    }
+
+    try {
+      const date = new Date(isoString);
+      if (isNaN(date.getTime())) throw new Error("Invalid date");
+
+      // Convert to local time string for datetime-local input
+      const offset = date.getTimezoneOffset() * 60000;
+      const localISOTime = new Date(date.getTime() - offset).toISOString();
+      return localISOTime.slice(0, 16);
+    } catch {
+      // Fallback to current time + 1 hour if parsing fails
+      const fallbackDate = new Date();
+      fallbackDate.setHours(fallbackDate.getHours() + 1);
+      return format(fallbackDate, "yyyy-MM-dd'T'HH:mm");
+    }
   };
 
-  // Set minimum expiry date to current time + 1 hour
-  useEffect(() => {
-    const now = new Date();
-    now.setHours(now.getHours() + 1);
-    setMinExpiryDate(format(now, "yyyy-MM-dd'T'HH:mm"));
-  }, []);
   console.log(request);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -122,17 +138,20 @@ export function Edit_RequestDialog({ request }: NewRequestDialogProps) {
       unitsRequired: request?.unitsRequired,
       urgency: request?.urgency,
       token: session.session?.token,
-      requestId:request?.id,
+      requestId: request?.id,
       expiryTime: formatExpiryForInput(request?.expiryTime),
     },
   });
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     console.log(values);
-    const isoExpiry = new Date(values.expiryTime).toISOString();
+    const expiryDate = new Date(values.expiryTime);
+    if (isNaN(expiryDate.getTime())) {
+      throw new Error("Invalid expiry date");
+    }
     const submissionValues = {
       ...values,
-      expiryTime: isoExpiry,
+      expiryTime: expiryDate.toISOString(), // Ensure expiryTime is in ISO format
     };
 
     startTransition(async () => {
@@ -309,14 +328,11 @@ export function Edit_RequestDialog({ request }: NewRequestDialogProps) {
                 name="expiryTime"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-foreground">
-                      Expiry Date & Time
-                    </FormLabel>
+                    <FormLabel>Expiry Date & Time</FormLabel>
                     <FormControl>
                       <Input
                         type="datetime-local"
-                        className="bg-muted border-border"
-                        min={minExpiryDate}
+                        min={format(new Date(), "yyyy-MM-dd'T'HH:mm")} // Current time as min
                         {...field}
                         onChange={(e) => {
                           const selectedDate = new Date(e.target.value);
