@@ -15,9 +15,9 @@ public class DistanceService {
     private static final String OSRM_API_BASE_URL = "http://router.project-osrm.org/route/v1/driving/";
 
     /**
-     * Calculates distance between two points using OSRM
-     * @param src Source point
-     * @param dest Destination point
+     * Calculates road distance between two geographic points
+     * @param src Source location
+     * @param dest Destination location
      * @return Distance in kilometers
      * @throws RuntimeException if OSRM request fails
      */
@@ -34,7 +34,7 @@ public class DistanceService {
                     .body(OsrmResponseDTO.class);
 
             double calculatedDistance = response.getRoutes().get(0).getDistance();
-            if (calculatedDistance == 0){
+            if (calculatedDistance == 0) {
                 return 0.0;
             }
             return calculatedDistance / 1000.0; // Convert meters to km

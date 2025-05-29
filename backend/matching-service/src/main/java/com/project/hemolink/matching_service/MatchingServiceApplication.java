@@ -9,7 +9,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 @EnableFeignClients
-@EnableJpaRepositories(basePackages = "com.project.hemolink.matching_service.repositories")
 public class MatchingServiceApplication {
 
 	public static void main(String[] args) {
