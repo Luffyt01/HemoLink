@@ -19,6 +19,7 @@ export const Edit_Hospital_Request = async (pre: any, formData: any) => {
         const requestId = formData.requestId || null;
         console.log(token)
         console.log(Data)
+        console.log(formData)
 
 
         const response = await axios.post(`${process.env.BACKEND_APP_URL1}/requests/updateDetails/${requestId}`,
