@@ -43,6 +43,7 @@ public class BloodRequest {
     private Point location;
 
     @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     private LocalDateTime expiryTime;
