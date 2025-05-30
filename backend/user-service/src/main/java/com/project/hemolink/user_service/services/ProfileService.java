@@ -1,15 +1,12 @@
 package com.project.hemolink.user_service.services;
 
 import com.project.hemolink.user_service.auth.UserContextHolder;
-import com.project.hemolink.user_service.dto.DonorDto;
-import com.project.hemolink.user_service.dto.HospitalDto;
-import com.project.hemolink.user_service.dto.UserDto;
+import com.project.hemolink.user_service.dto.*;
 import com.project.hemolink.user_service.entities.Donor;
 import com.project.hemolink.user_service.entities.Hospital;
 import com.project.hemolink.user_service.entities.User;
 import com.project.hemolink.user_service.entities.enums.UserRole;
-import com.project.hemolink.user_service.exception.ProfileOperationException;
-import com.project.hemolink.user_service.exception.ResourceNotFoundException;
+import com.project.hemolink.user_service.exception.*;
 import com.project.hemolink.user_service.repositories.DonorRepository;
 import com.project.hemolink.user_service.repositories.HospitalRepository;
 import com.project.hemolink.user_service.repositories.UserRepository;
@@ -23,19 +20,26 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+/**
+ * Service handling user profile operations including:
+ * - Profile retrieval
+ * - Profile deletion
+ * - Role-specific profile handling
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class ProfileService {
-
     private final UserRepository userRepository;
     private final DonorRepository donorRepository;
     private final HospitalRepository hospitalRepository;
     private final ModelMapper modelMapper;
     private final SecurityUtil securityUtil;
 
-
-//    @Cacheable(value = "userProfiles", key = "#root.methodName + ':'+ T(com.project.hemolink.user_service.auth.UserContextHolder).getCurrentUserId()")
+    /**
+     * Gets complete profile based on user role
+     * @return Profile DTO (DonorDto, HospitalDto, or UserDto)
+     */
     public Object getCompleteProfile() {
         try {
             UUID userId = securityUtil.getCurrentUserId();
@@ -59,20 +63,31 @@ public class ProfileService {
         }
     }
 
-//    @Cacheable(value = "userProfiles", key = "#root.methodName + ':'+ T(com.project.hemolink.user_service.auth.UserContextHolder).getCurrentUserId()")
-    public DonorDto getDonorProfile(User user){
+    /**
+     * Gets donor profile for user
+     * @param user User entity
+     * @return Donor DTO
+     */
+    public DonorDto getDonorProfile(User user) {
         Donor donor = donorRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Donor not found with email: "+user.getEmail()));
         return modelMapper.map(donor, DonorDto.class);
     }
 
-//    @Cacheable(value = "userProfiles", key = "#root.methodName + ':'+ T(com.project.hemolink.user_service.auth.UserContextHolder).getCurrentUserId()")
-    public HospitalDto getHospitalProfile(User user){
+    /**
+     * Gets hospital profile for user
+     * @param user User entity
+     * @return Hospital DTO
+     */
+    public HospitalDto getHospitalProfile(User user) {
         Hospital hospital = hospitalRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Hospital not found with email: "+user.getEmail()));
         return modelMapper.map(hospital, HospitalDto.class);
     }
 
+    /**
+     * Deletes user profile and associated data
+     */
     @CacheEvict(value = "userProfiles", key = "'getCompleteProfile:' + T(com.project.hemolink.user_service.auth.UserContextHolder).getCurrentUserId()")
     public void deleteProfile() {
         try {
@@ -100,12 +115,21 @@ public class ProfileService {
         }
     }
 
-    public void deleteDonorProfile(User user){
+    /**
+     * Deletes donor-specific profile data
+     * @param user User entity
+     */
+    public void deleteDonorProfile(User user) {
         Donor donor = donorRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Donor not found with email: "+user.getEmail()));
         donorRepository.delete(donor);
     }
-    public void deleteHospitalProfile(User user){
+
+    /**
+     * Deletes hospital-specific profile data
+     * @param user User entity
+     */
+    public void deleteHospitalProfile(User user) {
         Hospital hospital = hospitalRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Hospital not found with email: "+user.getEmail()));
         hospitalRepository.delete(hospital);

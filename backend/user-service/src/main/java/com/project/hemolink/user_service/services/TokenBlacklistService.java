@@ -6,14 +6,20 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Service handling JWT token blacklisting operations
+ */
 @Service
 @RequiredArgsConstructor
 public class TokenBlacklistService {
-
     private final RedisTemplate<String, String> redisTemplate;
 
-    // Function to blacklist the tokens
-    public void blacklistToken (String token, long expiresInSeconds){
+    /**
+     * Blacklists a JWT token
+     * @param token Token to blacklist
+     * @param expiresInSeconds Time until token expires (in seconds)
+     */
+    public void blacklistToken(String token, long expiresInSeconds) {
         redisTemplate.opsForValue().set(
                 "blacklist:"+token,
                 "logged_out",
@@ -22,7 +28,12 @@ public class TokenBlacklistService {
         );
     }
 
-    public boolean isTokenBlacklisted(String token){
+    /**
+     * Checks if token is blacklisted
+     * @param token Token to check
+     * @return True if token is blacklisted, false otherwise
+     */
+    public boolean isTokenBlacklisted(String token) {
         return redisTemplate.hasKey("blacklist:" + token);
     }
 }
