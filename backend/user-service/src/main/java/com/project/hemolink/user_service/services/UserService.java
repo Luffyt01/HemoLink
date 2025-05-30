@@ -31,9 +31,11 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
+
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
+
 
     /**
      * Registers new user
@@ -74,6 +76,7 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
     }
 
+
     /**
      * Loads user by username (email) for Spring Security
      * @param username User's email
@@ -87,6 +90,7 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new BadCredentialsException("Invalid credentials, user not found with email: "+username));
     }
 
+
     /**
      * Finds user by ID
      * @param userId User's unique ID
@@ -97,6 +101,7 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
     }
 
+
     /**
      * Saves user entity
      * @param newUser User entity to save
@@ -105,4 +110,5 @@ public class UserService implements UserDetailsService {
     public User save(User newUser) {
         return userRepository.save(newUser);
     }
+
 }
