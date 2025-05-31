@@ -37,6 +37,7 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
 
 
+
     /**
      * Registers new user
      * @param signupRequestDto Contains user registration details

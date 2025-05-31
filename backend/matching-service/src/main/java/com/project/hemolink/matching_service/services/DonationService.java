@@ -32,12 +32,15 @@ public class DonationService {
     private final BloodRequestRepository bloodRequestRepository;
     private final ModelMapper modelMapper;
 
+
+
     /**
      * Updates donation status
      * @param donationId Donation ID
      * @param status New status
      * @return Updated donation DTO
      */
+
     @Transactional
     public DonationDto updateDonationStatus(String donationId, DonationStatus status) {
         log.info("Updating status for donation {}", donationId);
@@ -61,6 +64,7 @@ public class DonationService {
         return modelMapper.map(donationRepository.save(donation), DonationDto.class);
     }
 
+
     /**
      * Gets all donations by donor
      * @param donorId Donor ID
@@ -75,6 +79,7 @@ public class DonationService {
                 .map(donation -> modelMapper.map(donation, DonationDto.class))
                 .toList();
     }
+
 
     /**
      * Updates request status if required units are fulfilled
