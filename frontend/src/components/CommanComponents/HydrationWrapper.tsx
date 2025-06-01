@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHydrationStore } from '@/lib/hydration';
 
-export default function HydrationWrapper({ 
+ function HydrationWrapper({ 
   children 
 }: { 
   children: React.ReactNode 
@@ -86,3 +86,4 @@ useEffect(() => {
     </>
   );
 }
+export default HydrationWrapper;

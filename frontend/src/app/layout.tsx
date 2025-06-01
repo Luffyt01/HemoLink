@@ -7,6 +7,8 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "./Provider/ThemeProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import HydrationWrapper from "@/components/CommanComponents/HydrationWrapper";
+
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
