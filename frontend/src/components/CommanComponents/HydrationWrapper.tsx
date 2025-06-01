@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHydrationStore } from '@/lib/hydration';
 
- function HydrationWrapper({ 
+export default function HydrationWrapper({ 
   children 
 }: { 
   children: React.ReactNode 
@@ -14,19 +14,19 @@ import { useHydrationStore } from '@/lib/hydration';
   const { _hasHydrated, setHydrated } = useHydrationStore();
   const [showLoader, setShowLoader] = useState(true);
   
-// Change the timeout based on environment
-const delay = process.env.NODE_ENV == 'development' ? 1 : 0;
+  useEffect(() => {
+    if (!_hasHydrated) {
+      // Simulate loading delay (remove in production)
+      const timer = setTimeout(() => {
+        setHydrated(true);
+        setShowLoader(false);
 
-useEffect(() => {
-  if (!_hasHydrated) {
-    const timer = setTimeout(() => {
-      setHydrated(true);
-      setShowLoader(false);
-    }, delay);
-    
-    return () => clearTimeout(timer);
-  }
-}, [_hasHydrated, setHydrated]);
+      },0); // Adjust timing as needed
+
+      
+      return () => clearTimeout(timer);
+    }
+  }, [_hasHydrated, setHydrated]);
 
   return (
     <>
@@ -86,4 +86,3 @@ useEffect(() => {
     </>
   );
 }
-export default HydrationWrapper;

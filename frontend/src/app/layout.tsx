@@ -3,12 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientSessionProvider from "./Provider/ClientSessionProvider";
 import { Toaster } from "sonner";
-
+import HydrationWrapper from "@/components/CommanComponents/HydrationWrapper";
 import { ThemeProvider } from "./Provider/ThemeProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import HydrationWrapper from "@/components/CommanComponents/HydrationWrapper";
-
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -53,7 +50,7 @@ export default function RootLayout({
                 disableTransitionOnChange
               >
                 {children}
-              <SpeedInsights/>
+            <SpeedInsights/>
               </ThemeProvider>
             </main>
             <Toaster
