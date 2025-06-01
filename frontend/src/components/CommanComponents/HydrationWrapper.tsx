@@ -21,7 +21,7 @@ export default function HydrationWrapper({
         setHydrated(true);
         setShowLoader(false);
 
-      }, 1); // Adjust timing as needed
+      },0); // Adjust timing as needed
 
       
       return () => clearTimeout(timer);

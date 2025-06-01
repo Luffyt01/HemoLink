@@ -50,7 +50,7 @@ export default function RootLayout({
                 disableTransitionOnChange
               >
                 {children}
-              <SpeedInsights/>
+            <SpeedInsights/>
               </ThemeProvider>
             </main>
             <Toaster
@@ -61,7 +61,7 @@ export default function RootLayout({
                   toast: "font-sans",
                 },
               }}
-            />
+              />
           </HydrationWrapper>
         </ClientSessionProvider>
       </body>
