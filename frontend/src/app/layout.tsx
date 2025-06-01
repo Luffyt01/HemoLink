@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientSessionProvider from "./Provider/ClientSessionProvider";
 import { Toaster } from "sonner";
-import HydrationWrapper from "@/components/CommanComponents/HydrationWrapper";
+// import HydrationWrapper from "@/components/CommanComponents/HydrationWrapper";
 import { ThemeProvider } from "./Provider/ThemeProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 const geistSans = Geist({
@@ -41,7 +41,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ClientSessionProvider>
-          <HydrationWrapper>
+          {/* <HydrationWrapper> */}
             <main className="flex-1 overflow-x-hidden md:mt-0">
               <ThemeProvider
                 attribute="class"
@@ -50,6 +50,7 @@ export default function RootLayout({
                 disableTransitionOnChange
               >
                 {children}
+            <SpeedInsights/>
               </ThemeProvider>
             </main>
             <Toaster
@@ -61,9 +62,8 @@ export default function RootLayout({
                 },
               }}
               />
-          </HydrationWrapper>
+          {/* </HydrationWrapper> */}
         </ClientSessionProvider>
-              <SpeedInsights/>
       </body>
     </html>
   );
