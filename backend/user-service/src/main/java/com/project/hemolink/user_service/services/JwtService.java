@@ -13,42 +13,65 @@ import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Date;
 
+/**
+ * Service handling JWT token operations including:
+ * - Token generation
+ * - Token validation
+ * - Token claims extraction
+ */
 @Service
 @RequiredArgsConstructor
 public class JwtService {
-
     @Value("${jwt.secretKey}")
     private String jwtSecretKey;
     private final TokenBlacklistService blacklistService;
 
-
-    private SecretKey getSecretKey(){
+    /**
+     * Generates secret key from configured secret string
+     */
+    private SecretKey getSecretKey() {
         return Keys.hmacShaKeyFor(jwtSecretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateAccessToken(User user){
+    /**
+     * Generates JWT access token for user
+     * @param user User entity
+     * @return JWT token string
+     */
+    public String generateAccessToken(User user) {
         Date currentDate = new Date();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(currentDate);
-        calendar.add(Calendar.DAY_OF_YEAR, 7);
+        calendar.add(Calendar.DAY_OF_YEAR, 7); // 7 day validity
         Date expirationDate = calendar.getTime();
+
         return Jwts.builder()
                 .subject(user.getId().toString())
-                .claim("email",user.getEmail())
-                .claim("role",user.getRole().toString())
+                .claim("email", user.getEmail())
+                .claim("role", user.getRole().toString())
                 .issuedAt(currentDate)
-                .expiration(expirationDate) // 7 days
+                .expiration(expirationDate)
                 .signWith(getSecretKey())
                 .compact();
     }
 
-    public long getRemainingValidity (String token){
+    /**
+     * Calculates remaining validity of token in seconds
+     * @param token JWT token
+     * @return Remaining validity in seconds
+     */
+    public long getRemainingValidity(String token) {
         Claims claims = parseTokenClaims(token);
         Date expiration = claims.getExpiration();
-        return (expiration.getTime() - System.currentTimeMillis())/1000;
+        return (expiration.getTime() - System.currentTimeMillis()) / 1000;
     }
 
-    public Claims parseTokenClaims(String token){
+    /**
+     * Parses and validates JWT token claims
+     * @param token JWT token
+     * @return Token claims
+     */
+    public Claims parseTokenClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSecretKey())
                 .build()
@@ -56,7 +79,12 @@ public class JwtService {
                 .getPayload();
     }
 
-    public String generateRefreshToken(User user){
+    /**
+     * Generates refresh token for user
+     * @param user User entity
+     * @return Refresh token string
+     */
+    public String generateRefreshToken(User user) {
         return Jwts.builder()
                 .subject(user.getId().toString())
                 .issuedAt(new Date())
@@ -64,11 +92,12 @@ public class JwtService {
                 .compact();
     }
 
-
-
-
-    public String getUserIdFromToken(String token){
-
+    /**
+     * Extracts user ID from token
+     * @param token JWT token
+     * @return User ID as string
+     */
+    public String getUserIdFromToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(getSecretKey())
                 .build()
@@ -77,12 +106,17 @@ public class JwtService {
         return claims.getSubject();
     }
 
+    /**
+     * Extracts user role from token
+     * @param token JWT token
+     * @return User role as string
+     */
     public String getRoleFromToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(getSecretKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-        return claims.get("role", String.class); // Extract role claim
+        return claims.get("role", String.class);
     }
 }

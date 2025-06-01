@@ -17,10 +17,6 @@ const publicPaths = [
 
 
 
-
-
-
-
 const isPublicPath = (pathname: string) => {
   return publicPaths.some(path => 
     pathname.startsWith(path) || 

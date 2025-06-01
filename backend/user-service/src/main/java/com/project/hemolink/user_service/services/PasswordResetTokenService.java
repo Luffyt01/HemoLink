@@ -9,60 +9,64 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
+/**
+ * Service handling password reset token operations including:
+ * - Token generation
+ * - Token validation
+ * - Token management
+ */
 @Service
 @RequiredArgsConstructor
 public class PasswordResetTokenService {
-
     private final PasswordResetTokenRepository passwordResetTokenRepository;
 
-    /*
-     * Function to create a password reset token for user identification and verification
+    /**
+     * Creates password reset token for user
+     * @param user User entity
+     * @param token Generated token string
+     * @throws BadRequestException If valid token already exists
      */
-    public void createPasswordResetToken(User user, String token){
-        // Checking if and unused token for the user is present in repository or not
+    public void createPasswordResetToken(User user, String token) {
         PasswordResetToken existingToken = passwordResetTokenRepository.findByUser(user).orElse(null);
 
-        // check if the token is present or not
-        if (existingToken != null){
-            // Delete the token if present but expired
-            if (existingToken.getExpiryDate().before(new Date())){
+        if (existingToken != null) {
+            if (existingToken.getExpiryDate().before(new Date())) {
                 deleteToken(existingToken);
-            }else{
-                // Throws exception if the token is present but not used by user
+            } else {
                 throw new BadRequestException("Password reset link is already sent to your email: "+user.getEmail());
             }
         }
 
-        // Generation password resetting token
         PasswordResetToken resetToken = PasswordResetToken.builder()
                 .user(user)
                 .token(token)
-                .expiryDate(new Date(System.currentTimeMillis() + (1000L * 60 * 60)))
+                .expiryDate(new Date(System.currentTimeMillis() + (1000L * 60 * 60))) // 1 hour validity
                 .build();
 
-        // Saving the details in the repository
         passwordResetTokenRepository.save(resetToken);
     }
 
-    /*
-     * Function to validate if the token is valid or invalid
+    /**
+     * Validates password reset token
+     * @param token Token string to validate
+     * @return Valid token entity
+     * @throws BadRequestException If token is invalid or expired
      */
-    public PasswordResetToken validatePasswordToken(String token){
-
-        // Throws exception if the token is not present in the repository
-        PasswordResetToken passwordResetToken =  passwordResetTokenRepository.findByToken(token)
+    public PasswordResetToken validatePasswordToken(String token) {
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByToken(token)
                 .orElseThrow(() -> new BadRequestException("Invalid token"));
 
-        // Throws exception if the token is expired
-        if (passwordResetToken.getExpiryDate().before(new Date())){
+        if (passwordResetToken.getExpiryDate().before(new Date())) {
             throw new BadRequestException("Expired token");
         }
         return passwordResetToken;
     }
 
-    // Function to delete the password reset token
-    public void deleteToken(PasswordResetToken token){
+    /**
+     * Deletes password reset token
+     * @param token Token entity to delete
+     */
+    public void deleteToken(PasswordResetToken token) {
         passwordResetTokenRepository.delete(token);
     }
-
 }

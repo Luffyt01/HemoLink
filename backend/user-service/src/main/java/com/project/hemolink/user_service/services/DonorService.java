@@ -5,10 +5,7 @@ import com.project.hemolink.user_service.dto.*;
 import com.project.hemolink.user_service.entities.Donor;
 import com.project.hemolink.user_service.entities.User;
 import com.project.hemolink.user_service.entities.enums.BloodType;
-import com.project.hemolink.user_service.exception.BadRequestException;
-import com.project.hemolink.user_service.exception.ProfileCompletionException;
-import com.project.hemolink.user_service.exception.ProfileOperationException;
-import com.project.hemolink.user_service.exception.ResourceNotFoundException;
+import com.project.hemolink.user_service.exception.*;
 import com.project.hemolink.user_service.repositories.DonorRepository;
 import com.project.hemolink.user_service.repositories.UserRepository;
 import com.project.hemolink.user_service.utils.SecurityUtil;
@@ -19,25 +16,24 @@ import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.util.ReflectionUtils;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-/*
- * Service Class to manage the donor related logic
+/**
+ * Service handling donor-related operations including:
+ * - Profile completion
+ * - Availability management
+ * - Location updates
+ * - Donor search
  */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class DonorService {
-
     private final DonorRepository donorRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
@@ -45,35 +41,30 @@ public class DonorService {
     private final BloodTypeCompatibilityService compatibilityService;
     private final DistanceService distanceService;
 
-    /*
-     * Function to complete the donor profile
+    /**
+     * Completes donor profile setup
+     * @param completeDonorProfileDto Contains donor profile details
+     * @return Created donor profile DTO
+     * @throws ProfileCompletionException If profile already completed
      */
     @Transactional
     public DonorDto completeProfile(CompleteDonorProfileDto completeDonorProfileDto) {
         try {
-            // Fetching the userId of current logged user
             UUID userId = securityUtil.getCurrentUserId();
-
-            // Fetching the user details from the repository
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-            // Checking if the user profile is already completed or not
             if (user.isProfileComplete()) {
                 throw new ProfileCompletionException("Profile already completed for donor with email: " + user.getEmail());
             }
 
             log.info("Completing donor profile for user: {}", user.getEmail());
-
             user.setProfileComplete(true);
             Donor donor = modelMapper.map(completeDonorProfileDto, Donor.class);
             donor.setUser(userRepository.save(user));
 
-            // Saving the details
             Donor savedDonor = donorRepository.save(donor);
             log.info("Donor profile completed successfully");
-
-            // mapping the saved details to the dto
             return modelMapper.map(savedDonor, DonorDto.class);
 
         } catch (ProfileCompletionException e) {
@@ -82,21 +73,20 @@ public class DonorService {
         }
     }
 
-    /*
-     * Function to update the user availability (TRUE, FALSE)
+    /**
+     * Updates donor availability status
+     * @param availabilityDto Contains new availability status
+     * @return Updated donor DTO
      */
     @Transactional
     public DonorDto updateAvailability(AvailabilityDto availabilityDto) {
         try {
-
             UUID userId = securityUtil.getCurrentUserId();
-
             Donor donor = donorRepository.findByUserId(userId)
                     .orElseThrow(() -> new ResourceNotFoundException("Donor not found with userId: "+userId));
 
             log.info("Updating availability for donor: {}", donor.getUser().getEmail());
             donor.setIsAvailable(availabilityDto.isAvailable());
-
             return modelMapper.map(donorRepository.save(donor), DonorDto.class);
 
         } catch (ResourceNotFoundException e) {
@@ -108,52 +98,60 @@ public class DonorService {
         }
     }
 
-
-
+    /**
+     * Updates donor location
+     * @param updatedLocation New location coordinates
+     * @return Updated donor DTO
+     */
     @Transactional
-    public DonorDto updateLocation(PointDTO updatedLocation){
+    public DonorDto updateLocation(PointDTO updatedLocation) {
         UUID userId = securityUtil.getCurrentUserId();
-
         Donor donor = donorRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Donor not found with userId: "+userId));
 
-        log.info("Updating the location for the donor with email: {}", donor.getUser().getEmail());
-
+        log.info("Updating location for donor: {}", donor.getUser().getEmail());
         donor.setLocation(modelMapper.map(updatedLocation, Point.class));
-
         Donor savedDonor = donorRepository.save(donor);
         log.info("Location updated");
         return modelMapper.map(savedDonor, DonorDto.class);
     }
 
+    /**
+     * Finds donor by ID
+     * @param donorId Donor's unique ID
+     * @return Donor DTO
+     */
     public DonorDto findDonorById(String donorId) {
         log.info("Fetching Donor by donorId: {}", donorId);
         Donor donor = donorRepository.findById(UUID.fromString(donorId))
                 .orElseThrow(() -> new ResourceNotFoundException("Donor not found with id: "+donorId));
-
         return modelMapper.map(donor, DonorDto.class);
     }
 
+    /**
+     * Finds donor by user ID
+     * @param userId User's unique ID
+     * @return Donor DTO
+     */
     public DonorDto getDonorByUserId(String userId) {
         log.info("Fetching Donor by userId: {}", userId);
-
-
         Donor donor = donorRepository.findByUserId(UUID.fromString(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("Donor not found with userId: "+userId));
-
         return modelMapper.map(donor, DonorDto.class);
     }
 
+    /**
+     * Finds nearby eligible donors matching criteria
+     * @param location Request location
+     * @param bloodType Required blood type
+     * @param radiusKm Search radius in kilometers
+     * @param limit Maximum results to return
+     * @return List of matching donors with distance information
+     */
     public List<DonorMatchDto> findNearByEligibleDonors(Point location, BloodType bloodType, int radiusKm, int limit) {
-        // Get all compatible blood types
         List<BloodType> compatibleTypes = compatibilityService.getCompatibleBloodTypes(bloodType);
-
-        // Calculate minimum date (90 days ago)
         LocalDate minDate = LocalDate.now().minusDays(90);
-
-        // Convert km to meters (PostGIS uses meters)
         double radiusMeters = radiusKm * 1000;
-
         PageRequest pageRequest = PageRequest.of(0, limit);
 
         List<Donor> donors = donorRepository.findNearbyEligibleDonors(
@@ -167,7 +165,6 @@ public class DonorService {
         return donors.stream()
                 .map(donor -> {
                     DonorMatchDto dto = modelMapper.map(donor, DonorMatchDto.class);
-                    // Calculate distance in km
                     dto.setDistanceKm(calculateDistance(location, donor.getLocation()));
                     return dto;
                 })
@@ -175,7 +172,6 @@ public class DonorService {
     }
 
     private double calculateDistance(Point p1, Point p2) {
-        // Simple distance calculation for example
         return distanceService.calculateDistance(p1, p2);
     }
 }

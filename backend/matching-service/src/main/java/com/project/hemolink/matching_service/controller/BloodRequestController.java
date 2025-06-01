@@ -46,7 +46,7 @@ public class BloodRequestController {
         return ResponseEntity.ok(bloodRequestService.updateRequestStatus(requestId, requestStatus));
     }
 
-    @PutMapping("/{requestId}/updateDetails")
+    @PutMapping("/updateDetails/{requestId}")
     public ResponseEntity<BloodRequestDto> updateRequestDetails(@PathVariable String requestId,
                                                                 @RequestBody UpdateRequestDto updateRequestDto){
         return ResponseEntity.ok(bloodRequestService.updateRequestDetails(requestId, updateRequestDto));

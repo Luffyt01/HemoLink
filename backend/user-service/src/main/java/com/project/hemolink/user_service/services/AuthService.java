@@ -3,10 +3,7 @@ package com.project.hemolink.user_service.services;
 import com.project.hemolink.user_service.dto.*;
 import com.project.hemolink.user_service.entities.PasswordResetToken;
 import com.project.hemolink.user_service.entities.User;
-import com.project.hemolink.user_service.exception.AuthenticationException;
-import com.project.hemolink.user_service.exception.BadRequestException;
-import com.project.hemolink.user_service.exception.InvalidTokenException;
-import com.project.hemolink.user_service.exception.ResourceNotFoundException;
+import com.project.hemolink.user_service.exception.*;
 import com.project.hemolink.user_service.repositories.UserRepository;
 import com.project.hemolink.user_service.utils.PasswordUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,24 +13,22 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.lang.module.ResolutionException;
 import java.util.UUID;
 
-/*
- * Service class to setup the authentication logic
+/**
+ * Service handling authentication-related operations including:
+ * - User login/logout
+ * - Password reset functionality
+ * - JWT token management
  */
 @Service
 @Slf4j
@@ -48,35 +43,32 @@ public class AuthService {
     private final JavaMailSender javaMailSender;
     private final PasswordResetTokenService passwordResetTokenService;
 
-
-
-
-
-    /*
-     * Function to Login the user
+    /**
+     * Authenticates user and generates JWT token
+     * @param loginRequestDto Contains email and password
+     * @return LoginResponseDto with user details and access token
+     * @throws AuthenticationException If credentials are invalid
      */
     @Transactional
     public LoginResponseDto login(LoginRequestDto loginRequestDto) {
         try {
             log.info("Attempting to login user with email: {}", loginRequestDto.getEmail());
 
-            // Authenticating the user and verifying the details
+            // Authenticate user credentials
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequestDto.getEmail(), loginRequestDto.getPassword())
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequestDto.getEmail(),
+                            loginRequestDto.getPassword()
+                    )
             );
 
-            // Throws exception if the user is not authenticated
             if (!authentication.isAuthenticated()) {
                 throw new AuthenticationException("Authentication failed for user: " + loginRequestDto.getEmail());
             }
 
-            // Fetching the authenticated user
             User user = (User) authentication.getPrincipal();
-
-            // Generating the JWT token for the authenticated user
             String accessToken = jwtService.generateAccessToken(user);
 
-            // Build the response
             return LoginResponseDto.builder()
                     .id(user.getId().toString())
                     .accessToken(accessToken)
@@ -93,24 +85,21 @@ public class AuthService {
         }
     }
 
-    /*
-     * Function to logout the user
+    /**
+     * Logs out user by blacklisting their JWT token
+     * @param request HTTP request containing the authorization header
+     * @throws InvalidTokenException If token is missing or invalid
      */
     @Transactional
     public void logout(HttpServletRequest request) {
         try {
-            // Fetching the authorization token from the request header
             final String requestTokenHeader = request.getHeader("Authorization");
 
-            // Throws exception if the header is empty or incorrect
             if (requestTokenHeader == null || !requestTokenHeader.startsWith("Bearer")) {
                 throw new InvalidTokenException("Authorization header is missing or invalid");
             }
 
-            // Got correct JWT token
             String token = requestTokenHeader.split("Bearer ")[1];
-
-            // Blacklisting the token
             blacklistService.blacklistToken(token, jwtService.getRemainingValidity(token));
             log.info("User logged out successfully");
 
@@ -123,33 +112,26 @@ public class AuthService {
         }
     }
 
-    public String refreshToken(String refreshToken) {
-        return null;
-    }
-
-    /*
-     * Function to start the process for user password reset
+    /**
+     * Initiates password reset process by generating token and sending email
+     * @param email User's email address
+     * @throws ResourceNotFoundException If user not found
      */
     public void initiatePasswordReset(String email) {
         log.info("Resetting password for user with email: {}", email);
 
-        // Throws exception if the user is not present with the entered email
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: "+email));
 
-        // Generating a random token
         String token = UUID.randomUUID().toString();
-
-        // Creating a password token for user identification
         passwordResetTokenService.createPasswordResetToken(user,token);
-
-        // Sending email to the user with the password reset link and the token
         sendPasswordResetEmail(user.getEmail(), token);
-
     }
 
-    /*
-     * Function to send email to user containing the password reset link and the token
+    /**
+     * Sends password reset email to user
+     * @param email Recipient email
+     * @param token Unique reset token
      */
     private void sendPasswordResetEmail(String email, String token) {
         SimpleMailMessage message = new SimpleMailMessage();
@@ -160,21 +142,17 @@ public class AuthService {
         javaMailSender.send(message);
     }
 
-
-    /*
-     * Function to reset the password
+    /**
+     * Completes password reset process
+     * @param resetPasswordRequest Contains token and new password
+     * @throws BadRequestException If token is invalid or expired
      */
     @Transactional
     public void completePasswordReset(ResetPasswordRequest resetPasswordRequest) {
-        // Verify if the token is valid or invalid
         PasswordResetToken token = passwordResetTokenService.validatePasswordToken(resetPasswordRequest.getToken());
-        // Getting user from token
         User user = token.getUser();
-        // Setting new password
         user.setPassword(passwordEncoder.encode(resetPasswordRequest.getPassword()));
-        // Saving the new password for the user
         userRepository.save(user);
-        // Delete the token after the password has been successfully changed
         passwordResetTokenService.deleteToken(token);
     }
 }
