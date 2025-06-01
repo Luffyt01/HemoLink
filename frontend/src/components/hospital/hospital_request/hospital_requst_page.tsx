@@ -39,23 +39,7 @@ export default function DonationRequestPage() {
     }
   ]);
 
-  const [completedRequests, setCompletedRequests] = useState<Request[]>([
-    {
-      id: "req-003",
-      hospitalId: "hosp-123",
-      hospitalName: "City General Hospital",
-      bloodType: "B_POSITIVE",
-      unitsRequired: 2,
-      urgency: "LOW",
-      location: {
-        coordinates: [-73.935242, 40.730610],
-        type: "Point"
-      },
-      createdAt: "2023-06-10T09:15:00Z",
-      expiryTime: "2023-06-15T09:15:00Z",
-      status: "FULFILLED"
-    }
-  ]);
+
 
   const handleSubmitNewRequest = (values: any) => {
     const newRequest: Request = {
@@ -98,30 +82,7 @@ export default function DonationRequestPage() {
                 <p className="font-semibold text-red-700">{activeRequests.length}</p>
               </div>
             </div>
-            
-            <div className=" p-3 rounded-lg shadow-sm border border-red-200 flex items-center">
-              <div className="bg-red-100 p-2 rounded-full mr-3">
-                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Completed</p>
-                <p className="font-semibold text-red-700">{completedRequests.length}</p>
-              </div>
-            </div>
-            
-            {/* <div className="bg-white p-3 rounded-lg shadow-sm border border-red-100 flex items-center">
-              <div className="bg-red-100 p-2 rounded-full mr-3">
-                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Potential Donors</p>
-                <p className="font-semibold text-red-700">42</p>
-              </div>
-            </div> */}
+       
           </div>
         </div>
 
@@ -137,7 +98,6 @@ export default function DonationRequestPage() {
         {/* Request Tables with enhanced visual connection cues */}
         <RequestTables 
           activeRequests={activeRequests} 
-          completedRequests={completedRequests} 
         />
         
         {/* Donor connection footer */}

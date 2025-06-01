@@ -68,29 +68,29 @@ export default function LoginForm() {
       }
       
 
-      // Prepare session data for storage
-      const customSession: CustomSession = {
-        token: session.token, // Make sure your session actually has a token
-        user: {
-          id: session.user.id,
-          email: session.user.email,
-          role: session.user.role,
-          phone: session.user.phone,
-          profileComplete: session.user.profileComplete,
-          // Add other necessary user fields
-        },
-        expires: session.expires, // If available
-      };
+      // // Prepare session data for storage
+      // const customSession: CustomSession = {
+      //   token: session.token, // Make sure your session actually has a token
+      //   user: {
+      //     id: session.user.id,
+      //     email: session.user.email,
+      //     role: session.user.role,
+      //     phone: session.user.phone,
+      //     profileComplete: session.user.profileComplete,
+      //     // Add other necessary user fields
+      //   },
+      //   expires: session.expires, // If available
+      // };
 
-      // Store session in Zustand
-      setSession(customSession);
+      // // Store session in Zustand
+      // setSession(customSession);
 
       toast.success("Login successful!");
 
       // Handle redirection
       if (session.user.role) {
         const basePath = session.user.role.toLowerCase();
-        const profileComplete = session.user.profileComplete === true;
+        const profileComplete = session.user?.profileComplete === true;
 
         router.push(
           profileComplete
@@ -98,7 +98,7 @@ export default function LoginForm() {
             : `/${basePath}/complete-profile`
         );
       } else {
-        router.push("/");
+        router.push("/logIn");
       }
     } catch (error) {
       console.error("Login error:", error);

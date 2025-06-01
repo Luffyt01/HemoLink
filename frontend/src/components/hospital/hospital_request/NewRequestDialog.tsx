@@ -125,7 +125,7 @@ export function NewRequestDialog({ onSubmit }: NewRequestDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white shadow-lg">
+        <Button className="bg-gradient-to-r cursor-pointer from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white shadow-lg">
           <HeartPulse className="mr-2 h-4 w-4" />
           New Blood Request
         </Button>
@@ -248,7 +248,7 @@ export function NewRequestDialog({ onSubmit }: NewRequestDialogProps) {
               <Button
                 type="button"
                 variant="outline"
-                className="border-border text-foreground hover:bg-muted"
+                className="border-border cursor-pointer text-foreground hover:bg-muted"
                 onClick={() => setOpen(false)}
                 disabled={isPending}
               >
@@ -256,7 +256,7 @@ export function NewRequestDialog({ onSubmit }: NewRequestDialogProps) {
               </Button>
               <Button
                 type="submit"
-                className="bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white"
+                className="bg-gradient-to-r cursor-pointer from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white"
                 disabled={isPending}
               >
                 {isPending ? "Submitting..." : "Submit Request"}
