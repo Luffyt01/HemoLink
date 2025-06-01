@@ -143,13 +143,14 @@ export function RequestActions({ request }: RequestActionsProps) {
             </p>
             <div className="flex justify-end gap-2">
               <Button
-                variant="outline"
+               
                 onClick={() => setShowCancelDialog(false)}
                 className="text-black hover:text-black/75 cursor-pointer"
               >
                 Cancel
               </Button>
               <Button
+                
                 onClick={cancelRequest}
                 className="text-white bg-red-600 hover:bg-red-700 cursor-pointer"
               >
@@ -219,16 +220,17 @@ export function RequestActions({ request }: RequestActionsProps) {
             </select>
             <div className="flex justify-end gap-2">
               <Button
-                variant="outline"
+                
                 onClick={() => setShowStatusSelect(false)}
                 disabled={isLoading}
-                className="text-black hover:text-black/75"
+                className="text-black cursor-pointer hover:text-black/75"
               >
                 Cancel
               </Button>
               <Button
                 onClick={updateStatus}
                 disabled={isLoading || selectedStatus === request.status}
+                className="text-black cursor-pointer hover:text-black/75"
               >
                 {isLoading ? "Updating..." : "Update"}
               </Button>

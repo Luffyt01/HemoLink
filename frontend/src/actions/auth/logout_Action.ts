@@ -47,13 +47,13 @@ const logout_Action = async ({ token }: { token: string }): Promise<LogoutRespon
     };
 
   } catch (error: any) {
-    console.log("errorqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq",error.response?.data)  
+    console.log("error logout",error.response?.data)  
     // Type-safe error handling
     if (axios.isAxiosError(error)) {
       return {
         error: error.response?.data?.error || "Logout failed",
         status:  500,
-        message: error.response?.data?.error || "Logout failed",
+        message: error.response?.data?.statusCode|| "Logout failed",
 
 
       };

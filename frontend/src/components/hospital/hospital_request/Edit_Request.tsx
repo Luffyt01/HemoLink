@@ -166,7 +166,7 @@ export function Edit_RequestDialog({ request }: NewRequestDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="w-full justify-start text-left">
+        <Button variant="ghost" className="w-full cursor-pointer justify-start text-left">
           <Edit className="mr-2 h-4 w-4" /> Edit
         </Button>
       </DialogTrigger>
@@ -360,7 +360,7 @@ export function Edit_RequestDialog({ request }: NewRequestDialogProps) {
               <Button
                 type="button"
                 variant="outline"
-                className="border-border text-foreground hover:bg-muted"
+                className="border-border cursor-pointer text-foreground hover:bg-muted"
                 onClick={() => setOpen(false)}
                 disabled={isPending}
               >
@@ -368,7 +368,7 @@ export function Edit_RequestDialog({ request }: NewRequestDialogProps) {
               </Button>
               <Button
                 type="submit"
-                className="bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white"
+                className="bg-gradient-to-r cursor-pointer from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white"
                 disabled={isPending}
               >
                 {isPending ? "Submitting..." : "Submit Request"}
