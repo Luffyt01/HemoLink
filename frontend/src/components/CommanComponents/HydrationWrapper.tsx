@@ -14,20 +14,19 @@ export default function HydrationWrapper({
   const { _hasHydrated, setHydrated } = useHydrationStore();
   const [showLoader, setShowLoader] = useState(true);
   
-  useEffect(() => {
-    if (!_hasHydrated) {
-      // Simulate loading delay (remove in production)
-      const timer = setTimeout(() => {
-        setHydrated(true);
-        setShowLoader(false);
+  // Change the timeout based on environment
+const delay = process.env.NODE_ENV === 'development' ? 1 : 0;
 
-      },0); // Adjust timing as needed
-
-      
-      return () => clearTimeout(timer);
-    }
-  }, [_hasHydrated, setHydrated]);
-
+useEffect(() => {
+  if (!_hasHydrated) {
+    const timer = setTimeout(() => {
+      setHydrated(true);
+      setShowLoader(false);
+    }, delay);
+    
+    return () => clearTimeout(timer);
+  }
+}, [_hasHydrated, setHydrated]);
   return (
     <>
       <AnimatePresence>
