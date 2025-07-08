@@ -18,7 +18,7 @@ export function GoogleSubmitBtn({ pending, setPending }: { pending: boolean; set
   }, [pending])
 
   return (
-    <span className=" text-center px-auto content-center  " aria-disabled={pending}>
+    <span  className=" text-center px-auto content-center  cursor-not-allowed" aria-disabled={pending}>
       {pending ? (
         "Processing..."
       ) : (
@@ -26,6 +26,7 @@ export function GoogleSubmitBtn({ pending, setPending }: { pending: boolean; set
           onClick={() => {
             if (!pending) setPending(true)
           }}
+        
           className="flex items-center gap-2">
           <Image src="/google.png" alt="google"  width={500} height={500} className="w-4 h-4" />
           <span className="text-black">Sign in with Google</span>
