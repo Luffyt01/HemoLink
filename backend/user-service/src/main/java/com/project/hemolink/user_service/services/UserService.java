@@ -37,7 +37,6 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
 
 
-
     /**
      * Registers new user
      * @param signupRequestDto Contains user registration details
@@ -101,7 +100,6 @@ public class UserService implements UserDetailsService {
         return userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "+userId));
     }
-
 
     /**
      * Saves user entity
