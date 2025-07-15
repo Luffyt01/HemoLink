@@ -113,7 +113,7 @@ export default function LoginForm() {
   const handleGoogleSignIn = async () => {
     setGooglePending(true);
     try {
-      await signIn("google", { callbackUrl: "/" });
+      // await signIn("google", { callbackUrl: "/" });
     } catch {
       toast.error("Google sign-in failed");
     } finally {

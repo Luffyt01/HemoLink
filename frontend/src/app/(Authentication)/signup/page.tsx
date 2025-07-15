@@ -14,7 +14,7 @@ export default function SignupPage() {
   const handleGoogleSignIn = async () => {
     setGooglePending(true);
     try {
-      await signIn("google", { redirect: true, callbackUrl: "/" });
+      // await signIn("google", { redirect: true, callbackUrl: "/" });
     } catch (error) {
       toast.error("Google sign-in failed");
     } finally {
