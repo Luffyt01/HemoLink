@@ -18,7 +18,7 @@ export function GoogleSubmitBtn({ pending, setPending }: { pending: boolean; set
   }, [pending])
 
   return (
-    <span  className=" text-center px-auto content-center  cursor-not-allowed" aria-disabled={pending}>
+    <span  className=" text-center px-auto content-center  " aria-disabled={pending}>
       {pending ? (
         "Processing..."
       ) : (

@@ -69,7 +69,7 @@ export async function completeDonorProfile(prevState: any, formData: FormData) {
       sataus:200
      }
   } catch (error) {
-    // console.error('Validation Error:', error.response)
+    console.error('Validation Error:', error.response)
     
   
     if(error instanceof axios.AxiosError) {
