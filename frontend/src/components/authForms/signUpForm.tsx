@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { IoEye, IoEyeOff } from "react-icons/io5";
+import { IoEye, IoEyeOff, IoWarning } from "react-icons/io5";
 import { FaHandHoldingHeart, FaHospital } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -125,6 +125,10 @@ export default function SignupForm({
           <FaHospital className="text-red-600" />
           Hospital Staff
         </motion.button>
+      </div>
+      <div className=" flex  justify-center gap-2 items-center">
+        <IoWarning className="h-5 w-5 text-red-900 animate-ping "/>
+        <h1 className="text-red-500"  >Working.....</h1>
       </div>
 
       {/* Form */}
@@ -284,7 +288,7 @@ export default function SignupForm({
     <Button
       variant="outline"
       onClick={onGoogleSignIn}
-      className="w-full h-12 rounded-xl bg-white cursor-pointer text-gray-800 border border-gray-300 hover:bg-gray-50 hover:border-red-400 transition-colors duration-200 shadow-sm flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full h-12 rounded-xl bg-white cursor-not-allowed text-gray-800 border border-gray-300 hover:bg-gray-50 hover:border-red-400 transition-colors duration-200 shadow-sm flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={googlePending}
     >
 

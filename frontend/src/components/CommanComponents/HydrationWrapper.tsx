@@ -15,7 +15,7 @@ export default function HydrationWrapper({
   const [showLoader, setShowLoader] = useState(true);
   
   // Change the timeout based on environment
-const delay = process.env.NODE_ENV === 'development' ? 1 : 0;
+const delay = process.env.NODE_ENV === 'development' ? 300 : 100;
 
 useEffect(() => {
   if (!_hasHydrated) {

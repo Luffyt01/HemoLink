@@ -2,11 +2,11 @@
 import LoginForm from "@/components/authForms/signInForm";
 import { motion } from "framer-motion";
 import Image from "next/image";
-
+import { IoWarning } from "react-icons/io5";
 
 export default function LoginPage() {
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -20,23 +20,23 @@ export default function LoginPage() {
         className="h-full w-full md:h-[90vh] md:max-h-[700px] md:w-[90vw] md:max-w-5xl bg-white shadow-2xl flex flex-col md:flex-row overflow-hidden"
       >
         {/* Mobile Top Image (hidden on desktop) */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
           className="relative h-32 w-full md:hidden"
         >
-           <Image
-          src="/donor-hero.jpg"
-          alt="Blood donor hero image"
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          priority
-          quality={80}
-        />
+          <Image
+            src="/donor-hero.jpg"
+            alt="Blood donor hero image"
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            priority
+            quality={80}
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent flex items-end p-4">
-            <motion.h1 
+            <motion.h1
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.6 }}
@@ -48,21 +48,21 @@ export default function LoginPage() {
         </motion.div>
 
         {/* Desktop Side Image (hidden on mobile) */}
-        <motion.div 
+        <motion.div
           initial={{ x: -20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.4 }}
           className="hidden md:flex md:w-1/2 relative bg-gradient-to-br from-rose-500 to-red-600"
         >
           <Image
-          src="/donor-hero.jpg"
-          alt="Blood donor hero image"
-          fill
-          className="object-fill"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          priority
-          quality={80}
-        />
+            src="/donor-hero.jpg"
+            alt="Blood donor hero image"
+            fill
+            className="object-fill"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            priority
+            quality={80}
+          />
           <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent flex items-center p-10">
             <motion.div
               initial={{ x: -30, opacity: 0 }}
@@ -73,12 +73,13 @@ export default function LoginPage() {
                 Give the Gift of Life
               </h1>
               <p className="text-lg text-white/90 ">
-                Your blood donation can save up to 3 lives. Join our community of heroes today.
+                Your blood donation can save up to 3 lives. Join our community
+                of heroes today.
               </p>
             </motion.div>
           </div>
         </motion.div>
-
+       
         {/* Form Content - Now a separate component */}
         <LoginForm />
       </motion.div>

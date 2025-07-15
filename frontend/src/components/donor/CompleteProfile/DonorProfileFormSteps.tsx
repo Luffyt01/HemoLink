@@ -65,6 +65,7 @@ import { Textarea } from "@/components/ui/textarea";
       address: "",
     });
     const {updateSession} = useAuthStore();
+    console.log(session)
 
     const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
@@ -244,7 +245,7 @@ import { Textarea } from "@/components/ui/textarea";
         description: "Select your blood group",
         render: ({ field }: any) => (
           <Select onValueChange={field.onChange} defaultValue={field.value}>
-            <SelectTrigger className="bg-gray-50 border-gray-200 focus:ring-2 focus:ring-pink-500">
+            <SelectTrigger className=" border-gray-200 focus:ring-2 focus:ring-pink-500">
               <SelectValue placeholder="Select your blood type" />
             </SelectTrigger>
             <SelectContent className="">
@@ -252,7 +253,7 @@ import { Textarea } from "@/components/ui/textarea";
                 <SelectItem
                   key={type}
                   value={type}
-                  className="hover:bg-pink-50 focus:bg-pink-50"
+                  className=""
                 >
                   <div className="flex items-center">
                     <span className="font-medium">{type.replace("_", " ")}</span>

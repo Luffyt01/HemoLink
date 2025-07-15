@@ -5,21 +5,35 @@ import { getSession, signIn } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { IoEye, IoEyeOff } from "react-icons/io5";
+import { IoEye, IoEyeOff, IoWarning } from "react-icons/io5";
 import { FaHandHoldingHeart, FaHospital } from "react-icons/fa";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/useAuthStore";
-import { CustomSession } from "@/app/api/auth/[...nextauth]/options";
+
 import { ArrowRight } from "lucide-react";
 import { hospitalInformationStore } from "@/lib/stores/hostpital/getInfromationHospital";
 import { donorInformationStore } from "@/lib/stores/donor/getInformation";
 import removeGlobalData from "../CommanComponents/RemoveGlobalData";
 
 
+// session interface
+export interface CustomSession {
+  token?: string;
+  user: {
+      id: string;
+  token?: string;
+  phone?: string | null;
+  email: string;
+  role?: string;
+  provider?: string;
+  googleId?: string | null;
+  profileComplete?: boolean;
 
-
+  };
+  expires : string;
+}
 
 export default function LoginForm() {
   const [role, setRole] = useState<"DONOR" | "HOSPITAL">("DONOR");
@@ -27,9 +41,9 @@ export default function LoginForm() {
   const [googlePending, setGooglePending] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  useEffect(()=>{
+  useEffect(() => {
     // removeGlobalData();
-  },[])
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -66,24 +80,23 @@ export default function LoginForm() {
       if (!session?.user) {
         throw new Error("No user data in session");
       }
-      
 
       // // Prepare session data for storage
-      // const customSession: CustomSession = {
-      //   token: session.token, // Make sure your session actually has a token
-      //   user: {
-      //     id: session.user.id,
-      //     email: session.user.email,
-      //     role: session.user.role,
-      //     phone: session.user.phone,
-      //     profileComplete: session.user.profileComplete,
-      //     // Add other necessary user fields
-      //   },
-      //   expires: session.expires, // If available
-      // };
-
-      // // Store session in Zustand
-      // setSession(customSession);
+      const customSession :CustomSession = {
+        token: session.token, // Make sure your session actually has a token
+        user: {
+          id: session.user.id,
+          email: session?.user?.email || "",
+          role: session.user?.role,
+          phone: session.user?.phone || "",
+          profileComplete: session.user?.profileComplete || "",
+          // Add other necessary user fields
+        },
+        expires: session.expires, // If available
+      };
+console.log(customSession)
+      // Store session in Zustand
+      setSession(customSession);
 
       toast.success("Login successful!");
 
@@ -131,6 +144,10 @@ export default function LoginForm() {
       <Header />
 
       <RoleToggle role={role} setRole={setRole} />
+      <div className=" flex  justify-center gap-2 items-center">
+        <IoWarning className="h-5 w-5 text-red-900 animate-ping " />
+        <h1 className="text-red-500">Working.....</h1>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-2 md:space-y-4">
         <input type="hidden" name="userRole" value={role} />
@@ -385,10 +402,9 @@ const GoogleSignInButton = ({
     <Button
       variant="outline"
       onClick={onClick}
-      className="w-full h-12 rounded-xl cursor-pointer bg-white text-gray-800 border border-gray-300 hover:bg-gray-50 hover:border-red-400 transition-colors duration-200 shadow-sm flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full h-12  rounded-xl cursor-not-allowed  bg-white text-gray-800 border border-gray-300 hover:bg-gray-50 hover:border-red-400 transition-colors duration-200 shadow-sm flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       disabled={pending}
     >
-
       <GoogleSubmitBtn pending={pending} setPending={setPending} />
     </Button>
   </motion.div>
