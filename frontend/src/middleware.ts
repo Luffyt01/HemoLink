@@ -10,7 +10,8 @@ const publicPaths = [
   "/api/auth/",
   "/_next/",
   "/favicon.ico",
-  "/error"
+  "/error",
+  "/"
 ];
 
 
@@ -36,7 +37,7 @@ export async function middleware(request: NextRequest) {
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
       secureCookie: process.env.NODE_ENV === "production"
-    });
+    }) ;
     if (!token && isPublicPath(pathname)) {
       return NextResponse.next();
     }
