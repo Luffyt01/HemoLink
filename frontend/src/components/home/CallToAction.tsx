@@ -32,14 +32,14 @@ export default function CallToAction() {
         
         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
           <Link 
-            href="/register/donor" 
+            href="/signup" 
             className="group bg-white hover:bg-pink-50 text-red-700 font-bold py-4 px-10 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 flex items-center gap-3"
           >
             <FaHandHoldingHeart className="w-6 h-6 group-hover:animate-bounce" />
             Register as Donor
           </Link>
           <Link 
-            href="/register/hospital" 
+            href="/signup" 
             className="bg-transparent border-2 border-white hover:bg-white hover:bg-opacity-20 font-bold py-4 px-10 rounded-full transition-all duration-300 transform hover:scale-105 flex items-center gap-3"
           >
             <FaHospital className="w-6 h-6" />

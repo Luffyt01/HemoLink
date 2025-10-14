@@ -36,14 +36,14 @@ export default function Hero() {
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Link 
-            href="/register/donor" 
+            href="/signup" 
             className="group bg-white hover:bg-pink-50 text-red-600 font-bold py-4 px-10 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 flex items-center gap-2"
           >
             <FaHandHoldingHeart className="w-5 h-5" />
             Join as Early Donor
           </Link>
           <Link 
-            href="/register/hospital" 
+            href="/signup" 
             className="bg-transparent hover:bg-white hover:bg-opacity-10 text-white border-2 border-white font-bold py-4 px-10 rounded-full transition-all duration-300 transform hover:scale-105"
           >
             Register Your Hospital

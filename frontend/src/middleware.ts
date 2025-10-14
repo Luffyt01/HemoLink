@@ -10,7 +10,8 @@ const publicPaths = [
   "/api/auth/",
   "/_next/",
   "/favicon.ico",
-  "/error"
+  "/error",
+  "/"
 ];
 
 
@@ -30,7 +31,7 @@ export async function middleware(request: NextRequest) {
   
   // Skip middleware for public paths and static files
   
-  return NextResponse.next();
+  // return NextResponse.next();
   try {
     const token = await getToken({ 
       req: request,
