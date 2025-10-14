@@ -30,13 +30,13 @@ export async function middleware(request: NextRequest) {
   
   // Skip middleware for public paths and static files
   
-  // return NextResponse.next();
+  return NextResponse.next();
   try {
     const token = await getToken({ 
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
       secureCookie: process.env.NODE_ENV === "production"
-    });
+    }) ;
     if (!token && isPublicPath(pathname)) {
       return NextResponse.next();
     }
